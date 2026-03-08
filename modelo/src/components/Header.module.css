@@ -1,0 +1,16 @@
+.header{
+  background: var(--gray-800);
+  display: flex;
+  justify-content: center;
+  padding: 1.25rem 0 ;
+}
+
+.header img {
+  height: 2rem;
+  
+  cursor: pointer;
+}
+.header img:hover {
+  transition: all 0.2s ease;
+  transform: scale(1.1);
+}
