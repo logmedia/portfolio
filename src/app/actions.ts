@@ -34,8 +34,8 @@ export async function createComment(formData: FormData) {
   const { error } = await supabase.from("comments").insert({
     post_id: parsed.data.postId,
     content: parsed.data.content,
-    author_id: user.id,
-  });
+    author_id: user.id as any,
+  } as any);
 
   if (error) {
     return { success: false, message: "Não foi possível enviar seu comentário." };
@@ -111,7 +111,7 @@ export async function saveProfile(formData: FormData) {
     stacks: parseStacks(parsed.data.stacks),
   };
 
-  const { error } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
+  const { error } = await supabase.from("profiles").upsert(payload as any, { onConflict: "id" });
 
   if (error) {
     return { success: false, message: "Erro ao salvar perfil." };
@@ -182,7 +182,7 @@ export async function savePost(formData: FormData) {
     status: parsed.data.status,
   };
 
-  const { error } = await supabase.from("posts").upsert(payload, { onConflict: "slug" });
+  const { error } = await supabase.from("posts").upsert(payload as any, { onConflict: "slug" });
 
   if (error) {
     return { success: false, message: "Erro ao salvar post." };

@@ -2,9 +2,33 @@
 
 import { Box, Flex, Avatar, Text, Link, Textarea, Button, Heading } from "@chakra-ui/react";
 import { useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import type { Post as PostType, Profile } from "@/types/content";
 
-export function Post() {
+interface PostProps {
+  post: PostType;
+  profile: Profile;
+}
+
+export function Post({ post, profile }: PostProps) {
   const [isFocused, setIsFocused] = useState(false);
+
+  const publishedAt = post.published_at 
+    ? new Date(post.published_at) 
+    : new Date();
+
+  const publishedDateFormatted = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(publishedAt);
+
+  const publishedDateRelativeToNow = formatDistanceToNow(publishedAt, {
+    locale: ptBR,
+    addSuffix: true,
+  });
 
   return (
     <Box
@@ -21,24 +45,24 @@ export function Post() {
       transition="all 0.3s ease"
       _hover={{ boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
     >
-      <Flex as="header" align="center" justify="space-between">
+      <Flex as="header" align="center" justify="space-between" direction={{ base: "column", sm: "row" }} gap={4}>
         <Flex align="center" gap={4}>
           <Avatar
             size="xl"
-            src="https://github.com/logmedia.png"
-            name="José Renato"
+            src={profile.avatar_url}
+            name={profile.name}
             border="4px solid"
-            borderColor="brand.900" /* matching gray-800 from theme */
+            borderColor="brand.900" 
             outline="2px solid"
             outlineColor="brand.500"
             bg="brand.800"
           />
           <Flex direction="column">
             <Text color="gray.100" fontWeight="bold" lineHeight="1.6">
-              José Renato
+              {profile.name}
             </Text>
             <Text fontSize="sm" color="gray.400" lineHeight="1.6">
-              Web Developer
+              {profile.role}
             </Text>
           </Flex>
         </Flex>
@@ -46,36 +70,27 @@ export function Post() {
           as="time"
           fontSize="sm"
           color="gray.400"
-          title="10 de junho às 17:00h"
-          dateTime="2022-05-11 08:13:30"
+          title={publishedDateFormatted}
+          dateTime={publishedAt.toISOString()}
         >
-          Publicado há 1 hora
+          Publicado {publishedDateRelativeToNow}
         </Text>
       </Flex>
       
       <Box lineHeight="1.6" color="gray.300" mt={6} sx={{ "& > p": { mt: 4 } }}>
-        <Text as="p">Fala galeraa 👋</Text>
-        <Text as="p">
-          Acabei de subir mais um projeto no meu portifa. É um projeto que fiz no
-          NLW Return, evento da Rocketseat. O nome do projeto é DoctorCare 🚀
-        </Text>
-        <Text as="p">
-          👉{" "}
-          <Link href="#" fontWeight="bold" color="brand.500" _hover={{ color: "brand.300", textDecoration: "none" }} transition="color 0.2s">
-            jane.design/doctorcare
-          </Link>
-        </Text>
-        <Text as="p">
-          <Link href="#" fontWeight="bold" color="brand.500" _hover={{ color: "brand.300", textDecoration: "none" }} transition="color 0.2s" mr={1}>
-            #novoprojeto
-          </Link>
-          <Link href="#" fontWeight="bold" color="brand.500" _hover={{ color: "brand.300", textDecoration: "none" }} transition="color 0.2s" mr={1}>
-            #nlw
-          </Link>
-          <Link href="#" fontWeight="bold" color="brand.500" _hover={{ color: "brand.300", textDecoration: "none" }} transition="color 0.2s">
-            #rocketseat
-          </Link>
-        </Text>
+        <Heading size="md" color="white" mb={2}>{post.title}</Heading>
+        <Text color="whiteAlpha.700" mb={4}>{post.subtitle}</Text>
+        <Text as="p">{post.content}</Text>
+        
+        {post.tags && post.tags.length > 0 && (
+          <Flex gap={2} mt={4} flexWrap="wrap">
+            {post.tags.map(tag => (
+              <Link key={tag} href="#" fontWeight="bold" color="brand.500" _hover={{ color: "brand.300", textDecoration: "none" }} transition="color 0.2s">
+                #{tag}
+              </Link>
+            ))}
+          </Flex>
+        )}
       </Box>
 
       <Box

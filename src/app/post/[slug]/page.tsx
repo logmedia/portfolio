@@ -7,7 +7,7 @@ interface PostPageProps {
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const [post, profile] = await Promise.all([
     fetchPostBySlug(slug),
     fetchProfile(),
@@ -23,7 +23,7 @@ export default async function PostPage({ params }: PostPageProps) {
 }
 
 export async function generateMetadata({ params }: PostPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const post = await fetchPostBySlug(slug);
   if (!post) {
     return { title: "Post não encontrado" };

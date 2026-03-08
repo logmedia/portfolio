@@ -79,15 +79,17 @@ export async function fetchProfile(): Promise<Profile> {
       return fallbackProfile;
     }
 
+    const profileData = data as any;
+
     return {
-      id: data.id,
-      name: data.name,
-      role: data.role ?? undefined,
-      bio: data.bio ?? undefined,
-      avatar_url: data.avatar_url ?? undefined,
-      cover_url: data.cover_url ?? undefined,
-      socials: (data.socials as Profile["socials"]) ?? [],
-      stacks: (data.stacks as string[]) ?? [],
+      id: profileData.id,
+      name: profileData.name,
+      role: profileData.role ?? undefined,
+      bio: profileData.bio ?? undefined,
+      avatar_url: profileData.avatar_url ?? undefined,
+      cover_url: profileData.cover_url ?? undefined,
+      socials: (profileData.socials as Profile["socials"]) ?? [],
+      stacks: (profileData.stacks as string[]) ?? [],
     };
   } catch (error) {
     console.error("fetchProfile", error);

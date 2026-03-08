@@ -34,7 +34,9 @@ const markdownComponents: Components = {
   p: (props) => (
     <Text fontSize="lg" color="whiteAlpha.800" lineHeight="tall" mb={4} {...props} />
   ),
+  // @ts-ignore
   ul: (props) => <Stack as="ul" pl={4} spacing={2} {...props} />,
+  // @ts-ignore
   li: (props) => <Text as="li" color="whiteAlpha.800" {...props} />,
 };
 
