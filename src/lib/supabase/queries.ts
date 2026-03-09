@@ -1,5 +1,13 @@
-import { createSupabaseServerClient } from "./server";
+import { createClient } from "@supabase/supabase-js";
 import type { Comment, Post, Profile } from "@/types/content";
+import type { Database } from "./types";
+
+const createPublicClient = () => {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+};
 
 const fallbackProfile: Profile = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -72,7 +80,7 @@ const fallbackComments: Comment[] = [
 
 export async function fetchProfile(): Promise<Profile> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase.from("profiles").select("*").single();
 
     if (error || !data) {
@@ -92,14 +100,14 @@ export async function fetchProfile(): Promise<Profile> {
       stacks: (profileData.stacks as string[]) ?? [],
     };
   } catch (error) {
-    console.error("fetchProfile", error);
+    console.error("fetchProfile ERROR:", error);
     return fallbackProfile;
   }
 }
 
 export async function fetchPosts(): Promise<Post[]> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("posts")
       .select("*")
@@ -112,14 +120,14 @@ export async function fetchPosts(): Promise<Post[]> {
 
     return data as Post[];
   } catch (error) {
-    console.error("fetchPosts", error);
+    console.error("fetchPosts ERROR:", error);
     return fallbackPosts;
   }
 }
 
 export async function fetchPostBySlug(slug: string): Promise<Post | null> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("posts")
       .select("*")
@@ -139,7 +147,7 @@ export async function fetchPostBySlug(slug: string): Promise<Post | null> {
 
 export async function fetchComments(postId: string): Promise<Comment[]> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("comments")
       .select("*")
@@ -160,7 +168,7 @@ export async function fetchComments(postId: string): Promise<Comment[]> {
 
 export async function fetchRecentComments(limit = 20): Promise<Comment[]> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("comments")
       .select("*")
