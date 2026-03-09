@@ -23,7 +23,6 @@ export function Post({ post, profile }: PostProps) {
       bg="rgba(32, 32, 36, 0.4)"
       backdropFilter="blur(16px)"
       borderRadius="2xl"
-      mt={8}
       boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
       border="1px solid"
       borderColor="whiteAlpha.100"
@@ -33,7 +32,7 @@ export function Post({ post, profile }: PostProps) {
       display="flex"
       flexDirection="column"
     >
-      <Box h="240px" overflow="hidden" position="relative" bg="blackAlpha.500">
+      <Box h={{ base: "200px", md: "240px" }} overflow="hidden" position="relative" bg="blackAlpha.500">
         <img 
           src={imgSrc} 
           alt={`Capa do post ${post.title}`}
@@ -44,7 +43,7 @@ export function Post({ post, profile }: PostProps) {
         />
       </Box>
 
-      <Box p={8} flex="1" display="flex" flexDirection="column">
+      <Box p={{ base: 5, md: 8 }} flex="1" display="flex" flexDirection="column">
         {post.tags && post.tags.length > 0 && (
           <Flex gap={2} mb={4} flexWrap="wrap">
             {post.tags.map(tag => (

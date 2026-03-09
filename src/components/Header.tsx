@@ -1,10 +1,10 @@
 "use client";
 
-import { Flex, HStack, Link as ChakraLink, IconButton, useColorMode } from "@chakra-ui/react";
+import { Flex, HStack, Link as ChakraLink, IconButton, useColorMode, Menu, MenuButton, MenuList, MenuItem, Box } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import NextLink from "next/link";
 import Image from "next/image";
-import { Moon, Sun } from "phosphor-react";
+import { Moon, Sun, List } from "phosphor-react";
 
 export function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -86,6 +86,38 @@ export function Header() {
           _hover={{ bg: colorMode === "light" ? "blackAlpha.100" : "whiteAlpha.200" }}
           transition="all 0.2s"
         />
+
+        {/* Mobile Menu */}
+        <Box display={{ base: "block", md: "none" }}>
+          <Menu>
+            <MenuButton
+              as={IconButton}
+              aria-label="Menu"
+              icon={<List weight="bold" size={24} />}
+              variant="outline"
+              borderColor={colorMode === "light" ? "gray.200" : "whiteAlpha.200"}
+              color={colorMode === "light" ? "gray.800" : "gray.100"}
+            />
+            <MenuList 
+              bg={colorMode === "light" ? "white" : "gray.800"} 
+              borderColor={colorMode === "light" ? "gray.200" : "whiteAlpha.200"}
+              boxShadow="lg"
+            >
+              <NextLink href="/" passHref legacyBehavior>
+                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Início</MenuItem>
+              </NextLink>
+              <NextLink href="#" passHref legacyBehavior>
+                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Projetos</MenuItem>
+              </NextLink>
+              <NextLink href="#" passHref legacyBehavior>
+                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Sobre</MenuItem>
+              </NextLink>
+              <NextLink href="#" passHref legacyBehavior>
+                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Contato</MenuItem>
+              </NextLink>
+            </MenuList>
+          </Menu>
+        </Box>
       </HStack>
     </Flex>
   );

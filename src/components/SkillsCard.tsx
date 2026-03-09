@@ -25,7 +25,7 @@ export function SkillsCard() {
       bg="rgba(32, 32, 36, 0.4)"
       backdropFilter="blur(16px)"
       borderRadius="2xl"
-      p={8}
+      p={{ base: 5, md: 8 }}
       boxShadow="0 8px 32px 0 rgba(0, 0, 0, 0.37)"
       border="1px solid"
       borderColor="whiteAlpha.100"
