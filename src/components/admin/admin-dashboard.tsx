@@ -44,7 +44,9 @@ import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash } fro
 import { StacksManagement } from "./stacks-management";
 import { StackSelector } from "./stack-selector";
 import { MediaPicker } from "./media-picker";
+import { GalleryManager } from "./gallery-manager";
 import { useEffect } from "react";
+import type { GalleryItem } from "@/types/content";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -65,17 +67,27 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const safeProfileId = uuidRegex.test(profile.id ?? "") ? profile.id : "";
   const safePostId = uuidRegex.test(selectedPost?.id ?? "") ? selectedPost?.id : "";
   
-  // Estado local para as stacks selecionadas no projeto atual
   const [selectedStackIds, setSelectedStackIds] = useState<string[]>([]);
   const [heroImageUrl, setHeroImageUrl] = useState("");
-  const [galleryUrls, setGalleryUrls] = useState("");
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
 
   // Sincronizar stacks quando o post selecionado muda
   useEffect(() => {
     setSelectedStackIds(selectedPost?.stacks?.map(s => s.id) ?? []);
     setHeroImageUrl(selectedPost?.hero_image_url ?? "");
-    setGalleryUrls(Array.isArray(selectedPost?.gallery) ? selectedPost.gallery.join("\n") : "");
-    setIsDirty(false); // Reset dirty state when changing post
+    // Parse gallery: pode ser GalleryItem[] ou string[] legado
+    const rawGallery = selectedPost?.gallery;
+    if (Array.isArray(rawGallery)) {
+      if (rawGallery.length > 0 && typeof rawGallery[0] === 'string') {
+        // Formato legado: array de strings
+        setGalleryItems((rawGallery as unknown as string[]).map((url, i) => ({ url, caption: '', order: i })));
+      } else {
+        setGalleryItems(rawGallery as GalleryItem[]);
+      }
+    } else {
+      setGalleryItems([]);
+    }
+    setIsDirty(false);
   }, [selectedPost]);
 
   // Auxiliar para verificar se a stack está selecionada no post
@@ -339,31 +351,15 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                           </Grid>
 
                           <FormControl>
-                            <FormLabel fontSize="sm">Galeria de Fotos (URLs por linha)</FormLabel>
-                            <VStack align="stretch" spacing={2}>
-                              <Textarea 
-                                name="gallery" 
-                                value={galleryUrls} 
-                                onChange={(e) => {
-                                  setGalleryUrls(e.target.value);
-                                  setIsDirty(true);
-                                }}
-                                rows={3} 
-                                bg="blackAlpha.300" 
-                                placeholder="Uma URL por linha..."
-                              />
-                              <HStack justify="flex-end">
-                                <MediaPicker 
-                                  label="" 
-                                  value="" 
-                                  onChange={(url) => {
-                                    const newGallery = galleryUrls ? `${galleryUrls}\n${url}` : url;
-                                    setGalleryUrls(newGallery);
-                                    setIsDirty(true);
-                                  }} 
-                                />
-                              </HStack>
-                            </VStack>
+                            <FormLabel fontSize="sm">Galeria de Fotos</FormLabel>
+                            <input type="hidden" name="gallery" value={JSON.stringify(galleryItems)} />
+                            <GalleryManager
+                              items={galleryItems}
+                              onChange={(items) => {
+                                setGalleryItems(items);
+                                setIsDirty(true);
+                              }}
+                            />
                           </FormControl>
 
                           <Grid templateColumns="repeat(3, 1fr)" gap={4}>

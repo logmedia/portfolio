@@ -160,10 +160,17 @@ const postSchema = z.object({
 
 const parseGallery = (input?: string) => {
   if (!input) return [];
+  // Tentar parsear como JSON (novo formato com caption/order)
+  try {
+    const parsed = JSON.parse(input);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {}
+  // Fallback: formato legado (URLs separadas por newline)
   return input
     .split("\n")
-    .map((url) => url.trim())
-    .filter(Boolean);
+    .map((url, i) => url.trim())
+    .filter(Boolean)
+    .map((url, i) => ({ url, caption: '', order: i }));
 };
 
 export async function savePost(formData: FormData) {

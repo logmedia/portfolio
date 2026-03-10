@@ -22,6 +22,12 @@ export type Profile = {
   skills?: any[];
 };
 
+export type GalleryItem = {
+  url: string;
+  caption?: string;
+  order: number;
+};
+
 export type Post = {
   id: string;
   slug: string;
@@ -29,7 +35,7 @@ export type Post = {
   subtitle?: string;
   content?: string;
   hero_image_url?: string;
-  gallery?: string[];
+  gallery?: GalleryItem[];
   tags?: string[]; // Mantemos por compatibilidade legada
   stacks?: Stack[]; // Nova relação real
   external_link?: string;
