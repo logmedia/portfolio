@@ -16,9 +16,7 @@ import {
   Tab,
   TabPanels,
   TabPanel,
-  Icon,
   IconButton,
-  Tooltip,
 } from '@chakra-ui/react';
 import { CloudArrowUp, Image as ImageIcon, Trash, CheckCircle } from 'phosphor-react';
 import { getMediaLibrary, uploadMedia, deleteMedia } from '@/app/actions';
@@ -154,7 +152,7 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
                       borderRadius="md"
                       overflow="hidden"
                       cursor="pointer"
-                      aspectRatio={1}
+                      sx={{ aspectRatio: "1/1" }}
                       border="2px solid"
                       borderColor={selectedUrl === item.url ? "brand.400" : "transparent"}
                       onClick={() => onSelect(item)}
