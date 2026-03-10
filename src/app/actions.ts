@@ -200,6 +200,15 @@ export async function savePost(formData: FormData) {
       return { success: false, message: "Não autorizado. Faça login novamente." };
     }
 
+    // Garantir que existe um perfil para este usuário no banco (evita erro de FK)
+    const { data: profile } = await (supabase as any).from("profiles").select("id").eq("id", user.id).single();
+    if (!profile) {
+      await (supabase as any).from("profiles").insert({
+        id: user.id,
+        name: user.email?.split("@")[0] || "Usuário", // Fallback básico
+      });
+    }
+
     // Pegar IDs das stacks do formData (enviados como stacks[])
     const selectedStackIds = formData.getAll("stacks[]").map(id => id.toString());
 
@@ -217,6 +226,7 @@ export async function savePost(formData: FormData) {
       performance: parsed.data.performance,
       difficulty: parsed.data.difficulty,
       status: parsed.data.status,
+      author_id: user.id, // Restaurando o vínculo de autor
     };
 
     const { data: post, error } = await (supabase as any)
