@@ -267,6 +267,30 @@ export async function savePost(formData: FormData) {
   }
 }
 
+export async function deletePost(id: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    
+    // Check authentication
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, message: "Não autorizado." };
+    }
+
+    const { error } = await (supabase as any).from("posts").delete().eq("id", id);
+
+    if (error) {
+      return { success: false, message: "Erro ao excluir projeto." };
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: "Erro crítico ao excluir projeto." };
+  }
+}
+
 const stackSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Nome é obrigatório"),

@@ -28,9 +28,9 @@ import {
   Textarea,
   useToast,
 } from "@chakra-ui/react";
-import { savePost, saveProfile, signOut } from "@/app/actions";
+import { deletePost, savePost, saveProfile, signOut } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack } from "@/types/content";
-import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon } from "phosphor-react";
+import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash } from "phosphor-react";
 import { StacksManagement } from "./stacks-management";
 import { StackSelector } from "./stack-selector";
 import { useEffect } from "react";
@@ -47,6 +47,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const [selectedPost, setSelectedPost] = useState<Post | null>(posts[0] ?? null);
   const [isSavingProfile, startProfileTransition] = useTransition();
   const [isSavingPost, startPostTransition] = useTransition();
+  const [isDeletingPost, startDeleteTransition] = useTransition();
   const [isLoggingOut, startLogoutTransition] = useTransition();
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const safeProfileId = uuidRegex.test(profile.id ?? "") ? profile.id : "";
@@ -95,6 +96,20 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
         return;
       }
       toast({ title: "Projeto salvo com sucesso!", status: "success" });
+    });
+  };
+
+  const handleDeletePost = (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.")) return;
+    
+    startDeleteTransition(async () => {
+      const result = await deletePost(id);
+      if (!result.success) {
+        toast({ title: result.message ?? "Erro ao excluir", status: "error" });
+        return;
+      }
+      toast({ title: "Projeto excluído com sucesso!", status: "success" });
+      setSelectedPost(null);
     });
   };
 
@@ -304,9 +319,22 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <FormLabel>Documentação / Conteúdo (Markdown)</FormLabel>
                             <Textarea name="content" defaultValue={selectedPost?.content ?? ""} rows={6} bg="blackAlpha.300" />
                           </FormControl>
-                          <Button type="submit" isLoading={isSavingPost} loadingText="Salvando" colorScheme="brand">
-                            Salvar Projeto
-                          </Button>
+                          <HStack spacing={4}>
+                            <Button type="submit" isLoading={isSavingPost} loadingText="Salvando" colorScheme="brand" flex={1}>
+                              Salvar Projeto
+                            </Button>
+                            {selectedPost && (
+                              <Button 
+                                variant="outline" 
+                                colorScheme="red" 
+                                onClick={() => handleDeletePost(selectedPost.id)}
+                                isLoading={isDeletingPost}
+                                leftIcon={<Trash />}
+                              >
+                                Excluir
+                              </Button>
+                            )}
+                          </HStack>
                         </ChakraStack>
                       </form>
                     </CardBody>
