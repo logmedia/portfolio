@@ -435,6 +435,7 @@ export async function signOut() {
   }
 }
 export async function getMediaLibrary() {
+  console.log("[getMediaLibrary] Start");
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await (supabase as any)
@@ -444,55 +445,60 @@ export async function getMediaLibrary() {
 
     if (error) {
       console.error("[getMediaLibrary] DB error:", error);
-      return { success: false, message: "Erro ao buscar biblioteca de mídia." };
+      return { success: false, message: "Erro ao buscar mídia." };
     }
 
-    const serializedData = JSON.parse(JSON.stringify(data, (key, value) => 
-      typeof value === 'bigint' ? value.toString() : value
+    // Serialização defensiva
+    const safeMedia = JSON.parse(JSON.stringify(data || [], (k, v) => 
+      typeof v === 'bigint' ? v.toString() : v
     ));
 
-    return { success: true, media: serializedData };
-  } catch (error) {
-    return { success: false, message: "Erro crítico ao buscar mídia." };
+    console.log("[getMediaLibrary] Success, items:", safeMedia.length);
+    return { success: true, media: safeMedia };
+  } catch (error: any) {
+    console.error("[getMediaLibrary] Fatal error:", error);
+    return { success: false, message: "Erro interno ao carregar biblioteca." };
   }
 }
 
 export async function uploadMedia(formData: FormData) {
+  console.log("[uploadMedia] Start");
   try {
-    const file = formData.get("file") as File;
-    if (!file) {
-      return { success: false, message: "Nenhum arquivo enviado." };
+    const file = formData.get("file") as any;
+    if (!file || !file.name) {
+      return { success: false, message: "Nenhum arquivo válido enviado." };
     }
 
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, message: "Não autorizado." };
-    }
+    if (!user) return { success: false, message: "Não autorizado." };
 
-    // Gerar caminho estilo WordPress: uploads/ANO/MES/DIA/timestamp-nome.ext
+    console.log("[uploadMedia] File received:", file.name, "Size:", file.size);
+
+    // Converter para Buffer para evitar problemas com File no servidor
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const timestamp = Date.now();
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const path = `uploads/${year}/${month}/${day}/${timestamp}-${sanitizedName}`;
+    const path = `uploads/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-    // 1. Upload para o Storage
-    const { data: storageData, error: storageError } = await supabase.storage
+    console.log("[uploadMedia] Uploading to storage path:", path);
+
+    // 1. Upload para o Storage usando Buffer
+    const { error: storageError } = await supabase.storage
       .from("media")
-      .upload(path, file);
+      .upload(path, buffer, {
+        contentType: file.type || 'image/jpeg',
+        upsert: true
+      });
 
     if (storageError) {
-      console.error("Storage upload error:", storageError);
-      return { success: false, message: `Erro no upload: ${storageError.message}` };
+      console.error("[uploadMedia] Storage error:", storageError);
+      return { success: false, message: `Erro no storage: ${storageError.message}` };
     }
 
-    // 2. Obter URL pública
     const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
 
-    // 3. Salvar na tabela media
     const mediaPayload = {
       filename: file.name,
       path: path,
@@ -502,6 +508,7 @@ export async function uploadMedia(formData: FormData) {
       user_id: user.id,
     };
 
+    console.log("[uploadMedia] Inserting into DB...");
     const { data: mediaRecord, error: dbError } = await (supabase as any)
       .from("media")
       .insert(mediaPayload)
@@ -509,19 +516,19 @@ export async function uploadMedia(formData: FormData) {
       .single();
 
     if (dbError) {
-      console.error("[uploadMedia] DB record error:", dbError);
-      return { success: false, message: `Erro ao registrar mídia: ${dbError.message}` };
+      console.error("[uploadMedia] DB error:", dbError);
+      return { success: false, message: `Erro no banco: ${dbError.message}` };
     }
 
-    const serializedRecord = JSON.parse(JSON.stringify(mediaRecord, (key, value) => 
-      typeof value === 'bigint' ? value.toString() : value
+    const safeRecord = JSON.parse(JSON.stringify(mediaRecord, (k, v) => 
+      typeof v === 'bigint' ? v.toString() : v
     ));
 
     console.log("[uploadMedia] Success!");
-    return { success: true, media: serializedRecord };
-  } catch (error) {
-    console.error("uploadMedia fatal error:", error);
-    return { success: false, message: "Erro inesperado no upload." };
+    return { success: true, media: safeRecord };
+  } catch (error: any) {
+    console.error("[uploadMedia] Fatal error:", error);
+    return { success: false, message: `Erro inesperado: ${error.message || 'Erro desconhecido'}` };
   }
 }
 

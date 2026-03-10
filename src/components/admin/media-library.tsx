@@ -60,17 +60,27 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Limite de 5MB para evitar erro 400 de payload no Vercel/Next.js
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Arquivo muito grande', description: 'O limite é de 5MB.', status: 'warning' });
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
     startUploadTransition(async () => {
-      const result = (await uploadMedia(formData)) as any;
-      if (result.success && result.media) {
-        toast({ title: 'Upload concluído!', status: 'success' });
-        setMediaItems([result.media as MediaFile, ...mediaItems]);
-        onSelect(result.media as MediaFile);
-      } else {
-        toast({ title: result.message || 'Erro no upload', status: 'error' });
+      try {
+        const result = (await uploadMedia(formData)) as any;
+        if (result.success && result.media) {
+          toast({ title: 'Upload concluído!', status: 'success' });
+          setMediaItems([result.media as MediaFile, ...mediaItems]);
+          onSelect(result.media as MediaFile);
+        } else {
+          toast({ title: 'Erro no servidor', description: result.message || 'Erro no upload', status: 'error' });
+        }
+      } catch (err: any) {
+        toast({ title: 'Erro de conexão', description: 'O servidor não respondeu corretamente.', status: 'error' });
       }
     });
   };
