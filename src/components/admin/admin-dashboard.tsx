@@ -14,6 +14,7 @@ import {
   GridItem,
   Heading,
   HStack,
+  Icon,
   Input,
   Select,
   Stack,
@@ -27,8 +28,9 @@ import {
   Textarea,
   useToast,
 } from "@chakra-ui/react";
-import { savePost, saveProfile } from "@/app/actions";
+import { savePost, saveProfile, signOut } from "@/app/actions";
 import type { Comment, Post, Profile } from "@/types/content";
+import { SignOut } from "phosphor-react";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -41,6 +43,7 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
   const [selectedPost, setSelectedPost] = useState<Post | null>(posts[0] ?? null);
   const [isSavingProfile, startProfileTransition] = useTransition();
   const [isSavingPost, startPostTransition] = useTransition();
+  const [isLoggingOut, startLogoutTransition] = useTransition();
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const safeProfileId = uuidRegex.test(profile.id ?? "") ? profile.id : "";
   const safePostId = uuidRegex.test(selectedPost?.id ?? "") ? selectedPost?.id : "";
@@ -49,6 +52,12 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
     () => comments.filter((comment) => comment.status === "pending"),
     [comments]
   );
+
+  const handleLogout = () => {
+    startLogoutTransition(async () => {
+      await signOut();
+    });
+  };
 
   const handleProfileSubmit = (formData: FormData) => {
     startProfileTransition(async () => {
@@ -75,12 +84,23 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
   return (
     <Box bgGradient="linear(to-b, #05080c, #040507)" minH="100vh" py={16}>
       <Stack spacing={10} maxW="6xl" mx="auto" px={{ base: 6, md: 10 }}>
-        <Stack spacing={2}>
-          <Heading size="xl">Painel Administrativo</Heading>
-          <Text color="whiteAlpha.700">
-            Gerencie seu perfil, os posts do portfólio e comentários enviados pela comunidade.
-          </Text>
-        </Stack>
+        <HStack justify="space-between" align="start">
+          <Stack spacing={2}>
+            <Heading size="xl">Painel Administrativo</Heading>
+            <Text color="whiteAlpha.700">
+              Gerencie seu perfil, os posts do portfólio e comentários enviados pela comunidade.
+            </Text>
+          </Stack>
+          <Button 
+            leftIcon={<Icon as={SignOut} />} 
+            variant="ghost" 
+            colorScheme="red" 
+            onClick={handleLogout}
+            isLoading={isLoggingOut}
+          >
+            Sair
+          </Button>
+        </HStack>
 
         <Tabs variant="enclosed" colorScheme="brand">
           <TabList overflowX="auto">

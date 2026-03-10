@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseCredentials } from "@/lib/env";
@@ -213,8 +214,36 @@ export async function savePost(formData: FormData) {
     return { success: false, message: "Erro ao salvar post." };
   }
 
-  revalidatePath("/");
-  revalidatePath(`/post/${parsed.data.slug}`);
   revalidatePath("/admin");
   return { success: true };
+}
+
+export async function signIn(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  if (!email || !password) {
+    return { success: false, message: "Email e senha são obrigatórios." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function signOut() {
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+  revalidatePath("/");
+  redirect("/login");
 }
