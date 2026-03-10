@@ -226,7 +226,7 @@ export function Post({ post, profile }: PostProps) {
             <HStack color={metaTextColor} fontSize="sm" spacing={{ base: 3, md: 5 }}>
               <HStack spacing={1.5} title="Data de Publicação">
                 <Icon as={GitMerge} fontSize="16px" />
-                <Text dateTime={publishedAt.toISOString()} fontFamily="monospace">
+                <Text as="time" dateTime={publishedAt.toISOString()} fontFamily="monospace">
                   {new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(publishedAt)}
                 </Text>
               </HStack>
