@@ -74,7 +74,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   useEffect(() => {
     setSelectedStackIds(selectedPost?.stacks?.map(s => s.id) ?? []);
     setHeroImageUrl(selectedPost?.hero_image_url ?? "");
-    setGalleryUrls(selectedPost?.gallery?.join("\n") ?? "");
+    setGalleryUrls(Array.isArray(selectedPost?.gallery) ? selectedPost.gallery.join("\n") : "");
     setIsDirty(false); // Reset dirty state when changing post
   }, [selectedPost]);
 
