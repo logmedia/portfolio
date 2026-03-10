@@ -443,11 +443,15 @@ export async function getMediaLibrary() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("getMediaLibrary error:", error);
+      console.error("[getMediaLibrary] DB error:", error);
       return { success: false, message: "Erro ao buscar biblioteca de mídia." };
     }
 
-    return { success: true, media: data };
+    const serializedData = JSON.parse(JSON.stringify(data, (key, value) => 
+      typeof value === 'bigint' ? value.toString() : value
+    ));
+
+    return { success: true, media: serializedData };
   } catch (error) {
     return { success: false, message: "Erro crítico ao buscar mídia." };
   }
@@ -505,12 +509,16 @@ export async function uploadMedia(formData: FormData) {
       .single();
 
     if (dbError) {
-      console.error("Database media record error:", dbError);
-      // Opcional: deletar do storage se falhar no banco?
+      console.error("[uploadMedia] DB record error:", dbError);
       return { success: false, message: `Erro ao registrar mídia: ${dbError.message}` };
     }
 
-    return { success: true, media: mediaRecord };
+    const serializedRecord = JSON.parse(JSON.stringify(mediaRecord, (key, value) => 
+      typeof value === 'bigint' ? value.toString() : value
+    ));
+
+    console.log("[uploadMedia] Success!");
+    return { success: true, media: serializedRecord };
   } catch (error) {
     console.error("uploadMedia fatal error:", error);
     return { success: false, message: "Erro inesperado no upload." };

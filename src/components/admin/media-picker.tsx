@@ -16,7 +16,6 @@ import {
   Box,
   Text,
   Icon,
-  Portal,
 } from '@chakra-ui/react';
 import { Image as ImageIcon, Link as LinkIcon, Pencil } from 'phosphor-react';
 import { MediaLibrary } from './media-library';
@@ -57,17 +56,15 @@ export function MediaPicker({ value, onChange, label }: MediaPickerProps) {
                 Mídia
               </Button>
             </PopoverTrigger>
-            <Portal>
-              <PopoverContent bg="gray.900" borderColor="whiteAlpha.300" w="450px" boxShadow="dark-lg" zIndex={2000}>
-                <PopoverArrow bg="gray.900" />
-                <PopoverBody p={0}>
-                  <MediaLibrary 
-                    selectedUrl={value}
-                    onSelect={(media) => onChange(media.url)} 
-                  />
-                </PopoverBody>
-              </PopoverContent>
-            </Portal>
+            <PopoverContent bg="gray.900" borderColor="whiteAlpha.300" w="450px" boxShadow="dark-lg" zIndex={2000}>
+              <PopoverArrow bg="gray.900" />
+              <PopoverBody p={0}>
+                <MediaLibrary 
+                  selectedUrl={value}
+                  onSelect={(media) => onChange(media.url)} 
+                />
+              </PopoverBody>
+            </PopoverContent>
           </Popover>
         </HStack>
       </VStack>
