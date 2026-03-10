@@ -110,77 +110,77 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
               transition="all 0.2s"
               position="relative"
             >
-              <Icon as={CloudArrowUp} size={48} color="whiteAlpha.500" />
-              <VStack spacing={1}>
-                <Text fontWeight="bold">Solte arquivos aqui para enviar</Text>
-                <Text fontSize="xs" color="whiteAlpha.600">Ou clique para selecionar do seu computador</Text>
+                <CloudArrowUp size={48} style={{ opacity: 0.5 }} />
+                <VStack spacing={1}>
+                  <Text fontWeight="bold">Solte arquivos aqui para enviar</Text>
+                  <Text fontSize="xs" color="whiteAlpha.600">Ou clique para selecionar do seu computador</Text>
+                </VStack>
+                <Button
+                  as="label"
+                  htmlFor="file-upload"
+                  cursor="pointer"
+                  colorScheme="brand"
+                  size="sm"
+                  isLoading={isUploading}
+                >
+                  Selecionar Arquivo
+                </Button>
+                <input
+                  id="file-upload"
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={handleFileUpload}
+                  accept="image/*"
+                />
               </VStack>
-              <Button
-                as="label"
-                htmlFor="file-upload"
-                cursor="pointer"
-                colorScheme="brand"
-                size="sm"
-                isLoading={isUploading}
-              >
-                Selecionar Arquivo
-              </Button>
-              <input
-                id="file-upload"
-                type="file"
-                style={{ display: 'none' }}
-                onChange={handleFileUpload}
-                accept="image/*"
-              />
-            </VStack>
-          </TabPanel>
+            </TabPanel>
 
-          <TabPanel px={0}>
-            {isLoading ? (
-              <Box display="flex" justifyContent="center" py={12}>
-                <Spinner color="brand.400" />
-              </Box>
-            ) : mediaItems.length === 0 ? (
-              <VStack py={12} color="whiteAlpha.400">
-                <Icon as={ImageIcon} size={40} />
-                <Text>Nenhum arquivo encontrado</Text>
-              </VStack>
-            ) : (
-              <Grid templateColumns="repeat(auto-fill, minmax(100px, 1fr))" gap={3} maxH="400px" overflowY="auto" px={2}>
-                {mediaItems.map((item) => (
-                  <Box
-                    key={item.id}
-                    position="relative"
-                    borderRadius="md"
-                    overflow="hidden"
-                    cursor="pointer"
-                    aspectRatio={1}
-                    border="2px solid"
-                    borderColor={selectedUrl === item.url ? "brand.400" : "transparent"}
-                    onClick={() => onSelect(item)}
-                    role="group"
-                  >
-                    <Image
-                      src={item.url}
-                      alt={item.filename}
-                      objectFit="cover"
-                      w="100%"
-                      h="100%"
-                      fallbackSrc="https://via.placeholder.com/100?text=..."
-                    />
-                    
-                    {selectedUrl === item.url && (
-                      <Box
-                        position="absolute"
-                        top={1}
-                        right={1}
-                        bg="brand.400"
-                        borderRadius="full"
-                        p={0.5}
-                      >
-                        <Icon as={CheckCircle} color="white" weight="fill" />
-                      </Box>
-                    )}
+            <TabPanel px={0}>
+              {isLoading ? (
+                <Box display="flex" justifyContent="center" py={12}>
+                  <Spinner color="brand.400" />
+                </Box>
+              ) : mediaItems.length === 0 ? (
+                <VStack py={12} color="whiteAlpha.400">
+                  <ImageIcon size={40} />
+                  <Text>Nenhum arquivo encontrado</Text>
+                </VStack>
+              ) : (
+                <Grid templateColumns="repeat(auto-fill, minmax(100px, 1fr))" gap={3} maxH="400px" overflowY="auto" px={2}>
+                  {mediaItems.map((item) => (
+                    <Box
+                      key={item.id}
+                      position="relative"
+                      borderRadius="md"
+                      overflow="hidden"
+                      cursor="pointer"
+                      aspectRatio={1}
+                      border="2px solid"
+                      borderColor={selectedUrl === item.url ? "brand.400" : "transparent"}
+                      onClick={() => onSelect(item)}
+                      role="group"
+                    >
+                      <Image
+                        src={item.url}
+                        alt={item.filename}
+                        objectFit="cover"
+                        w="100%"
+                        h="100%"
+                        fallbackSrc="https://via.placeholder.com/100?text=..."
+                      />
+                      
+                      {selectedUrl === item.url && (
+                        <Box
+                          position="absolute"
+                          top={1}
+                          right={1}
+                          bg="brand.400"
+                          borderRadius="full"
+                          p={0.5}
+                        >
+                          <CheckCircle color="white" weight="fill" size={16} />
+                        </Box>
+                      )}
 
                     <IconButton
                       aria-label="Deletar"

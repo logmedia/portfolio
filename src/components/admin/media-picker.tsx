@@ -42,7 +42,7 @@ export function MediaPicker({ value, onChange, label }: MediaPickerProps) {
         
         <HStack>
           <Input 
-            name={label === "Hero image (URL)" ? "heroImage" : "gallery"}
+            name={label === "Foto de Destaque" ? "heroImage" : "gallery"}
             value={value || ''} 
             onChange={(e) => onChange(e.target.value)}
             bg="blackAlpha.300"
@@ -50,9 +50,9 @@ export function MediaPicker({ value, onChange, label }: MediaPickerProps) {
             size="sm"
           />
           
-          <Popover placement="bottom-end" isLazy variant="responsive">
+          <Popover placement="bottom-end" isLazy>
             <PopoverTrigger>
-              <Button size="sm" leftIcon={<Icon as={ImageIcon} />} colorScheme="brand">
+              <Button size="sm" leftIcon={<ImageIcon size={18} />} colorScheme="brand">
                 Mídia
               </Button>
             </PopoverTrigger>
