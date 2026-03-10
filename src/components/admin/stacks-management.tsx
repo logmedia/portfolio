@@ -234,15 +234,43 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
               </Text>
             </FormControl>
             <FormControl>
-              <FormLabel fontSize="sm">Cor (Hex)</FormLabel>
-              <Input 
-                name="color" 
-                value={formData.color} 
-                onChange={(e) => setFormData({...formData, color: e.target.value})}
-                placeholder="Ex: #61DAFB" 
-                size="sm" 
-                bg="blackAlpha.300"
-              />
+              <FormLabel fontSize="sm" display="flex" justifyContent="space-between">
+                Cor (Hex)
+                <Box 
+                  w="16px" 
+                  h="16px" 
+                  borderRadius="full" 
+                  bg={formData.color || "transparent"} 
+                  border="1px solid" 
+                  borderColor="whiteAlpha.300"
+                  boxShadow={formData.color ? `0 0 10px ${formData.color}` : "none"}
+                />
+              </FormLabel>
+              <HStack spacing={2}>
+                <Input 
+                  name="color" 
+                  value={formData.color} 
+                  onChange={(e) => setFormData({...formData, color: e.target.value})}
+                  placeholder="Ex: #61DAFB" 
+                  size="sm" 
+                  bg="blackAlpha.300"
+                />
+                <Box position="relative" w="36px" h="32px" borderRadius="md" overflow="hidden" border="1px solid" borderColor="whiteAlpha.100">
+                  <Input 
+                    type="color" 
+                    value={formData.color || "#61DAFB"} 
+                    onChange={(e) => setFormData({...formData, color: e.target.value.toUpperCase()})}
+                    position="absolute"
+                    top="-5px"
+                    left="-5px"
+                    w="50px"
+                    h="50px"
+                    cursor="pointer"
+                    p={0}
+                    border="none"
+                  />
+                </Box>
+              </HStack>
             </FormControl>
             <HStack pt={2}>
               <Button type="submit" size="sm" colorScheme="brand" isLoading={isPending} flex={1}>
