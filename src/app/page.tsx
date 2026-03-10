@@ -6,6 +6,8 @@ import { StacksCard } from "@/components/StacksCard";
 import { Box, Flex, Text as ChakraText } from "@chakra-ui/react";
 import { fetchPosts, fetchProfile } from "@/lib/supabase/queries";
 
+export const revalidate = 3600; // ISR: Revalidate every hour for high performance
+
 export default async function Home() {
   const [profile, posts] = await Promise.all([
     fetchProfile(),

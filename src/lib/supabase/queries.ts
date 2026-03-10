@@ -145,6 +145,25 @@ export async function fetchPostBySlug(slug: string): Promise<Post | null> {
   }
 }
 
+export async function fetchAllPostSlugs(): Promise<string[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("posts")
+      .select("slug")
+      .eq("status", "published");
+
+    if (error || !data) {
+      return fallbackPosts.map((post) => post.slug);
+    }
+    
+    return data.map((post: any) => post.slug);
+  } catch (error) {
+    console.error("fetchAllPostSlugs", error);
+    return fallbackPosts.map((post) => post.slug);
+  }
+}
+
 export async function fetchComments(postId: string): Promise<Comment[]> {
   try {
     const supabase = createPublicClient();

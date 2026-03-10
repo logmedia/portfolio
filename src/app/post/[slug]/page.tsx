@@ -1,9 +1,18 @@
 import { notFound } from "next/navigation";
-import { fetchComments, fetchPostBySlug, fetchProfile } from "@/lib/supabase/queries";
+import { fetchComments, fetchPostBySlug, fetchProfile, fetchAllPostSlugs } from "@/lib/supabase/queries";
 import { PostDetailClient } from "@/components/post/post-detail-client";
 
 interface PostPageProps {
   params: { slug: string };
+}
+
+export const revalidate = 3600; // ISR for dynamic posts
+
+export async function generateStaticParams() {
+  const slugs = await fetchAllPostSlugs();
+  return slugs.map((slug) => ({
+    slug,
+  }));
 }
 
 export default async function PostPage({ params }: PostPageProps) {
