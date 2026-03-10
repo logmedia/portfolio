@@ -194,6 +194,12 @@ export async function savePost(formData: FormData) {
 
     const supabase = await createSupabaseServerClient();
     
+    // Check authentication for admin actions
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, message: "Não autorizado. Faça login novamente." };
+    }
+
     // Pegar IDs das stacks do formData (enviados como stacks[])
     const selectedStackIds = formData.getAll("stacks[]").map(id => id.toString());
 
@@ -211,6 +217,7 @@ export async function savePost(formData: FormData) {
       performance: parsed.data.performance,
       difficulty: parsed.data.difficulty,
       status: parsed.data.status,
+      author_id: user.id, // Associate with current user
     };
 
     const { data: post, error } = await (supabase as any)
@@ -221,7 +228,7 @@ export async function savePost(formData: FormData) {
 
     if (error || !post) {
       console.error("savePost error:", error);
-      return { success: false, message: "Erro ao salvar projeto." };
+      return { success: false, message: `Erro no banco: ${error?.message || "Sem resposta do post"}` };
     }
 
     // Sincronizar stacks (Muitos-para-Muitos)
