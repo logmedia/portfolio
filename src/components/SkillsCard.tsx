@@ -10,16 +10,29 @@ interface Skill {
   color: string;
 }
 
-const SKILLS: Skill[] = [
-  { name: "Frontend", level: 95, icon: Code, color: "cyan.400" },
-  { name: "UI Design", level: 85, icon: Palette, color: "pink.400" },
-  { name: "Backend", level: 80, icon: Database, color: "purple.400" },
-  { name: "Performance", level: 90, icon: Lightning, color: "yellow.400" },
-  { name: "React/Next.js", level: 98, icon: BracketsCurly, color: "blue.400" },
-  { name: "Mobile", level: 75, icon: Cpu, color: "green.400" },
-];
+const ICON_MAP: Record<string, any> = {
+  Code,
+  Palette,
+  Database,
+  Lightning,
+  BracketsCurly,
+  Cpu,
+};
 
-export function SkillsCard() {
+const COLOR_MAP: Record<string, string> = {
+  Code: "cyan.400",
+  Palette: "pink.400",
+  Database: "purple.400",
+  Lightning: "yellow.400",
+  BracketsCurly: "blue.400",
+  Cpu: "green.400",
+};
+
+interface SkillsCardProps {
+  skills?: any[];
+}
+
+export function SkillsCard({ skills }: SkillsCardProps) {
   const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
   const borderColor = useColorModeValue("white", "whiteAlpha.100");
   const headingColor = useColorModeValue("gray.800", "gray.100");
@@ -43,30 +56,38 @@ export function SkillsCard() {
       </Heading>
 
       <Stack spacing={6}>
-        {SKILLS.map((skill) => (
-          <Box key={skill.name}>
-            <Flex justify="space-between" align="center" mb={2}>
-              <Flex align="center" gap={2}>
-                <Icon as={skill.icon} color={skill.color} fontSize="20px" />
-                <Text color={textColor} fontWeight="medium" fontSize="sm">
-                  {skill.name}
+        {(skills || []).map((skill) => {
+          const IconComponent = ICON_MAP[skill.icon] || Code;
+          const skillColor = COLOR_MAP[skill.icon] || "brand.500";
+          
+          return (
+            <Box key={skill.name}>
+              <Flex justify="space-between" align="center" mb={2}>
+                <Flex align="center" gap={2}>
+                  <Icon as={IconComponent} color={skillColor} fontSize="20px" />
+                  <Text color={textColor} fontWeight="medium" fontSize="sm">
+                    {skill.name}
+                  </Text>
+                </Flex>
+                <Text color={subTextColor} fontSize="xs">
+                  {skill.level}%
                 </Text>
               </Flex>
-              <Text color={subTextColor} fontSize="xs">
-                {skill.level}%
-              </Text>
-            </Flex>
-            <Box h="6px" w="full" bg={trackBg} borderRadius="full" overflow="hidden">
-              <Box
-                h="full"
-                w={`${skill.level}%`}
-                borderRadius="full"
-                bgGradient={`linear(to-r, ${skill.color}, brand.500)`}
-                transition="width 1s ease-in-out"
-              />
+              <Box h="6px" w="full" bg={trackBg} borderRadius="full" overflow="hidden">
+                <Box
+                  h="full"
+                  w={`${skill.level}%`}
+                  borderRadius="full"
+                  bgGradient={`linear(to-r, ${skillColor}, brand.500)`}
+                  transition="width 1s ease-in-out"
+                />
+              </Box>
             </Box>
-          </Box>
-        ))}
+          );
+        })}
+        {(!skills || skills.length === 0) && (
+          <Text fontSize="sm" color={subTextColor}>Configure suas skills no painel admin.</Text>
+        )}
       </Stack>
     </Box>
   );

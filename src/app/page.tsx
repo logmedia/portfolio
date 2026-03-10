@@ -36,8 +36,8 @@ export default async function Home() {
             coverUrl: profile.cover_url ?? "",
             socials: profile.socials
           }} />
-          <SkillsCard />
-          <StacksCard />
+          <SkillsCard skills={profile.skills} />
+          <StacksCard stacks={profile.stacks} />
         </Box>
         <Box as="main" w="100%">
           <Flex direction="column" gap={{ base: 6, md: 8 }}>

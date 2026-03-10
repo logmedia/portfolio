@@ -131,12 +131,20 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
                             />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Stacks favoritas</FormLabel>
-                            <Input
-                              name="stacks"
-                              placeholder="Separadas por vírgula"
-                              defaultValue={profile.stacks?.join(", ") ?? ""}
+                            <FormLabel>Skills (Nome|Nível|Ícone)</FormLabel>
+                            <Textarea
+                              name="skills"
+                              placeholder="Ex: React|95|BracketsCurly"
+                              defaultValue={
+                                profile.skills
+                                  ?.map((s) => `${s.name}|${s.level}|${s.icon}`)
+                                  .join("\n") ?? ""
+                              }
+                              rows={4}
                             />
+                            <Text fontSize="xs" color="whiteAlpha.500" mt={1}>
+                              Ícones disponíveis: Code, Palette, Database, Lightning, BracketsCurly, Cpu
+                            </Text>
                           </FormControl>
                           <Button type="submit" isLoading={isSavingProfile} loadingText="Salvando">
                             Salvar perfil

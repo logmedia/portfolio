@@ -13,6 +13,7 @@ export type Database = {
           cover_url: string | null;
           socials: Json | null;
           stacks: Json | null;
+          skills: Json | null;
           created_at: string | null;
           updated_at: string | null;
         };

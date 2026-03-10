@@ -2,26 +2,29 @@
 
 import { Box, Flex, Text, Heading, Icon, SimpleGrid, Tooltip, useColorModeValue } from "@chakra-ui/react";
 import { FaWordpress, FaPhp, FaReact, FaGitAlt, FaNodeJs, FaFigma } from "react-icons/fa";
-import { SiNextdotjs, SiTypescript, SiTailwindcss, SiJavascript, SiPostgresql, SiFirebase } from "react-icons/si";
+import { SiNextdotjs, SiTypescript, SiTailwindcss, SiJavascript, SiPostgresql, SiFirebase, SiSupabase } from "react-icons/si";
 
-interface StackItem {
-  name: string;
-  icon: any;
-  color: string;
+const ICON_MAP: Record<string, any> = {
+  "React": { icon: FaReact, color: "#61DAFB" },
+  "Next.js": { icon: SiNextdotjs, color: "white" },
+  "TypeScript": { icon: SiTypescript, color: "#3178C6" },
+  "Tailwind CSS": { icon: SiTailwindcss, color: "#06B6D4" },
+  "WordPress": { icon: FaWordpress, color: "#21759B" },
+  "PHP": { icon: FaPhp, color: "#777BB4" },
+  "Node.js": { icon: FaNodeJs, color: "#339933" },
+  "Git": { icon: FaGitAlt, color: "#F05032" },
+  "Figma": { icon: FaFigma, color: "#F24E1E" },
+  "Supabase": { icon: SiSupabase, color: "#3ECF8E" },
+  "Firebase": { icon: SiFirebase, color: "#FFCA28" },
+  "JavaScript": { icon: SiJavascript, color: "#F7DF1E" },
+  "PostgreSQL": { icon: SiPostgresql, color: "#4169E1" },
+};
+
+interface StacksCardProps {
+  stacks?: string[];
 }
 
-const STACKS: StackItem[] = [
-  { name: "React", icon: FaReact, color: "#61DAFB" },
-  { name: "Next.js", icon: SiNextdotjs, color: "white" },
-  { name: "TypeScript", icon: SiTypescript, color: "#3178C6" },
-  { name: "Tailwind CSS", icon: SiTailwindcss, color: "#06B6D4" },
-  { name: "WordPress", icon: FaWordpress, color: "#21759B" },
-  { name: "PHP", icon: FaPhp, color: "#777BB4" },
-  { name: "Node.js", icon: FaNodeJs, color: "#339933" },
-  { name: "Git", icon: FaGitAlt, color: "#F05032" },
-];
-
-export function StacksCard() {
+export function StacksCard({ stacks }: StacksCardProps) {
   const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
   const borderColor = useColorModeValue("white", "whiteAlpha.100");
   const headingColor = useColorModeValue("gray.800", "gray.100");
@@ -46,19 +49,25 @@ export function StacksCard() {
       </Heading>
 
       <Flex wrap="wrap" gap={6} justify="center">
-        {STACKS.map((stack) => (
-          <Box
-            key={stack.name}
-            as="span"
-            transition="transform 0.2s ease"
-            _hover={{ transform: "scale(1.15)" }}
-            cursor="default"
-            display="inline-flex"
-            title={stack.name}
-          >
-            <Icon as={stack.icon} color={stack.name === "Next.js" ? nextJsColor : stack.color} fontSize="32px" />
-          </Box>
-        ))}
+        {(stacks || []).map((stackName) => {
+          const item = ICON_MAP[stackName] || { icon: FaGitAlt, color: "gray.400" };
+          return (
+            <Box
+              key={stackName}
+              as="span"
+              transition="transform 0.2s ease"
+              _hover={{ transform: "scale(1.15)" }}
+              cursor="default"
+              display="inline-flex"
+              title={stackName}
+            >
+              <Icon as={item.icon} color={stackName === "Next.js" ? nextJsColor : item.color} fontSize="32px" />
+            </Box>
+          );
+        })}
+        {(!stacks || stacks.length === 0) && (
+          <Text fontSize="sm" color="whiteAlpha.500">Nenhuma stack listada.</Text>
+        )}
       </Flex>
     </Box>
   );

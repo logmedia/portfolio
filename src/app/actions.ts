@@ -57,6 +57,7 @@ const profileSchema = z.object({
   coverUrl: z.string().url().optional().or(z.literal("")),
   socials: socialsSchema,
   stacks: stacksSchema,
+  skills: z.string().optional(),
 });
 
 const parseSocials = (input?: string) => {
@@ -79,6 +80,22 @@ const parseStacks = (input?: string) => {
     .filter(Boolean);
 };
 
+const parseSkills = (input?: string) => {
+  if (!input) return [];
+  return input
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [name, level, icon] = line.split("|");
+      return { 
+        name: name?.trim() ?? "Skill", 
+        level: Number(level?.trim() ?? 0), 
+        icon: icon?.trim() ?? "Code" 
+      };
+    });
+};
+
 export async function saveProfile(formData: FormData) {
   const parsed = profileSchema.safeParse({
     id: formData.get("id")?.toString(),
@@ -89,6 +106,7 @@ export async function saveProfile(formData: FormData) {
     coverUrl: formData.get("coverUrl")?.toString(),
     socials: formData.get("socials")?.toString(),
     stacks: formData.get("stacks")?.toString(),
+    skills: formData.get("skills")?.toString(),
   });
 
   if (!parsed.success) {
@@ -109,6 +127,7 @@ export async function saveProfile(formData: FormData) {
     cover_url: parsed.data.coverUrl || null,
     socials: parseSocials(parsed.data.socials),
     stacks: parseStacks(parsed.data.stacks),
+    skills: parseSkills(parsed.data.skills),
   };
 
   const { error } = await supabase.from("profiles").upsert(payload as any, { onConflict: "id" });

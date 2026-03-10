@@ -98,6 +98,7 @@ export async function fetchProfile(): Promise<Profile> {
       cover_url: profileData.cover_url ?? undefined,
       socials: (profileData.socials as Profile["socials"]) ?? [],
       stacks: (profileData.stacks as string[]) ?? [],
+      skills: (profileData.skills as any[]) ?? [],
     };
   } catch (error) {
     console.error("fetchProfile ERROR:", error);

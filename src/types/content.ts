@@ -17,6 +17,7 @@ export type Profile = {
   cover_url?: string;
   socials?: SocialLink[];
   stacks?: string[];
+  skills?: any[];
 };
 
 export type Post = {
