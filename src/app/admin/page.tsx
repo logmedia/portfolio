@@ -6,18 +6,23 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
+    if (!user) {
+      redirect("/login");
+    }
+
+    const [profile, posts, comments] = await Promise.all([
+      fetchProfile(),
+      fetchPosts(),
+      fetchRecentComments(),
+    ]);
+
+    return <AdminDashboard profile={profile} posts={posts} comments={comments} />;
+  } catch (error) {
+    console.error("AdminPage error:", error);
     redirect("/login");
   }
-
-  const [profile, posts, comments] = await Promise.all([
-    fetchProfile(),
-    fetchPosts(),
-    fetchRecentComments(),
-  ]);
-
-  return <AdminDashboard profile={profile} posts={posts} comments={comments} />;
 }

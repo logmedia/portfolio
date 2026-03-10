@@ -219,31 +219,48 @@ export async function savePost(formData: FormData) {
 }
 
 export async function signIn(formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+  try {
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-  if (!email || !password) {
-    return { success: false, message: "Email e senha são obrigatórios." };
+    if (!email || !password) {
+      return { success: false, message: "Email e senha são obrigatórios." };
+    }
+
+    if (!hasSupabaseCredentials()) {
+      return { success: false, message: "Erro de configuração: Variáveis de ambiente faltando no servidor." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("signIn error:", error);
+    return { success: false, message: "Ocorreu um erro inesperado no servidor. Verifique as configurações." };
   }
-
-  const supabase = await createSupabaseServerClient();
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return { success: false, message: error.message };
-  }
-
-  revalidatePath("/admin");
-  return { success: true };
 }
 
 export async function signOut() {
-  const supabase = await createSupabaseServerClient();
-  await supabase.auth.signOut();
-  revalidatePath("/");
-  redirect("/login");
+  try {
+    if (!hasSupabaseCredentials()) {
+      redirect("/login");
+    }
+    const supabase = await createSupabaseServerClient();
+    await supabase.auth.signOut();
+    revalidatePath("/");
+  } catch (error) {
+    console.error("signOut error:", error);
+  } finally {
+    redirect("/login");
+  }
 }

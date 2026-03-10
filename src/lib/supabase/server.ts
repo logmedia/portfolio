@@ -19,13 +19,28 @@ export async function createSupabaseServerClient() {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          try {
+            return cookieStore.get(name)?.value;
+          } catch (error) {
+            console.error(`[Supabase Server] Error getting cookie ${name}:`, error);
+            return undefined;
+          }
         },
-        set(name: string, value: string, options: CookieOptions = {}) {
-          cookieStore.set({ name, value, ...options });
+        set(name: string, value: string, options: any) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // This is expected to fail during Server Component rendering
+            // if Supabase tries to refresh a token.
+            console.warn(`[Supabase Server] Could not set cookie ${name} (possibly in RSC):`, error);
+          }
         },
-        remove(name: string, options: CookieOptions = {}) {
-          cookieStore.set({ name, value: "", ...options, maxAge: 0 });
+        remove(name: string, options: any) {
+          try {
+            cookieStore.set({ name, value: "", ...options, maxAge: 0 });
+          } catch (error) {
+            console.warn(`[Supabase Server] Could not remove cookie ${name} (possibly in RSC):`, error);
+          }
         },
       },
     }
