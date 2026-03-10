@@ -86,6 +86,47 @@ export type Database = {
           stack_id?: string;
         };
       };
+      media: {
+        Row: {
+          id: string;
+          filename: string;
+          path: string;
+          url: string;
+          type: string | null;
+          size: number | null;
+          width: number | null;
+          height: number | null;
+          user_id: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          filename: string;
+          path: string;
+          url: string;
+          type?: string | null;
+          size?: number | null;
+          width?: number | null;
+          height?: number | null;
+          user_id?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          filename?: string;
+          path?: string;
+          url?: string;
+          type?: string | null;
+          size?: number | null;
+          width?: number | null;
+          height?: number | null;
+          user_id?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+      };
     };
   };
 };
