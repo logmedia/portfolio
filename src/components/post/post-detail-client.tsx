@@ -269,10 +269,13 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
                     Tecnologias Envolvidas
                   </Text>
                   <Flex gap={3} flexWrap="wrap">
-                    {post.tags?.map(tag => {
-                      const item = tagIconMap[tag.toLowerCase()] || { icon: Code, color: "gray.400" };
+                    {post.stacks && post.stacks.length > 0 ? post.stacks.map(stack => {
+                      const iconKey = (stack.icon || stack.name).toLowerCase();
+                      const item = tagIconMap[iconKey] || { icon: Code, color: stack.color || "gray.400" };
+                      const stackColor = stack.color || (item.color as string);
+                      
                       return (
-                        <Tooltip key={tag} label={tag} hasArrow>
+                        <Tooltip key={stack.id} label={stack.name} hasArrow>
                           <Flex 
                             align="center" 
                             justify="center" 
@@ -282,14 +285,16 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
                             borderRadius="xl" 
                             border="1px solid" 
                             borderColor={borderColor}
-                            _hover={{ borderColor: item.color, transform: "scale(1.1)" }}
+                            _hover={{ borderColor: stackColor, transform: "scale(1.1)" }}
                             transition="all 0.2s"
                           >
-                            <Icon as={item.icon} color={tag.toLowerCase() === 'nextjs' ? nextJsColor : item.color} fontSize="22px" />
+                            <Icon as={item.icon} color={iconKey === 'nextjs' ? nextJsColor : stackColor} fontSize="22px" />
                           </Flex>
                         </Tooltip>
                       );
-                    })}
+                    }) : (
+                      <Text fontSize="sm" color={subTextColor}>Nenhuma stack listada.</Text>
+                    )}
                   </Flex>
                 </Box>
 

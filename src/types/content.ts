@@ -3,9 +3,11 @@ export type SocialLink = {
   url: string;
 };
 
-export type StackIcon = {
+export type Stack = {
+  id: string;
   name: string;
-  url: string;
+  icon?: string;
+  color?: string;
 };
 
 export type Profile = {
@@ -28,7 +30,8 @@ export type Post = {
   content?: string;
   hero_image_url?: string;
   gallery?: string[];
-  tags?: string[];
+  tags?: string[]; // Mantemos por compatibilidade legada
+  stacks?: Stack[]; // Nova relação real
   external_link?: string;
   rating?: number | null;
   performance?: number;
@@ -36,6 +39,8 @@ export type Post = {
   status?: "draft" | "published";
   published_at?: string | null;
 };
+
+export type Project = Post;
 
 export type Comment = {
   id: string;

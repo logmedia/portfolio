@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PostPageProps) {
   const { slug } = await params;
   const post = await fetchPostBySlug(slug);
   if (!post) {
-    return { title: "Post não encontrado" };
+    return { title: "Projeto não encontrado" };
   }
   return {
     title: `${post.title} • José Renato`,

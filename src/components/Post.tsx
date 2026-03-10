@@ -190,13 +190,16 @@ export function Post({ post, profile }: PostProps) {
           {/* Stacks Overlay */}
           <Box mb={8}>
             <Text fontSize="xs" fontWeight="bold" color={metaTextColor} textTransform="uppercase" letterSpacing="wider" mb={3}>
-              Tech Stack Requerida
+              Tecnologias Utilizadas
             </Text>
             <Flex gap={3} flexWrap="wrap">
-              {post.tags && post.tags.length > 0 ? post.tags.map(tag => {
-                const mapped = tagIconMap[tag.toLowerCase()] || { icon: Code, color: "gray.400" };
+              {post.stacks && post.stacks.length > 0 ? post.stacks.map(stack => {
+                const iconKey = (stack.icon || stack.name).toLowerCase();
+                const mapped = tagIconMap[iconKey] || { icon: Code, color: stack.color || "gray.400" };
+                const stackColor = stack.color || (mapped.color as string);
+                
                 return (
-                  <Tooltip key={tag} label={tag} placement="top" hasArrow bg="gray.800" color="white">
+                  <Tooltip key={stack.id} label={stack.name} placement="top" hasArrow bg="gray.800" color="white">
                     <Flex 
                       align="center" 
                       justify="center" 
@@ -207,11 +210,11 @@ export function Post({ post, profile }: PostProps) {
                       borderColor={iconBorder} 
                       borderRadius="lg"
                       boxShadow="sm"
-                      _hover={{ borderColor: mapped.color, transform: "translateY(-4px)", boxShadow: "md" }}
+                      _hover={{ borderColor: stackColor, transform: "translateY(-4px)", boxShadow: "md" }}
                       transition="all 0.2s"
                       cursor="default"
                     >
-                      <Icon as={mapped.icon} color={tag.toLowerCase() === 'nextjs' ? nextJsColor : mapped.color} fontSize="20px" />
+                      <Icon as={mapped.icon} color={iconKey === 'nextjs' ? nextJsColor : stackColor} fontSize="20px" />
                     </Flex>
                   </Tooltip>
                 );
@@ -240,7 +243,7 @@ export function Post({ post, profile }: PostProps) {
             
             <Box 
               as="a" 
-              href={`/post/${post.slug}`} 
+              href={`/projeto/${post.slug}`} 
               bg={btnBg}
               color={btnColor}
               px={6}

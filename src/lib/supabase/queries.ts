@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Comment, Post, Profile } from "@/types/content";
+import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
+import type { Post, Profile, Comment, Stack } from "@/types/content";
 import type { Database } from "./types";
 
 const createPublicClient = () => {
@@ -110,12 +112,33 @@ export async function fetchProfile(): Promise<Profile> {
   }
 }
 
+export async function fetchStacks(): Promise<Stack[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("stacks")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (error || !data) return [];
+    return data as Stack[];
+  } catch (error) {
+    console.error("fetchStacks ERROR:", error);
+    return [];
+  }
+}
+
 export async function fetchPosts(): Promise<Post[]> {
   try {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("posts")
-      .select("*")
+      .select(`
+        *,
+        stacks:post_stacks(
+          stack:stacks(*)
+        )
+      `)
       .eq("status", "published")
       .order("published_at", { ascending: false });
 
@@ -123,7 +146,11 @@ export async function fetchPosts(): Promise<Post[]> {
       return fallbackPosts;
     }
 
-    return data as Post[];
+    // Mapear a estrutura aninhada do Supabase para o nosso tipo Post
+    return data.map((post: any) => ({
+      ...post,
+      stacks: post.stacks?.map((ps: any) => ps.stack).filter(Boolean) || []
+    })) as Post[];
   } catch (error) {
     console.error("fetchPosts ERROR:", error);
     return fallbackPosts;
@@ -135,7 +162,12 @@ export async function fetchPostBySlug(slug: string): Promise<Post | null> {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("posts")
-      .select("*")
+      .select(`
+        *,
+        stacks:post_stacks(
+          stack:stacks(*)
+        )
+      `)
       .eq("slug", slug)
       .single();
 
@@ -143,7 +175,11 @@ export async function fetchPostBySlug(slug: string): Promise<Post | null> {
       return fallbackPosts.find((post) => post.slug === slug) ?? null;
     }
 
-    return data as Post;
+    const postData = data as any;
+    return {
+      ...postData,
+      stacks: postData.stacks?.map((ps: any) => ps.stack).filter(Boolean) || []
+    } as Post;
   } catch (error) {
     console.error("fetchPostBySlug", error);
     return fallbackPosts.find((post) => post.slug === slug) ?? null;

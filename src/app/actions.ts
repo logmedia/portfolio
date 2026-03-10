@@ -167,55 +167,144 @@ const parseGallery = (input?: string) => {
 };
 
 export async function savePost(formData: FormData) {
-  const parsed = postSchema.safeParse({
-    id: formData.get("id")?.toString(),
-    title: formData.get("title")?.toString(),
-    slug: formData.get("slug")?.toString(),
-    subtitle: formData.get("subtitle")?.toString(),
-    content: formData.get("content")?.toString(),
-    heroImage: formData.get("heroImage")?.toString(),
-    gallery: formData.get("gallery")?.toString(),
-    tags: formData.get("tags")?.toString(),
-    externalLink: formData.get("externalLink")?.toString(),
-    rating: formData.get("rating")?.toString(),
-    performance: formData.get("performance")?.toString(),
-    difficulty: formData.get("difficulty")?.toString(),
-    status: formData.get("status")?.toString() as "draft" | "published",
-  });
+  try {
+    const parsed = postSchema.safeParse({
+      id: formData.get("id")?.toString(),
+      title: formData.get("title")?.toString(),
+      slug: formData.get("slug")?.toString(),
+      subtitle: formData.get("subtitle")?.toString(),
+      content: formData.get("content")?.toString(),
+      heroImage: formData.get("heroImage")?.toString(),
+      gallery: formData.get("gallery")?.toString(),
+      tags: formData.get("tags")?.toString(),
+      externalLink: formData.get("externalLink")?.toString(),
+      rating: formData.get("rating")?.toString(),
+      performance: formData.get("performance")?.toString(),
+      difficulty: formData.get("difficulty")?.toString(),
+      status: formData.get("status")?.toString() as "draft" | "published",
+    });
 
-  if (!parsed.success) {
-    return { success: false, errors: parsed.error.flatten() };
+    if (!parsed.success) {
+      return { success: false, errors: parsed.error.flatten() };
+    }
+
+    if (!hasSupabaseCredentials()) {
+      return { success: false, message: "Configure as chaves do Supabase no .env." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    
+    // Pegar IDs das stacks do formData (enviados como stacks[])
+    const selectedStackIds = formData.getAll("stacks[]").map(id => id.toString());
+
+    const payload = {
+      id: parsed.data.id || undefined,
+      title: parsed.data.title,
+      slug: parsed.data.slug,
+      subtitle: parsed.data.subtitle ?? null,
+      content: parsed.data.content ?? null,
+      hero_image_url: parsed.data.heroImage || null,
+      gallery: parseGallery(parsed.data.gallery),
+      tags: parseStacks(parsed.data.tags), // Mantemos tags legadas
+      external_link: parsed.data.externalLink || null,
+      rating: parsed.data.rating,
+      performance: parsed.data.performance,
+      difficulty: parsed.data.difficulty,
+      status: parsed.data.status,
+    };
+
+    const { data: post, error } = await (supabase as any)
+      .from("posts")
+      .upsert(payload as any, { onConflict: "slug" })
+      .select()
+      .single();
+
+    if (error || !post) {
+      console.error("savePost error:", error);
+      return { success: false, message: "Erro ao salvar projeto." };
+    }
+
+    // Sincronizar stacks (Muitos-para-Muitos)
+    // 1. Remover relações antigas
+    await (supabase as any).from("post_stacks").delete().eq("post_id", (post as any).id);
+
+    // 2. Inserir novas relações
+    if (selectedStackIds.length > 0) {
+      const relations = selectedStackIds.map(stackId => ({
+        post_id: (post as any).id,
+        stack_id: stackId
+      }));
+      await (supabase as any).from("post_stacks").insert(relations);
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    revalidatePath(`/post/${(post as any).slug}`);
+    
+    return { success: true };
+  } catch (error) {
+    console.error("savePost fatal error:", error);
+    return { success: false, message: "Erro inesperado ao salvar projeto." };
   }
+}
 
-  if (!hasSupabaseCredentials()) {
-    return { success: false, message: "Configure as chaves do Supabase no .env." };
+const stackSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Nome é obrigatório"),
+  icon: z.string().optional(),
+  color: z.string().optional(),
+});
+
+export async function saveStack(formData: FormData) {
+  try {
+    const parsed = stackSchema.safeParse({
+      id: formData.get("id")?.toString(),
+      name: formData.get("name")?.toString(),
+      icon: formData.get("icon")?.toString(),
+      color: formData.get("color")?.toString(),
+    });
+
+    if (!parsed.success) {
+      return { success: false, errors: parsed.error.flatten() };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const payload = {
+      id: parsed.data.id || undefined,
+      name: parsed.data.name,
+      icon: parsed.data.icon || null,
+      color: parsed.data.color || null,
+    };
+
+    const { error } = await (supabase as any).from("stacks").upsert(payload, { onConflict: "id" });
+
+    if (error) {
+      console.error("saveStack error:", error);
+      return { success: false, message: "Erro ao salvar stack." };
+    }
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("saveStack fatal error:", error);
+    return { success: false, message: "Erro inesperado ao salvar stack." };
   }
+}
 
-  const supabase = await createSupabaseServerClient();
-  const payload = {
-    id: parsed.data.id,
-    title: parsed.data.title,
-    slug: parsed.data.slug,
-    subtitle: parsed.data.subtitle ?? null,
-    content: parsed.data.content ?? null,
-    hero_image_url: parsed.data.heroImage || null,
-    gallery: parseGallery(parsed.data.gallery),
-    tags: parseStacks(parsed.data.tags),
-    external_link: parsed.data.externalLink || null,
-    rating: parsed.data.rating,
-    performance: parsed.data.performance,
-    difficulty: parsed.data.difficulty,
-    status: parsed.data.status,
-  };
+export async function deleteStack(id: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await (supabase as any).from("stacks").delete().eq("id", id);
 
-  const { error } = await supabase.from("posts").upsert(payload as any, { onConflict: "slug" });
+    if (error) {
+      return { success: false, message: "Erro ao excluir stack." };
+    }
 
-  if (error) {
-    return { success: false, message: "Erro ao salvar post." };
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: "Erro crítico ao excluir stack." };
   }
-
-  revalidatePath("/admin");
-  return { success: true };
 }
 
 export async function signIn(formData: FormData) {

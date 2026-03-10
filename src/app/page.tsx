@@ -4,16 +4,22 @@ import { Post } from "@/components/Post";
 import { SkillsCard } from "@/components/SkillsCard";
 import { StacksCard } from "@/components/StacksCard";
 import { Box, Flex, Text as ChakraText } from "@chakra-ui/react";
-import { fetchPosts, fetchProfile } from "@/lib/supabase/queries";
+import { fetchPosts, fetchProfile, fetchStacks } from "@/lib/supabase/queries";
 import { FeedTitle } from "@/components/FeedTitle";
+import { StackFilter } from "@/components/StackFilter";
 
 export const revalidate = 3600; // ISR: Revalidate every hour for high performance
 
-export default async function Home() {
-  const [profile, posts] = await Promise.all([
+export default async function Home({ searchParams }: { searchParams: { stack?: string } }) {
+  const [profile, posts, stacks] = await Promise.all([
     fetchProfile(),
     fetchPosts(),
+    fetchStacks(),
   ]);
+
+  const filteredPosts = searchParams.stack 
+    ? posts.filter(post => post.stacks?.some(s => s.id === searchParams.stack))
+    : posts;
 
   return (
     <Box minH="100vh">
@@ -43,13 +49,18 @@ export default async function Home() {
           <Flex direction="column" gap={{ base: 6, md: 8 }}>
             
             <FeedTitle />
+            
+            <StackFilter stacks={stacks} />
 
-            {posts.map(post => (
+            {filteredPosts.map(post => (
               <Post key={post.id} post={post} profile={profile} />
             ))}
-            {posts.length === 0 && (
+            
+            {filteredPosts.length === 0 && (
               <ChakraText color="gray.500" _dark={{ color: "whiteAlpha.500" }} textAlign="center" mt={10}>
-                Nenhum post publicado ainda.
+                {searchParams.stack 
+                  ? "Nenhum projeto encontrado com esta tecnologia." 
+                  : "Nenhum projeto publicado ainda."}
               </ChakraText>
             )}
           </Flex>

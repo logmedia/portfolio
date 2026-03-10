@@ -49,6 +49,43 @@ export type Database = {
           created_at: string;
         };
       };
+      stacks: {
+        Row: {
+          id: string;
+          name: string;
+          icon: string | null;
+          color: string | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          icon?: string | null;
+          color?: string | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          icon?: string | null;
+          color?: string | null;
+          created_at?: string | null;
+        };
+      };
+      post_stacks: {
+        Row: {
+          post_id: string;
+          stack_id: string;
+        };
+        Insert: {
+          post_id: string;
+          stack_id: string;
+        };
+        Update: {
+          post_id?: string;
+          stack_id?: string;
+        };
+      };
     };
   };
 };

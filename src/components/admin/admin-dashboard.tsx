@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo, useState, useTransition } from "react";
 import {
   Badge,
@@ -17,7 +15,7 @@ import {
   Icon,
   Input,
   Select,
-  Stack,
+  Stack as ChakraStack,
   Tab,
   TabList,
   TabPanel,
@@ -29,16 +27,18 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { savePost, saveProfile, signOut } from "@/app/actions";
-import type { Comment, Post, Profile } from "@/types/content";
-import { SignOut } from "phosphor-react";
+import type { Post, Profile, Comment as ContentComment, Stack } from "@/types/content";
+import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon } from "phosphor-react";
+import { StacksManagement } from "./stacks-management";
 
 type AdminDashboardProps = {
   profile: Profile;
   posts: Post[];
-  comments: Comment[];
+  comments: ContentComment[];
+  stacks: Stack[];
 };
 
-export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps) {
+export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashboardProps) {
   const toast = useToast();
   const [selectedPost, setSelectedPost] = useState<Post | null>(posts[0] ?? null);
   const [isSavingProfile, startProfileTransition] = useTransition();
@@ -47,6 +47,11 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const safeProfileId = uuidRegex.test(profile.id ?? "") ? profile.id : "";
   const safePostId = uuidRegex.test(selectedPost?.id ?? "") ? selectedPost?.id : "";
+
+  // Auxiliar para verificar se a stack está selecionada no post
+  const isStackSelected = (stackId: string) => {
+    return selectedPost?.stacks?.some(s => s.id === stackId) ?? false;
+  };
 
   const pendingComments = useMemo(
     () => comments.filter((comment) => comment.status === "pending"),
@@ -77,20 +82,19 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
         toast({ title: result.message ?? "Erro ao salvar", status: "error" });
         return;
       }
-      toast({ title: "Post salvo", status: "success" });
+      toast({ title: "Projeto salvo com sucesso!", status: "success" });
     });
   };
 
   return (
-    <Box bgGradient="linear(to-b, #05080c, #040507)" minH="100vh" py={16}>
-      <Stack spacing={10} maxW="6xl" mx="auto" px={{ base: 6, md: 10 }}>
+    <Box bgGradient="linear(to-b, #05080c, #040507)" minH="100vh" py={16}>      <ChakraStack spacing={10} maxW="6xl" mx="auto" px={{ base: 6, md: 10 }}>
         <HStack justify="space-between" align="start">
-          <Stack spacing={2}>
+          <ChakraStack spacing={2}>
             <Heading size="xl">Painel Administrativo</Heading>
             <Text color="whiteAlpha.700">
-              Gerencie seu perfil, os posts do portfólio e comentários enviados pela comunidade.
+              Gerencie seu perfil, os projetos do portfólio e as tecnologias utilizadas.
             </Text>
-          </Stack>
+          </ChakraStack>
           <Button 
             leftIcon={<Icon as={SignOut} />} 
             variant="ghost" 
@@ -103,39 +107,40 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
         </HStack>
 
         <Tabs variant="enclosed" colorScheme="brand">
-          <TabList overflowX="auto">
-            <Tab>Perfil</Tab>
-            <Tab>Posts</Tab>
-            <Tab>Comentários</Tab>
+          <TabList overflowX="auto" borderBottomColor="whiteAlpha.200">
+            <Tab fontWeight="semibold"><Icon as={Cube} mr={2} /> Perfil</Tab>
+            <Tab fontWeight="semibold"><Icon as={Desktop} mr={2} /> Projetos</Tab>
+            <Tab fontWeight="semibold"><Icon as={StackIcon} mr={2} /> Stacks</Tab>
+            <Tab fontWeight="semibold"><Icon as={ChatCircleText} mr={2} /> Comentários</Tab>
           </TabList>
           <TabPanels>
-            <TabPanel>
+            <TabPanel px={0} pt={8}>
               <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={8} as="section">
                 <GridItem>
-                  <Card bg="whiteAlpha.50">
+                  <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                     <CardBody>
                       <form key={profile.id ?? "profile-form"} action={handleProfileSubmit}>
                         <input type="hidden" name="id" value={safeProfileId} />
-                        <Stack spacing={4}>
+                        <ChakraStack spacing={4}>
                           <FormControl isRequired>
                             <FormLabel>Nome</FormLabel>
-                            <Input name="name" defaultValue={profile.name} placeholder="Nome completo" />
+                            <Input name="name" defaultValue={profile.name} placeholder="Nome completo" bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Cargo</FormLabel>
-                            <Input name="role" defaultValue={profile.role ?? ""} />
+                            <Input name="role" defaultValue={profile.role ?? ""} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Bio</FormLabel>
-                            <Textarea name="bio" defaultValue={profile.bio ?? ""} rows={4} />
+                            <Textarea name="bio" defaultValue={profile.bio ?? ""} rows={4} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Avatar URL</FormLabel>
-                            <Input name="avatarUrl" defaultValue={profile.avatar_url ?? ""} />
+                            <Input name="avatarUrl" defaultValue={profile.avatar_url ?? ""} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Capa URL</FormLabel>
-                            <Input name="coverUrl" defaultValue={profile.cover_url ?? ""} />
+                            <Input name="coverUrl" defaultValue={profile.cover_url ?? ""} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Redes sociais</FormLabel>
@@ -148,10 +153,11 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
                                   .join("\n") ?? ""
                               }
                               rows={4}
+                              bg="blackAlpha.300"
                             />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Skills (Nome|Nível|Ícone)</FormLabel>
+                            <FormLabel>Habilidades Atuais (Nome|Nível|Ícone)</FormLabel>
                             <Textarea
                               name="skills"
                               placeholder="Ex: React|95|BracketsCurly"
@@ -161,77 +167,95 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
                                   .join("\n") ?? ""
                               }
                               rows={4}
+                              bg="blackAlpha.300"
                             />
                             <Text fontSize="xs" color="whiteAlpha.500" mt={1}>
-                              Ícones disponíveis: Code, Palette, Database, Lightning, BracketsCurly, Cpu
+                              Ícones: Code, Palette, Database, Lightning, BracketsCurly, Cpu
                             </Text>
                           </FormControl>
-                          <Button type="submit" isLoading={isSavingProfile} loadingText="Salvando">
-                            Salvar perfil
+                          <Button type="submit" isLoading={isSavingProfile} loadingText="Salvando" colorScheme="brand">
+                            Salvar Perfil
                           </Button>
-                        </Stack>
+                        </ChakraStack>
                       </form>
                     </CardBody>
                   </Card>
                 </GridItem>
                 <GridItem>
-                  <Card bg="whiteAlpha.50">
+                  <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                     <CardBody>
-                      <Stack spacing={4}>
-                        <Heading size="md">Dicas rápidas</Heading>
-                        <Text color="whiteAlpha.700">
-                          Configure URLs públicas hospedadas no Supabase Storage ou em CDNs confiáveis para garantir performance.
+                      <ChakraStack spacing={4}>
+                        <Heading size="md">Dashboard de Controle</Heading>
+                        <Text color="whiteAlpha.700" fontSize="sm">
+                          Configure URLs públicas hospedadas no Supabase Storage ou em CDNs confiáveis.
                         </Text>
                         <Divider borderColor="whiteAlpha.200" />
-                        <Text color="whiteAlpha.700">
-                          Campos como redes e stacks aceitam múltiplos valores, facilitando atualizações rápidas direto do painel.
+                        <Text color="whiteAlpha.700" fontSize="sm">
+                          Dica: Use ícones do Phosphor para uma estética consistente em todo o site.
                         </Text>
-                      </Stack>
+                      </ChakraStack>
                     </CardBody>
                   </Card>
                 </GridItem>
               </Grid>
             </TabPanel>
 
-            <TabPanel>
+            <TabPanel px={0} pt={8}>
               <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8}>
                 <GridItem>
-                  <Card bg="whiteAlpha.50">
+                  <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                     <CardBody>
-                      <form key={selectedPost?.id ?? "new-post"} action={handlePostSubmit}>
+                      <form key={selectedPost?.id ?? "new-project"} action={handlePostSubmit}>
                         <input type="hidden" name="id" value={safePostId} />
-                        <Stack spacing={4}>
+                        <ChakraStack spacing={4}>
                           <FormControl isRequired>
-                            <FormLabel>Título</FormLabel>
-                            <Input name="title" defaultValue={selectedPost?.title ?? ""} />
+                            <FormLabel>Título do Projeto</FormLabel>
+                            <Input name="title" defaultValue={selectedPost?.title ?? ""} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl isRequired>
                             <FormLabel>Slug</FormLabel>
-                            <Input name="slug" defaultValue={selectedPost?.slug ?? ""} />
+                            <Input name="slug" defaultValue={selectedPost?.slug ?? ""} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Subtítulo</FormLabel>
-                            <Input name="subtitle" defaultValue={selectedPost?.subtitle ?? ""} />
+                            <FormLabel>Subtítulo / Especialidade</FormLabel>
+                            <Input name="subtitle" defaultValue={selectedPost?.subtitle ?? ""} bg="blackAlpha.300" />
                           </FormControl>
+
+                          <Box border="1px solid" borderColor="whiteAlpha.200" p={4} borderRadius="md" bg="blackAlpha.100">
+                            <FormLabel fontWeight="bold">Tecnologias (Stacks)</FormLabel>
+                            <Grid templateColumns="repeat(auto-fill, minmax(140px, 1fr))" gap={2}>
+                              {stacks.map(stack => (
+                                <HStack key={stack.id} spacing={2} p={2} borderRadius="md" _hover={{ bg: "whiteAlpha.100" }}>
+                                  <input 
+                                    type="checkbox" 
+                                    name="stacks[]" 
+                                    value={stack.id} 
+                                    defaultChecked={isStackSelected(stack.id)}
+                                  />
+                                  <Text fontSize="sm">{stack.name}</Text>
+                                </HStack>
+                              ))}
+                            </Grid>
+                            {stacks.length === 0 && (
+                              <Text fontSize="xs" color="whiteAlpha.500">Nenhuma stack cadastrada. Vá até a aba "Stacks" primeiro.</Text>
+                            )}
+                          </Box>
+
                           <FormControl>
-                            <FormLabel>Hero image</FormLabel>
-                            <Input name="heroImage" defaultValue={selectedPost?.hero_image_url ?? ""} />
+                            <FormLabel>Hero image (URL)</FormLabel>
+                            <Input name="heroImage" defaultValue={selectedPost?.hero_image_url ?? ""} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Galeria (URLs por linha)</FormLabel>
-                            <Textarea name="gallery" defaultValue={selectedPost?.gallery?.join("\n") ?? ""} rows={3} />
+                            <Textarea name="gallery" defaultValue={selectedPost?.gallery?.join("\n") ?? ""} rows={3} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Tags (separadas por vírgula)</FormLabel>
-                            <Input name="tags" defaultValue={selectedPost?.tags?.join(", ") ?? ""} />
+                            <FormLabel>Link Externo (Demo/Repo)</FormLabel>
+                            <Input name="externalLink" defaultValue={selectedPost?.external_link ?? ""} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Link externo</FormLabel>
-                            <Input name="externalLink" defaultValue={selectedPost?.external_link ?? ""} />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>Rating (Estrelas)</FormLabel>
-                            <Select name="rating" defaultValue={String(selectedPost?.rating ?? 5)}>
+                            <FormLabel>Nível de Avaliação (1-5)</FormLabel>
+                            <Select name="rating" defaultValue={String(selectedPost?.rating ?? 5)} bg="blackAlpha.300">
                               <option value="">Nenhum</option>
                               {[1, 2, 3, 4, 5].map((number) => (
                                 <option key={number} value={number}>
@@ -249,11 +273,12 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
                                 defaultValue={selectedPost?.performance ?? 100} 
                                 min={0} 
                                 max={100} 
+                                bg="blackAlpha.300"
                               />
                             </FormControl>
                             <FormControl>
-                              <FormLabel>Dificuldade (1-5)</FormLabel>
-                              <Select name="difficulty" defaultValue={String(selectedPost?.difficulty ?? 1)}>
+                              <FormLabel>Dificuldade Tech (1-5)</FormLabel>
+                              <Select name="difficulty" defaultValue={String(selectedPost?.difficulty ?? 1)} bg="blackAlpha.300">
                                 {[1, 2, 3, 4, 5].map((number) => (
                                   <option key={number} value={number}>
                                     Nível {number}
@@ -263,35 +288,35 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
                             </FormControl>
                           </Grid>
                           <FormControl>
-                            <FormLabel>Status</FormLabel>
-                            <Select name="status" defaultValue={selectedPost?.status ?? "draft"}>
-                              <option value="draft">Rascunho</option>
-                              <option value="published">Publicado</option>
+                            <FormLabel>Status de Visibilidade</FormLabel>
+                            <Select name="status" defaultValue={selectedPost?.status ?? "draft"} bg="blackAlpha.300">
+                              <option value="draft">Rascunho (Privado)</option>
+                              <option value="published">Publicado (Visível)</option>
                             </Select>
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Conteúdo (Markdown)</FormLabel>
-                            <Textarea name="content" defaultValue={selectedPost?.content ?? ""} rows={6} />
+                            <FormLabel>Documentação / Conteúdo (Markdown)</FormLabel>
+                            <Textarea name="content" defaultValue={selectedPost?.content ?? ""} rows={6} bg="blackAlpha.300" />
                           </FormControl>
-                          <Button type="submit" isLoading={isSavingPost} loadingText="Salvando">
-                            Salvar post
+                          <Button type="submit" isLoading={isSavingPost} loadingText="Salvando" colorScheme="brand">
+                            Salvar Projeto
                           </Button>
-                        </Stack>
+                        </ChakraStack>
                       </form>
                     </CardBody>
                   </Card>
                 </GridItem>
                 <GridItem>
-                  <Card bg="whiteAlpha.50">
+                  <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                     <CardBody>
-                      <Stack spacing={4}>
+                      <ChakraStack spacing={4}>
                         <HStack justify="space-between" align="center">
-                          <Heading size="md">Posts publicados</Heading>
+                          <Heading size="md">Projetos Ativos</Heading>
                           <Button size="sm" variant="outline" onClick={() => setSelectedPost(null)}>
-                            Novo post
+                            Novo Projeto
                           </Button>
                         </HStack>
-                        <Stack spacing={3} maxH="420px" overflowY="auto">
+                        <ChakraStack spacing={3} maxH="600px" overflowY="auto">
                           {posts.map((post) => (
                             <Card
                               key={post.id}
@@ -300,54 +325,63 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
                               cursor="pointer"
                               transition="all 0.2s"
                               onClick={() => setSelectedPost(post)}
+                              _hover={{ borderColor: "brand.300" }}
                             >
-                              <CardBody>
-                                <Stack spacing={1}>
-                                  <Heading size="sm">{post.title}</Heading>
-                                  <Text fontSize="sm" color="whiteAlpha.700">
-                                    /post/{post.slug}
+                              <CardBody p={3}>
+                                <ChakraStack spacing={2}>
+                                  <Heading size="xs">{post.title}</Heading>
+                                  <Text fontSize="xs" color="whiteAlpha.500" noOfLines={1}>
+                                    /projeto/{post.slug}
                                   </Text>
-                                  <HStack spacing={2}>
-                                    <Badge colorScheme={post.status === "published" ? "green" : "yellow"}>
+                                  <HStack spacing={1} flexWrap="wrap">
+                                    <Badge size="sm" fontSize="10px" colorScheme={post.status === "published" ? "green" : "yellow"}>
                                       {post.status}
                                     </Badge>
-                                    <Tag>{post.tags?.[0] ?? "Sem tag"}</Tag>
+                                    {post.stacks?.map(s => (
+                                      <Tag key={s.id} size="sm" fontSize="10px" variant="subtle" bg="whiteAlpha.100">
+                                        {s.name}
+                                      </Tag>
+                                    ))}
                                   </HStack>
-                                </Stack>
+                                </ChakraStack>
                               </CardBody>
                             </Card>
                           ))}
                           {posts.length === 0 && (
-                            <Text color="whiteAlpha.500">Nenhum post publicado ainda.</Text>
+                            <Text color="whiteAlpha.500">Nenhum projeto cadastrado.</Text>
                           )}
-                        </Stack>
-                      </Stack>
+                        </ChakraStack>
+                      </ChakraStack>
                     </CardBody>
                   </Card>
                 </GridItem>
               </Grid>
             </TabPanel>
 
-            <TabPanel>
-              <Card bg="whiteAlpha.50">
+            <TabPanel px={0} pt={8}>
+              <StacksManagement stacks={stacks} />
+            </TabPanel>
+
+            <TabPanel px={0} pt={8}>
+              <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                 <CardBody>
-                  <Stack spacing={6}>
-                    <Stack>
+                  <ChakraStack spacing={6}>
+                    <ChakraStack>
                       <HStack spacing={3} align="center">
-                        <Heading size="md">Fila de comentários</Heading>
+                        <Heading size="md">Comentários Pendentes</Heading>
                         <Badge
                           colorScheme={pendingComments.length ? "yellow" : "green"}
                           rounded="full"
                           px={3}
                         >
-                          Pendentes: {pendingComments.length}
+                          {pendingComments.length} aguardando
                         </Badge>
                       </HStack>
-                      <Text color="whiteAlpha.600">
-                        Aprove ou rejeite comentários para mantê-los saudáveis. Integre ações server-side quando configurar Supabase Auth.
+                      <Text color="whiteAlpha.600" fontSize="sm">
+                        Assegure a qualidade da comunidade moderando o conteúdo enviado.
                       </Text>
-                    </Stack>
-                    <Stack spacing={4}>
+                    </ChakraStack>
+                    <ChakraStack spacing={4}>
                       {comments.map((comment) => (
                         <Box
                           key={comment.id}
@@ -355,40 +389,41 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
                           borderColor="whiteAlpha.200"
                           rounded="xl"
                           p={4}
+                          bg="blackAlpha.200"
                         >
                           <HStack justify="space-between" mb={2}>
-                            <Stack spacing={0}>
-                              <Text fontWeight="semibold">{comment.author?.name ?? "Usuário"}</Text>
-                              <Text fontSize="sm" color="whiteAlpha.500">
-                                Post: {comment.post_id}
+                            <ChakraStack spacing={0}>
+                              <Text fontWeight="semibold" fontSize="sm">{comment.author?.name ?? "Usuário"}</Text>
+                              <Text fontSize="xs" color="whiteAlpha.500">
+                                Ref: {comment.post_id}
                               </Text>
-                            </Stack>
+                            </ChakraStack>
                             <Badge colorScheme={comment.status === "approved" ? "green" : "yellow"}>
                               {comment.status}
                             </Badge>
                           </HStack>
-                          <Text color="whiteAlpha.800">{comment.content}</Text>
+                          <Text color="whiteAlpha.800" fontSize="sm">{comment.content}</Text>
                           <HStack mt={3} spacing={2}>
-                            <Button size="sm" variant="outline" disabled>
+                            <Button size="xs" colorScheme="green" variant="solid" isDisabled>
                               Aprovar
                             </Button>
-                            <Button size="sm" variant="ghost" disabled>
+                            <Button size="xs" colorScheme="red" variant="ghost" isDisabled>
                               Rejeitar
                             </Button>
                           </HStack>
                         </Box>
                       ))}
                       {comments.length === 0 && (
-                        <Text color="whiteAlpha.500">Nenhum comentário no momento.</Text>
+                        <Text color="whiteAlpha.500">Silêncio no momento... Sem comentários.</Text>
                       )}
-                    </Stack>
-                  </Stack>
+                    </ChakraStack>
+                  </ChakraStack>
                 </CardBody>
               </Card>
             </TabPanel>
           </TabPanels>
         </Tabs>
-      </Stack>
+      </ChakraStack>
     </Box>
   );
 }
