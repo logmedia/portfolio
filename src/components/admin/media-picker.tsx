@@ -17,12 +17,11 @@ import {
   Text,
   Skeleton,
   IconButton,
-  InputGroup,
-  InputLeftElement,
   Collapse,
   useDisclosure,
+  Grid,
 } from '@chakra-ui/react';
-import { Image as ImageIcon, Trash, CloudArrowUp, Link as LinkIcon, CaretDown, CaretUp } from 'phosphor-react';
+import { Image as ImageIcon, Trash, CloudArrowUp, Link as LinkIcon } from 'phosphor-react';
 import { MediaLibrary } from './media-library';
 
 interface MediaPickerProps {
@@ -37,163 +36,143 @@ export function MediaPicker({ value, onChange, label }: MediaPickerProps) {
 
   return (
     <FormControl>
-      <FormLabel fontSize="sm">{label}</FormLabel>
+      {label && <FormLabel fontSize="sm">{label}</FormLabel>}
       
       {/* Hidden input for form submission */}
       <input type="hidden" name={inputName} value={value || ''} />
       
       <Box
         border="1px solid"
-        borderColor={value ? "whiteAlpha.200" : "whiteAlpha.100"}
+        borderColor="whiteAlpha.200"
         borderRadius="xl"
         overflow="hidden"
         bg="blackAlpha.200"
-        transition="all 0.2s"
       >
-        {/* Thumbnail / Skeleton */}
-        <Box
-          position="relative"
-          w="100%"
-          minH="140px"
-          bg="blackAlpha.400"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
+        <Grid templateColumns={value ? "120px 1fr" : "1fr"} minH="100px">
+          {/* Thumbnail à esquerda */}
           {value ? (
-            <>
+            <Box
+              bg="blackAlpha.500"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              borderRight="1px solid"
+              borderColor="whiteAlpha.100"
+              position="relative"
+              role="group"
+              cursor="pointer"
+              onClick={() => onChange('')}
+            >
               <Image
                 src={value}
-                alt="Imagem de destaque"
+                alt="Destaque"
                 objectFit="cover"
                 w="100%"
-                maxH="200px"
+                h="100%"
+                minH="100px"
                 fallback={
-                  <Skeleton w="100%" h="140px" startColor="whiteAlpha.100" endColor="whiteAlpha.300" />
+                  <Skeleton w="100%" h="100px" startColor="whiteAlpha.100" endColor="whiteAlpha.300" />
                 }
               />
-              {/* Overlay com botão remover */}
               <Box
                 position="absolute"
-                top={0}
-                left={0}
-                w="100%"
-                h="100%"
-                bg="blackAlpha.600"
+                inset={0}
+                bg="blackAlpha.700"
                 opacity={0}
-                _hover={{ opacity: 1 }}
+                _groupHover={{ opacity: 1 }}
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                gap={3}
                 transition="all 0.2s"
               >
-                <Popover placement="bottom" isLazy>
-                  <PopoverTrigger>
-                    <Button size="sm" colorScheme="brand" leftIcon={<ImageIcon size={16} />}>
-                      Alterar
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent bg="gray.900" borderColor="whiteAlpha.300" w="480px" boxShadow="dark-lg" zIndex={2000}>
-                    <PopoverArrow bg="gray.900" />
-                    <PopoverBody p={0}>
-                      <MediaLibrary selectedUrl={value} onSelect={(media) => onChange(media.url)} />
-                    </PopoverBody>
-                  </PopoverContent>
-                </Popover>
-                
+                <Trash size={20} color="white" />
+              </Box>
+            </Box>
+          ) : null}
+
+          {/* Controles à direita */}
+          <VStack
+            align="stretch"
+            justify="center"
+            spacing={3}
+            p={4}
+          >
+            {!value && (
+              <HStack spacing={2} color="whiteAlpha.400">
+                <Box
+                  w="40px"
+                  h="40px"
+                  borderRadius="lg"
+                  bg="whiteAlpha.100"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  flexShrink={0}
+                >
+                  <ImageIcon size={20} />
+                </Box>
+                <Text fontSize="xs" color="whiteAlpha.400">
+                  Nenhuma imagem
+                </Text>
+              </HStack>
+            )}
+
+            <HStack spacing={2}>
+              <Popover placement="bottom-start" isLazy>
+                <PopoverTrigger>
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    leftIcon={<CloudArrowUp size={14} />}
+                    borderColor="whiteAlpha.300"
+                    _hover={{ bg: 'whiteAlpha.100' }}
+                  >
+                    {value ? 'Alterar' : 'Enviar'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent bg="gray.900" borderColor="whiteAlpha.300" w="480px" boxShadow="dark-lg" zIndex={2000}>
+                  <PopoverArrow bg="gray.900" />
+                  <PopoverBody p={0}>
+                    <MediaLibrary selectedUrl={value} onSelect={(media) => onChange(media.url)} />
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover>
+
+              <Button
+                size="xs"
+                variant="ghost"
+                leftIcon={<LinkIcon size={12} />}
+                onClick={toggleUrlInput}
+                color="whiteAlpha.500"
+                _hover={{ color: 'whiteAlpha.800' }}
+              >
+                URL
+              </Button>
+
+              {value && (
                 <IconButton
-                  aria-label="Remover imagem"
-                  icon={<Trash size={16} />}
-                  size="sm"
+                  aria-label="Remover"
+                  icon={<Trash size={12} />}
+                  size="xs"
+                  variant="ghost"
                   colorScheme="red"
-                  variant="solid"
                   onClick={() => onChange('')}
                 />
-              </Box>
-            </>
-          ) : (
-            /* Skeleton placeholder quando não tem imagem */
-            <VStack spacing={3} py={6}>
-              <Box
-                w="64px"
-                h="64px"
-                borderRadius="xl"
-                bg="whiteAlpha.100"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <ImageIcon size={32} color="rgba(255,255,255,0.3)" />
-              </Box>
-              <VStack spacing={1}>
-                <Text fontSize="sm" fontWeight="medium" color="whiteAlpha.500">
-                  Nenhuma imagem selecionada
-                </Text>
-                <Text fontSize="xs" color="whiteAlpha.300">
-                  Envie um arquivo ou cole uma URL
-                </Text>
-              </VStack>
-            </VStack>
-          )}
-        </Box>
+              )}
+            </HStack>
 
-        {/* Ações */}
-        <HStack p={3} spacing={2} borderTop="1px solid" borderColor="whiteAlpha.100" bg="blackAlpha.300">
-          <Popover placement="bottom-start" isLazy>
-            <PopoverTrigger>
-              <Button size="sm" variant="outline" leftIcon={<CloudArrowUp size={16} />} flex={1} borderColor="whiteAlpha.200" _hover={{ bg: 'whiteAlpha.100' }}>
-                Enviar / Biblioteca
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent bg="gray.900" borderColor="whiteAlpha.300" w="480px" boxShadow="dark-lg" zIndex={2000}>
-              <PopoverArrow bg="gray.900" />
-              <PopoverBody p={0}>
-                <MediaLibrary selectedUrl={value} onSelect={(media) => onChange(media.url)} />
-              </PopoverBody>
-            </PopoverContent>
-          </Popover>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            leftIcon={showUrlInput ? <CaretUp size={14} /> : <LinkIcon size={14} />}
-            onClick={toggleUrlInput}
-            color="whiteAlpha.500"
-            _hover={{ color: 'whiteAlpha.800' }}
-          >
-            URL
-          </Button>
-
-          {value && (
-            <IconButton
-              aria-label="Remover"
-              icon={<Trash size={14} />}
-              size="sm"
-              variant="ghost"
-              colorScheme="red"
-              onClick={() => onChange('')}
-            />
-          )}
-        </HStack>
-
-        {/* URL Input colapsável */}
-        <Collapse in={showUrlInput} animateOpacity>
-          <Box px={3} pb={3}>
-            <InputGroup size="sm">
-              <InputLeftElement>
-                <LinkIcon size={14} color="rgba(255,255,255,0.4)" />
-              </InputLeftElement>
+            <Collapse in={showUrlInput} animateOpacity>
               <Input
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
                 bg="blackAlpha.400"
-                placeholder="https://exemplo.com/imagem.jpg"
+                placeholder="https://..."
+                size="xs"
                 borderColor="whiteAlpha.200"
               />
-            </InputGroup>
-          </Box>
-        </Collapse>
+            </Collapse>
+          </VStack>
+        </Grid>
       </Box>
     </FormControl>
   );
