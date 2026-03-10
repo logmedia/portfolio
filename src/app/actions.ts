@@ -434,3 +434,105 @@ export async function signOut() {
     redirect("/login");
   }
 }
+export async function getMediaLibrary() {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("media")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("getMediaLibrary error:", error);
+      return { success: false, message: "Erro ao buscar biblioteca de mídia." };
+    }
+
+    return { success: true, media: data };
+  } catch (error) {
+    return { success: false, message: "Erro crítico ao buscar mídia." };
+  }
+}
+
+export async function uploadMedia(formData: FormData) {
+  try {
+    const file = formData.get("file") as File;
+    if (!file) {
+      return { success: false, message: "Nenhum arquivo enviado." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, message: "Não autorizado." };
+    }
+
+    // Gerar caminho estilo WordPress: uploads/ANO/MES/DIA/timestamp-nome.ext
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const timestamp = Date.now();
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const path = `uploads/${year}/${month}/${day}/${timestamp}-${sanitizedName}`;
+
+    // 1. Upload para o Storage
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("media")
+      .upload(path, file);
+
+    if (storageError) {
+      console.error("Storage upload error:", storageError);
+      return { success: false, message: `Erro no upload: ${storageError.message}` };
+    }
+
+    // 2. Obter URL pública
+    const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
+
+    // 3. Salvar na tabela media
+    const mediaPayload = {
+      filename: file.name,
+      path: path,
+      url: publicUrl,
+      type: file.type,
+      size: file.size,
+      user_id: user.id,
+    };
+
+    const { data: mediaRecord, error: dbError } = await supabase
+      .from("media")
+      .insert(mediaPayload)
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error("Database media record error:", dbError);
+      // Opcional: deletar do storage se falhar no banco?
+      return { success: false, message: `Erro ao registrar mídia: ${dbError.message}` };
+    }
+
+    return { success: true, media: mediaRecord };
+  } catch (error) {
+    console.error("uploadMedia fatal error:", error);
+    return { success: false, message: "Erro inesperado no upload." };
+  }
+}
+
+export async function deleteMedia(id: string, path: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autorizado." };
+
+    // 1. Deletar do Storage
+    const { error: storageError } = await supabase.storage.from("media").remove([path]);
+    if (storageError) console.error("Error removing from storage:", storageError);
+
+    // 2. Deletar do Banco
+    const { error: dbError } = await supabase.from("media").delete().eq("id", id).eq("user_id", user.id);
+    if (dbError) return { success: false, message: "Erro ao deletar do banco." };
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: "Erro crítico ao deletar mídia." };
+  }
+}

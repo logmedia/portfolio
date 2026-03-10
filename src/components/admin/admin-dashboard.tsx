@@ -36,12 +36,14 @@ import {
   PopoverArrow,
   PopoverCloseButton,
   ButtonGroup,
+  VStack,
 } from "@chakra-ui/react";
 import { deletePost, savePost, saveProfile, signOut } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack } from "@/types/content";
 import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash } from "phosphor-react";
 import { StacksManagement } from "./stacks-management";
 import { StackSelector } from "./stack-selector";
+import { MediaPicker } from "./media-picker";
 import { useEffect } from "react";
 
 type AdminDashboardProps = {
@@ -65,10 +67,14 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   
   // Estado local para as stacks selecionadas no projeto atual
   const [selectedStackIds, setSelectedStackIds] = useState<string[]>([]);
+  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [galleryUrls, setGalleryUrls] = useState("");
 
   // Sincronizar stacks quando o post selecionado muda
   useEffect(() => {
     setSelectedStackIds(selectedPost?.stacks?.map(s => s.id) ?? []);
+    setHeroImageUrl(selectedPost?.hero_image_url ?? "");
+    setGalleryUrls(selectedPost?.gallery?.join("\n") ?? "");
     setIsDirty(false); // Reset dirty state when changing post
   }, [selectedPost]);
 
@@ -300,11 +306,16 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <Input name="slug" defaultValue={selectedPost?.slug ?? ""} bg="blackAlpha.300" />
                           </FormControl>
 
-                          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
-                            <FormControl>
-                              <FormLabel fontSize="sm">Hero image (URL)</FormLabel>
-                              <Input name="heroImage" defaultValue={selectedPost?.hero_image_url ?? ""} bg="blackAlpha.300" />
-                            </FormControl>
+                          <Grid templateColumns={{ base: "1fr", md: "1fr" }} gap={4}>
+                            <MediaPicker 
+                              label="Foto de Destaque" 
+                              value={heroImageUrl} 
+                              onChange={(url) => {
+                                setHeroImageUrl(url);
+                                setIsDirty(true);
+                              }} 
+                            />
+                            
                             <FormControl>
                               <FormLabel fontSize="sm">Link Externo (Demo/Repo)</FormLabel>
                               <Input name="externalLink" defaultValue={selectedPost?.external_link ?? ""} bg="blackAlpha.300" />
@@ -312,8 +323,31 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                           </Grid>
 
                           <FormControl>
-                            <FormLabel fontSize="sm">Galeria (URLs por linha)</FormLabel>
-                            <Textarea name="gallery" defaultValue={selectedPost?.gallery?.join("\n") ?? ""} rows={2} bg="blackAlpha.300" />
+                            <FormLabel fontSize="sm">Galeria de Fotos (URLs por linha)</FormLabel>
+                            <VStack align="stretch" spacing={2}>
+                              <Textarea 
+                                name="gallery" 
+                                value={galleryUrls} 
+                                onChange={(e) => {
+                                  setGalleryUrls(e.target.value);
+                                  setIsDirty(true);
+                                }}
+                                rows={3} 
+                                bg="blackAlpha.300" 
+                                placeholder="Uma URL por linha..."
+                              />
+                              <HStack justify="flex-end">
+                                <MediaPicker 
+                                  label="" 
+                                  value="" 
+                                  onChange={(url) => {
+                                    const newGallery = galleryUrls ? `${galleryUrls}\n${url}` : url;
+                                    setGalleryUrls(newGallery);
+                                    setIsDirty(true);
+                                  }} 
+                                />
+                              </HStack>
+                            </VStack>
                           </FormControl>
 
                           <Grid templateColumns="repeat(3, 1fr)" gap={4}>
