@@ -114,7 +114,7 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
               />
             </HStack>
           </FormControl>
-          <Grid templateColumns="repeat(auto-fill, minmax(130px, 1fr))" gap={2} maxH="400px" overflowY="auto" pr={2} sx={{
+          <Grid templateColumns="repeat(auto-fill, minmax(130px, 1fr))" gap={2} maxH="300px" overflowY="auto" pr={2} sx={{
             '&::-webkit-scrollbar': { width: '4px' },
             '&::-webkit-scrollbar-track': { bg: 'transparent' },
             '&::-webkit-scrollbar-thumb': { bg: 'whiteAlpha.200', borderRadius: 'full' },
@@ -126,15 +126,16 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
                 bg="whiteAlpha.50" 
                 borderRadius="md" 
                 cursor="pointer" 
-                _hover={{ bg: "brand.500", color: "white" }} 
+                border="1px solid"
+                borderColor="transparent"
+                _hover={{ bg: "brand.500", color: "white", borderColor: "brand.300" }} 
                 transition="all 0.2s"
                 onClick={() => handleSelectPredefined(s)}
               >
                 <HStack spacing={2}>
-                  <Box w={2} h={2} borderRadius="full" bg={s.color} />
+                  <Icon as={getIconComponent(s.icon)} fontSize="14px" />
                   <Text fontSize="xs" fontWeight="medium" isTruncated>{s.name}</Text>
                 </HStack>
-                <Text fontSize="10px" color="whiteAlpha.500" mt={1}>{s.category}</Text>
               </Box>
             ))}
           </Grid>
@@ -163,19 +164,27 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
                 Ícone Key
                 <HStack spacing={2} bg="blackAlpha.400" px={2} py={1} borderRadius="md" border="1px solid" borderColor="whiteAlpha.100">
                   <Text fontSize="10px" color="whiteAlpha.400">Preview:</Text>
-                  <Icon as={getIconComponent(formData.icon)} color={formData.color || "brand.500"} fontSize="16px" />
+                  <Box p={1} bg="whiteAlpha.100" borderRadius="md">
+                    <Icon as={getIconComponent(formData.icon)} color={formData.color || "brand.500"} fontSize="20px" key={formData.icon} />
+                  </Box>
                 </HStack>
               </FormLabel>
               <Input 
                 name="icon" 
                 value={formData.icon} 
+                list="icon-suggestions"
                 onChange={(e) => setFormData({...formData, icon: e.target.value})}
                 placeholder="Ex: FaReact ou SiNextdotjs" 
                 size="sm" 
                 bg="blackAlpha.300"
               />
+              <datalist id="icon-suggestions">
+                {PREDEFINED_STACKS.map(s => (
+                  <option key={s.icon} value={s.icon}>{s.name}</option>
+                ))}
+              </datalist>
               <Text fontSize="10px" color="whiteAlpha.400" mt={1}>
-                Busque no <Box as="a" href="https://react-icons.github.io/react-icons/" target="_blank" color="brand.400" textDecoration="underline">React Icons</Box> (Fa/Si)
+                Dica: Comece com <Box as="span" color="brand.300">Fa</Box> ou <Box as="span" color="brand.300">Si</Box>. Veja o <Box as="a" href="https://react-icons.github.io/react-icons/" target="_blank" color="brand.400" textDecoration="underline">diretório de ícones</Box>.
               </Text>
             </FormControl>
             <FormControl>

@@ -1,29 +1,33 @@
 import { Icon } from "@chakra-ui/react";
 import * as FaIcons from "react-icons/fa";
 import * as SiIcons from "react-icons/si";
-import { BracketsCurly } from "phosphor-react";
+import { BracketsCurly, Question } from "phosphor-react";
 
 /**
  * Resolves an icon component from a string key.
  * Supports FontAwesome (Fa) and SimpleIcons (Si) prefixes.
- * Falls back to a default icon if not found.
  */
 export function getIconComponent(iconKey: string | undefined | null) {
-  if (!iconKey) return BracketsCurly;
+  if (!iconKey || iconKey.trim() === "") return BracketsCurly;
 
-  // FontAwesome
-  if (iconKey.startsWith("Fa")) {
-    const icon = (FaIcons as any)[iconKey];
+  const key = iconKey.trim();
+
+  // FontAwesome (case-insensitive prefix check)
+  if (key.toLowerCase().startsWith("fa")) {
+    const pascalKey = key.charAt(0).toUpperCase() + key.charAt(1).toLowerCase() + key.slice(2);
+    // Try original, then pascal case
+    const icon = (FaIcons as any)[key] || (FaIcons as any)[pascalKey];
     if (icon) return icon;
   }
 
-  // SimpleIcons
-  if (iconKey.startsWith("Si")) {
-    const icon = (SiIcons as any)[iconKey];
+  // SimpleIcons (case-insensitive prefix check)
+  if (key.toLowerCase().startsWith("si")) {
+    const pascalKey = key.charAt(0).toUpperCase() + key.charAt(1).toLowerCase() + key.slice(2);
+    const icon = (SiIcons as any)[key] || (SiIcons as any)[pascalKey];
     if (icon) return icon;
   }
 
-  // Case-insensitive fallback check for some common names
+  // Common lowercase mapping
   const commonMap: Record<string, any> = {
     react: FaIcons.FaReact,
     nextjs: SiIcons.SiNextdotjs,
@@ -36,7 +40,16 @@ export function getIconComponent(iconKey: string | undefined | null) {
     php: FaIcons.FaPhp,
     python: FaIcons.FaPython,
     git: FaIcons.FaGitAlt,
+    github: FaIcons.FaGithub,
+    docker: FaIcons.FaDocker,
+    database: SiIcons.SiPostgresql,
+    aws: FaIcons.FaAws,
+    google: SiIcons.SiGoogle,
+    apple: FaIcons.FaApple,
+    android: FaIcons.FaAndroid,
   };
 
-  return commonMap[iconKey.toLowerCase()] || BracketsCurly;
+  const found = (FaIcons as any)[key] || (SiIcons as any)[key] || commonMap[key.toLowerCase()];
+  
+  return found || Question;
 }
