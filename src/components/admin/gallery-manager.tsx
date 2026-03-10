@@ -35,6 +35,15 @@ export function GalleryManager({ items, onChange }: GalleryManagerProps) {
   const [captionValue, setCaptionValue] = useState('');
   const dragCounter = useRef(0);
 
+  const addItems = (mediaItems: any[]) => {
+    const newItems: GalleryItem[] = mediaItems.map((media, i) => ({
+      url: media.url,
+      caption: '',
+      order: items.length + i,
+    }));
+    onChange([...items, ...newItems]);
+  };
+
   const addItem = (url: string) => {
     const newItem: GalleryItem = {
       url,
@@ -250,6 +259,7 @@ export function GalleryManager({ items, onChange }: GalleryManagerProps) {
             <MediaLibrary
               selectedUrl=""
               onSelect={(media) => addItem(media.url)}
+              onBatchSelect={(mediaItems) => addItems(mediaItems)}
             />
           </PopoverBody>
         </PopoverContent>

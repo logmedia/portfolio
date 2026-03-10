@@ -25,7 +25,7 @@ import {
   Badge,
   Divider,
 } from '@chakra-ui/react';
-import { CloudArrowUp, Image as ImageIcon, Trash, CheckCircle, ArrowsClockwise } from 'phosphor-react';
+import { CloudArrowUp, Image as ImageIcon, Trash, CheckCircle, ArrowsClockwise, CaretLeft, CaretRight } from 'phosphor-react';
 import { getMediaLibrary, uploadMedia, deleteMedia } from '@/app/actions';
 import {
   processImage,
@@ -51,21 +51,23 @@ interface MediaFile {
 
 interface MediaLibraryProps {
   onSelect: (media: MediaFile) => void;
+  onBatchSelect?: (mediaItems: MediaFile[]) => void;
   selectedUrl?: string;
 }
 
-export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
+export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl }: MediaLibraryProps) {
   const [mediaItems, setMediaItems] = useState<MediaFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUploading, startUploadTransition] = useTransition();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const toast = useToast();
 
   // Estado do processamento de imagem
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [processedPreview, setProcessedPreview] = useState<string | null>(null);
-  const [processResult, setProcessResult] = useState<ProcessResult | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewFiles, setPreviewFiles] = useState<{ original: string; processed: string | null }[]>([]);
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   const [originalSize, setOriginalSize] = useState<{ w: number; h: number; size: number } | null>(null);
+  const [processResult, setProcessResult] = useState<ProcessResult | null>(null);
   const [options, setOptions] = useState<ProcessOptions>({ ...DEFAULT_OPTIONS });
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,48 +85,77 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
 
   useEffect(() => { fetchMedia(); }, []);
 
-  // Processar imagem quando opções mudam
+  // Processar imagem de preview quando opções ou arquivo selecionado mudam
   useEffect(() => {
-    if (!selectedFile) return;
+    const file = selectedFiles[currentPreviewIndex];
+    if (!file) {
+      setProcessResult(null);
+      setOriginalSize(null);
+      return;
+    }
+
     const run = async () => {
       setIsProcessing(true);
       try {
-        const result = await processImage(selectedFile, options);
+        const img = await loadImage(file);
+        setOriginalSize({ w: img.naturalWidth, h: img.naturalHeight, size: file.size });
+        
+        const result = await processImage(file, options);
         setProcessResult(result);
-        if (processedPreview) URL.revokeObjectURL(processedPreview);
-        setProcessedPreview(URL.createObjectURL(result.blob));
+        
+        // Atualizar preview da lista
+        setPreviewFiles(prev => {
+          const next = [...prev];
+          if (next[currentPreviewIndex].processed) URL.revokeObjectURL(next[currentPreviewIndex].processed!);
+          next[currentPreviewIndex].processed = URL.createObjectURL(result.blob);
+          return next;
+        });
       } catch (err) {
         console.error('[ImageProcessor] Error:', err);
       }
       setIsProcessing(false);
     };
     run();
-  }, [selectedFile, options]);
+  }, [selectedFiles, currentPreviewIndex, options]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: 'Arquivo muito grande', description: 'O limite é de 10MB.', status: 'warning' });
-      return;
-    }
+    // Limpar previews antigos
+    previewFiles.forEach(p => {
+      URL.revokeObjectURL(p.original);
+      if (p.processed) URL.revokeObjectURL(p.processed);
+    });
 
-    setSelectedFile(file);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(URL.createObjectURL(file));
+    const newPreviews = files.map(f => ({
+      original: URL.createObjectURL(f),
+      processed: null
+    }));
 
-    const img = await loadImage(file);
-    setOriginalSize({ w: img.naturalWidth, h: img.naturalHeight, size: file.size });
+    setSelectedFiles(files);
+    setPreviewFiles(newPreviews);
+    setCurrentPreviewIndex(0);
   };
 
-  const handleUpload = () => {
-    if (!processResult || !selectedFile) return;
+  const handleUpload = async () => {
+    if (selectedFiles.length === 0) return;
 
-    startUploadTransition(async () => {
+    setIsUploading(true);
+    setUploadProgress({ current: 0, total: selectedFiles.length });
+    
+    const uploadedItems: MediaFile[] = [];
+    const errors: string[] = [];
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      setUploadProgress(prev => ({ ...prev, current: i + 1 }));
+      const file = selectedFiles[i];
+
       try {
-        const processedFile = new File([processResult.blob], processResult.filename, {
-          type: processResult.blob.type,
+        // Processar imagem com as opções atuais
+        const processed = await processImage(file, options);
+        const processedFile = new File([processed.blob], processed.filename, {
+          type: processed.blob.type,
         });
 
         const formData = new FormData();
@@ -132,25 +163,54 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
 
         const result = (await uploadMedia(formData)) as any;
         if (result.success && result.media) {
-          toast({ title: 'Upload concluído!', status: 'success' });
-          setMediaItems([result.media as MediaFile, ...mediaItems]);
-          onSelect(result.media as MediaFile);
-          resetUploadState();
+          uploadedItems.push(result.media as MediaFile);
         } else {
-          toast({ title: 'Erro no upload', description: result.message, status: 'error' });
+          errors.push(`${file.name}: ${result.message || 'Erro desconhecido'}`);
         }
-      } catch {
-        toast({ title: 'Erro de conexão', status: 'error' });
+      } catch (err) {
+        errors.push(`${file.name}: Erro ao processar arquivo`);
       }
-    });
+    }
+
+    if (uploadedItems.length > 0) {
+      setMediaItems(prev => [...uploadedItems, ...prev]);
+      
+      // Se tiver onBatchSelect e enviou múltiplos, usa ele
+      if (onBatchSelect && uploadedItems.length > 0) {
+        onBatchSelect(uploadedItems);
+      } else if (uploadedItems.length > 0) {
+        onSelect(uploadedItems[0]);
+      }
+
+      toast({
+        title: `${uploadedItems.length} arquivo(s) enviados`,
+        status: 'success',
+        duration: 3000
+      });
+      resetUploadState();
+    }
+
+    if (errors.length > 0) {
+      toast({
+        title: 'Alguns arquivos falharam',
+        description: errors.join('\n'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true
+      });
+    }
+
+    setIsUploading(false);
   };
 
   const resetUploadState = () => {
-    setSelectedFile(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    if (processedPreview) URL.revokeObjectURL(processedPreview);
-    setPreviewUrl(null);
-    setProcessedPreview(null);
+    previewFiles.forEach(p => {
+      URL.revokeObjectURL(p.original);
+      if (p.processed) URL.revokeObjectURL(p.processed);
+    });
+    setSelectedFiles([]);
+    setPreviewFiles([]);
+    setCurrentPreviewIndex(0);
     setProcessResult(null);
     setOriginalSize(null);
     setOptions({ ...DEFAULT_OPTIONS });
@@ -178,14 +238,14 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
     <Box bg="gray.900" borderRadius="xl" border="1px solid" borderColor="whiteAlpha.200" overflow="hidden">
       <Tabs variant="soft-rounded" colorScheme="brand" p={4}>
         <TabList mb={4}>
-          <Tab fontSize="sm">Enviar Arquivo</Tab>
+          <Tab fontSize="sm">Enviar Arquivos {selectedFiles.length > 0 && <Badge ml={2} colorScheme="brand" borderRadius="full">{selectedFiles.length}</Badge>}</Tab>
           <Tab fontSize="sm">Biblioteca de Mídia</Tab>
         </TabList>
 
         <TabPanels>
           {/* === TAB: UPLOAD === */}
           <TabPanel>
-            {!selectedFile ? (
+            {selectedFiles.length === 0 ? (
               <VStack
                 spacing={4}
                 py={12}
@@ -198,7 +258,7 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
                 <CloudArrowUp size={48} style={{ opacity: 0.5 }} />
                 <VStack spacing={1}>
                   <Text fontWeight="bold">Solte arquivos aqui para enviar</Text>
-                  <Text fontSize="xs" color="whiteAlpha.600">Ou clique para selecionar do seu computador</Text>
+                  <Text fontSize="xs" color="whiteAlpha.600">Suporte a múltiplos arquivos em lote</Text>
                 </VStack>
                 <Button
                   as="label"
@@ -207,12 +267,13 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
                   colorScheme="brand"
                   size="sm"
                 >
-                  Selecionar Arquivo
+                  Selecionar Arquivos
                 </Button>
                 <input
                   id="file-upload-media"
                   ref={fileInputRef}
                   type="file"
+                  multiple
                   style={{ display: 'none' }}
                   onChange={handleFileSelect}
                   accept="image/*"
@@ -220,12 +281,36 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
               </VStack>
             ) : (
               <VStack spacing={4} align="stretch">
+                {/* Batch Status / Navigation */}
+                {selectedFiles.length > 1 && (
+                  <HStack justify="space-between" bg="whiteAlpha.50" p={2} borderRadius="md">
+                    <Text fontSize="xs" fontWeight="bold">PROJETO DE LOTE ({selectedFiles.length} arquivos)</Text>
+                    <HStack>
+                      <IconButton
+                        aria-label="Anterior"
+                        icon={<CaretLeft />}
+                        size="xs"
+                        isDisabled={currentPreviewIndex === 0}
+                        onClick={() => setCurrentPreviewIndex(i => i - 1)}
+                      />
+                      <Text fontSize="xs">{currentPreviewIndex + 1} de {selectedFiles.length}</Text>
+                      <IconButton
+                        aria-label="Próximo"
+                        icon={<CaretRight />}
+                        size="xs"
+                        isDisabled={currentPreviewIndex === selectedFiles.length - 1}
+                        onClick={() => setCurrentPreviewIndex(i => i + 1)}
+                      />
+                    </HStack>
+                  </HStack>
+                )}
+
                 {/* Preview Original vs Processada */}
                 <Grid templateColumns="1fr 1fr" gap={3}>
                   <VStack spacing={1}>
                     <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500">ORIGINAL</Text>
-                    <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="whiteAlpha.200" maxH="120px">
-                      {previewUrl && <Image src={previewUrl} alt="Original" objectFit="contain" maxH="120px" mx="auto" />}
+                    <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="whiteAlpha.200" h="120px" w="100%">
+                      <Image src={previewFiles[currentPreviewIndex]?.original} alt="Original" objectFit="contain" h="100%" w="100%" />
                     </Box>
                     {originalSize && (
                       <Text fontSize="10px" color="whiteAlpha.500">
@@ -235,16 +320,16 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
                   </VStack>
                   <VStack spacing={1}>
                     <HStack spacing={1}>
-                      <Text fontSize="xs" fontWeight="bold" color="brand.300">PROCESSADA</Text>
+                      <Text fontSize="xs" fontWeight="bold" color="brand.300">OTIMIZADA</Text>
                       {savingsPercent > 0 && <Badge colorScheme="green" fontSize="10px">-{savingsPercent}%</Badge>}
                     </HStack>
-                    <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="brand.400" maxH="120px" position="relative">
+                    <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="brand.400" h="120px" w="100%" position="relative">
                       {isProcessing ? (
-                        <Box display="flex" alignItems="center" justifyContent="center" h="120px">
+                        <Box display="flex" alignItems="center" justifyContent="center" h="100%">
                           <Spinner size="sm" color="brand.400" />
                         </Box>
-                      ) : processedPreview ? (
-                        <Image src={processedPreview} alt="Processada" objectFit="contain" maxH="120px" mx="auto" />
+                      ) : previewFiles[currentPreviewIndex]?.processed ? (
+                        <Image src={previewFiles[currentPreviewIndex].processed!} alt="Processada" objectFit="contain" h="100%" w="100%" />
                       ) : null}
                     </Box>
                     {processResult && (
@@ -257,62 +342,65 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
 
                 <Divider borderColor="whiteAlpha.200" />
 
-                {/* Opções de Processamento */}
-                <Grid templateColumns="1fr 1fr" gap={3}>
-                  <VStack align="stretch" spacing={1}>
-                    <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500">FORMATO</Text>
-                    <Select
-                      size="sm"
-                      bg="blackAlpha.300"
-                      value={options.format}
-                      onChange={(e) => setOptions({ ...options, format: e.target.value as ImageFormat })}
-                    >
-                      {(Object.entries(FORMAT_LABELS) as [ImageFormat, string][]).map(([key, label]) => (
-                        <option key={key} value={key}>{label}</option>
-                      ))}
-                    </Select>
-                  </VStack>
+                {/* Opções de Processamento em Lote */}
+                <VStack align="stretch" spacing={3}>
+                  <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.600">CONFIGURAÇÃO DO LOTE</Text>
+                  <Grid templateColumns="1fr 1fr" gap={3}>
+                    <VStack align="stretch" spacing={1}>
+                      <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500">FORMATO</Text>
+                      <Select
+                        size="sm"
+                        bg="blackAlpha.300"
+                        value={options.format}
+                        onChange={(e) => setOptions({ ...options, format: e.target.value as ImageFormat })}
+                      >
+                        {(Object.entries(FORMAT_LABELS) as [ImageFormat, string][]).map(([key, label]) => (
+                          <option key={key} value={key}>{label}</option>
+                        ))}
+                      </Select>
+                    </VStack>
 
-                  <VStack align="stretch" spacing={1}>
-                    <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500">DIMENSÃO</Text>
-                    <Select
-                      size="sm"
-                      bg="blackAlpha.300"
-                      value={options.preset}
-                      onChange={(e) => setOptions({ ...options, preset: e.target.value as ImagePreset })}
-                    >
-                      {(Object.entries(PRESETS) as [ImagePreset, { label: string }][]).map(([key, val]) => (
-                        <option key={key} value={key}>{val.label}</option>
-                      ))}
-                    </Select>
-                  </VStack>
-                </Grid>
+                    <VStack align="stretch" spacing={1}>
+                      <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500">DIMENSÃO</Text>
+                      <Select
+                        size="sm"
+                        bg="blackAlpha.300"
+                        value={options.preset}
+                        onChange={(e) => setOptions({ ...options, preset: e.target.value as ImagePreset })}
+                      >
+                        {(Object.entries(PRESETS) as [ImagePreset, { label: string }][]).map(([key, val]) => (
+                          <option key={key} value={key}>{val.label}</option>
+                        ))}
+                      </Select>
+                    </VStack>
+                  </Grid>
 
-                {options.format !== 'png' && (
-                  <VStack align="stretch" spacing={1}>
-                    <HStack justify="space-between">
-                      <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500">QUALIDADE</Text>
-                      <Text fontSize="xs" color="brand.300" fontWeight="bold">{Math.round(options.quality * 100)}%</Text>
-                    </HStack>
-                    <Slider
-                      min={10}
-                      max={100}
-                      step={5}
-                      value={options.quality * 100}
-                      onChange={(val) => setOptions({ ...options, quality: val / 100 })}
-                      colorScheme="brand"
-                    >
-                      <SliderTrack bg="whiteAlpha.200">
-                        <SliderFilledTrack />
-                      </SliderTrack>
-                      <SliderThumb />
-                    </Slider>
-                  </VStack>
-                )}
+                  {options.format !== 'png' && (
+                    <VStack align="stretch" spacing={1}>
+                      <HStack justify="space-between">
+                        <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500">QUALIDADE</Text>
+                        <Text fontSize="xs" color="brand.300" fontWeight="bold">{Math.round(options.quality * 100)}%</Text>
+                      </HStack>
+                      <Slider
+                        min={10}
+                        max={100}
+                        step={5}
+                        value={options.quality * 100}
+                        onChange={(val) => setOptions({ ...options, quality: val / 100 })}
+                        colorScheme="brand"
+                      >
+                        <SliderTrack bg="whiteAlpha.200">
+                          <SliderFilledTrack />
+                        </SliderTrack>
+                        <SliderThumb />
+                      </Slider>
+                    </VStack>
+                  )}
+                </VStack>
 
                 {/* Ações */}
-                <HStack justify="flex-end" spacing={2}>
-                  <Button size="sm" variant="ghost" onClick={resetUploadState}>
+                <HStack justify="flex-end" spacing={2} pt={2}>
+                  <Button size="sm" variant="ghost" onClick={resetUploadState} isDisabled={isUploading}>
                     Cancelar
                   </Button>
                   <Button
@@ -320,10 +408,11 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
                     colorScheme="brand"
                     onClick={handleUpload}
                     isLoading={isUploading}
-                    isDisabled={!processResult || isProcessing}
+                    loadingText={`Enviando ${uploadProgress.current}/${uploadProgress.total}`}
+                    isDisabled={isProcessing || selectedFiles.length === 0}
                     leftIcon={<CloudArrowUp size={16} />}
                   >
-                    Enviar {processResult ? formatFileSize(processResult.size) : ''}
+                    Iniciar Upload ({selectedFiles.length})
                   </Button>
                 </HStack>
               </VStack>
