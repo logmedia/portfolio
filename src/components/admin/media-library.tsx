@@ -45,7 +45,7 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
 
   const fetchMedia = async () => {
     setIsLoading(true);
-    const result = await getMediaLibrary();
+    const result = (await getMediaLibrary()) as any;
     if (result.success && result.media) {
       setMediaItems(result.media as MediaFile[]);
     } else {
@@ -66,7 +66,7 @@ export function MediaLibrary({ onSelect, selectedUrl }: MediaLibraryProps) {
     formData.append('file', file);
 
     startUploadTransition(async () => {
-      const result = await uploadMedia(formData);
+      const result = (await uploadMedia(formData)) as any;
       if (result.success && result.media) {
         toast({ title: 'Upload concluído!', status: 'success' });
         setMediaItems([result.media as MediaFile, ...mediaItems]);

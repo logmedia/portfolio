@@ -437,7 +437,7 @@ export async function signOut() {
 export async function getMediaLibrary() {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("media")
       .select("*")
       .order("created_at", { ascending: false });
@@ -498,7 +498,7 @@ export async function uploadMedia(formData: FormData) {
       user_id: user.id,
     };
 
-    const { data: mediaRecord, error: dbError } = await supabase
+    const { data: mediaRecord, error: dbError } = await (supabase as any)
       .from("media")
       .insert(mediaPayload)
       .select()
@@ -528,7 +528,7 @@ export async function deleteMedia(id: string, path: string) {
     if (storageError) console.error("Error removing from storage:", storageError);
 
     // 2. Deletar do Banco
-    const { error: dbError } = await supabase.from("media").delete().eq("id", id).eq("user_id", user.id);
+    const { error: dbError } = await (supabase as any).from("media").delete().eq("id", id).eq("user_id", user.id);
     if (dbError) return { success: false, message: "Erro ao deletar do banco." };
 
     return { success: true };
