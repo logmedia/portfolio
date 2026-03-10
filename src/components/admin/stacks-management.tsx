@@ -37,6 +37,7 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
   const [isPending, startTransition] = useTransition();
   const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({ name: "", icon: "", color: "" });
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const filteredLibrary = useMemo(() => {
     return PREDEFINED_STACKS.filter(s => 
@@ -44,6 +45,48 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
       s.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery]);
+
+  const onDragStart = (e: React.DragEvent, stack: PredefinedStack) => {
+    e.dataTransfer.setData("application/json", JSON.stringify(stack));
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOver(false);
+    
+    try {
+      const data = e.dataTransfer.getData("application/json");
+      if (!data) return;
+      
+      const stack = JSON.parse(data) as PredefinedStack;
+      
+      startTransition(async () => {
+        const formData = new FormData();
+        formData.append("name", stack.name);
+        formData.append("icon", stack.icon);
+        formData.append("color", stack.color);
+        
+        const result = await saveStack(formData);
+        if (result.success) {
+          toast({ title: `${stack.name} adicionado via drag-and-drop!`, status: "success" });
+        } else {
+          toast({ title: result.message || "Erro ao adicionar", status: "error" });
+        }
+      });
+    } catch (err) {
+      console.error("Drop error:", err);
+    }
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOver(true);
+  };
+
+  const onDragLeave = () => {
+    setIsDraggingOver(false);
+  };
 
   const handleSubmit = async (form: FormData) => {
     startTransition(async () => {
@@ -125,10 +168,13 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
                 p={2} 
                 bg="whiteAlpha.50" 
                 borderRadius="md" 
-                cursor="pointer" 
+                cursor="grab" 
+                draggable
+                onDragStart={(e) => onDragStart(e, s)}
                 border="1px solid"
                 borderColor="transparent"
                 _hover={{ bg: "brand.500", color: "white", borderColor: "brand.300" }} 
+                _active={{ cursor: "grabbing" }}
                 transition="all 0.2s"
                 onClick={() => handleSelectPredefined(s)}
               >
@@ -212,9 +258,33 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
         </Box>
       </ChakraStack>
 
-      <Box bg="whiteAlpha.50" p={6} borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" overflowX="auto" h="fit-content">
+      <Box 
+        bg={isDraggingOver ? "brand.900" : "whiteAlpha.50"} 
+        p={6} 
+        borderRadius="xl" 
+        border="2px dashed" 
+        borderColor={isDraggingOver ? "brand.500" : "whiteAlpha.100"} 
+        overflowX="auto" 
+        h="fit-content"
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        transition="all 0.2s"
+        position="relative"
+      >
+        {isDraggingOver && (
+          <Box 
+            position="absolute" 
+            top={0} left={0} right={0} bottom={0} 
+            bg="brand.500" opacity={0.1} 
+            pointerEvents="none" 
+            borderRadius="xl"
+          />
+        )}
         <HStack mb={4} justify="space-between">
-          <Text fontWeight="bold">Minhas Stacks Cadastradas</Text>
+          <Text fontWeight="bold" color={isDraggingOver ? "brand.200" : "white"}>
+            {isDraggingOver ? "Solte para Adicionar" : "Minhas Stacks Cadastradas"}
+          </Text>
           <Text fontSize="xs" color="whiteAlpha.500">{stacks.length} tecnologias</Text>
         </HStack>
         <Table size="sm" variant="simple">
