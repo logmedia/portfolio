@@ -202,15 +202,38 @@ export function AdminDashboard({ profile, posts, comments }: AdminDashboardProps
                             <Input name="externalLink" defaultValue={selectedPost?.external_link ?? ""} />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Rating</FormLabel>
+                            <FormLabel>Rating (Estrelas)</FormLabel>
                             <Select name="rating" defaultValue={String(selectedPost?.rating ?? 5)}>
-                              {[0, 1, 2, 3, 4, 5].map((number) => (
+                              <option value="">Nenhum</option>
+                              {[1, 2, 3, 4, 5].map((number) => (
                                 <option key={number} value={number}>
                                   {number} estrelas
                                 </option>
                               ))}
                             </Select>
                           </FormControl>
+                          <Grid templateColumns="1fr 1fr" gap={4}>
+                            <FormControl>
+                              <FormLabel>Performance (%)</FormLabel>
+                              <Input 
+                                type="number" 
+                                name="performance" 
+                                defaultValue={selectedPost?.performance ?? 100} 
+                                min={0} 
+                                max={100} 
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel>Dificuldade (1-5)</FormLabel>
+                              <Select name="difficulty" defaultValue={String(selectedPost?.difficulty ?? 1)}>
+                                {[1, 2, 3, 4, 5].map((number) => (
+                                  <option key={number} value={number}>
+                                    Nível {number}
+                                  </option>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Grid>
                           <FormControl>
                             <FormLabel>Status</FormLabel>
                             <Select name="status" defaultValue={selectedPost?.status ?? "draft"}>

@@ -61,8 +61,8 @@ export function Post({ post, profile }: PostProps) {
   const nextJsColor = useColorModeValue("black", "white");
   const emptyBarColor = useColorModeValue("gray.200", "whiteAlpha.200");
 
-  const performanceScore = 90 + (post.title.length % 10);
-  const rating = post.rating || 3;
+  const performanceScore = post.performance ?? 100;
+  const rating = post.difficulty ?? 1;
 
   return (
     <Box

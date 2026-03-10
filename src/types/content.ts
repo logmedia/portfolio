@@ -29,7 +29,9 @@ export type Post = {
   gallery?: string[];
   tags?: string[];
   external_link?: string;
-  rating?: number;
+  rating?: number | null;
+  performance?: number;
+  difficulty?: number;
   status?: "draft" | "published";
   published_at?: string | null;
 };

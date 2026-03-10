@@ -30,6 +30,8 @@ export type Database = {
           tags: string[] | null;
           external_link: string | null;
           rating: number | null;
+          performance: number | null;
+          difficulty: number | null;
           status: "draft" | "published" | null;
           published_at: string | null;
           created_at: string | null;

@@ -132,7 +132,9 @@ const postSchema = z.object({
   gallery: z.string().optional(),
   tags: z.string().optional(),
   externalLink: z.string().url().optional().or(z.literal("")),
-  rating: z.preprocess((val) => Number(val ?? 0), z.number().min(0).max(5)),
+  rating: z.preprocess((val) => (val === "" || val === null ? null : Number(val)), z.number().min(0).max(5).nullable()),
+  performance: z.preprocess((val) => Number(val ?? 100), z.number().min(0).max(100)),
+  difficulty: z.preprocess((val) => Number(val ?? 1), z.number().min(1).max(5)),
   status: z.enum(["draft", "published"]),
 });
 
@@ -156,6 +158,8 @@ export async function savePost(formData: FormData) {
     tags: formData.get("tags")?.toString(),
     externalLink: formData.get("externalLink")?.toString(),
     rating: formData.get("rating")?.toString(),
+    performance: formData.get("performance")?.toString(),
+    difficulty: formData.get("difficulty")?.toString(),
     status: formData.get("status")?.toString() as "draft" | "published",
   });
 
@@ -179,6 +183,8 @@ export async function savePost(formData: FormData) {
     tags: parseStacks(parsed.data.tags),
     external_link: parsed.data.externalLink || null,
     rating: parsed.data.rating,
+    performance: parsed.data.performance,
+    difficulty: parsed.data.difficulty,
     status: parsed.data.status,
   };
 
