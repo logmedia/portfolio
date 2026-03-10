@@ -266,17 +266,33 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <Text fontWeight="bold" fontSize="sm" ml={2}>
                               {selectedPost ? "Editando Projeto" : "Novo Projeto"}
                             </Text>
-                            <Button 
-                              type="submit" 
-                              isLoading={isSavingPost} 
-                              isDisabled={!isDirty && !!selectedPost}
-                              loadingText="Salvando" 
-                              colorScheme="brand" 
-                              size="sm" 
-                              px={8}
-                            >
-                              Salvar
-                            </Button>
+                            <HStack spacing={2}>
+                              {selectedPost?.slug && (
+                                <Button
+                                  as="a"
+                                  href={`/projeto/${selectedPost.slug}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  size="sm"
+                                  variant="outline"
+                                  borderColor="whiteAlpha.300"
+                                  _hover={{ bg: 'whiteAlpha.100' }}
+                                >
+                                  Visualizar
+                                </Button>
+                              )}
+                              <Button 
+                                type="submit" 
+                                isLoading={isSavingPost} 
+                                isDisabled={!isDirty && !!selectedPost}
+                                loadingText="Salvando" 
+                                colorScheme="brand" 
+                                size="sm" 
+                                px={8}
+                              >
+                                Salvar
+                              </Button>
+                            </HStack>
                           </HStack>
 
                           <FormControl isRequired>
