@@ -1,53 +1,74 @@
 import { createServerClient } from '@supabase/auth-helpers-nextjs'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  
-  // Try to use createServerClient with manual cookie handling if createMiddlewareClient is missing
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return req.cookies.get(name)?.value
+  let res = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
+  })
+
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return req.cookies.get(name)?.value
+          },
+          set(name: string, value: string, options: any) {
+            req.cookies.set({ name, value, ...options })
+            res = NextResponse.next({
+              request: {
+                headers: req.headers,
+              },
+            })
+            res.cookies.set({ name, value, ...options })
+          },
+          remove(name: string, options: any) {
+            req.cookies.set({ name, value: '', ...options })
+            res = NextResponse.next({
+              request: {
+                headers: req.headers,
+              },
+            })
+            res.cookies.set({ name, value: '', ...options })
+          },
         },
-        set(name: string, value: string, options: any) {
-          req.cookies.set({ name, value, ...options })
-          res.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: any) {
-          req.cookies.set({ name, value: '', ...options })
-          res.cookies.set({ name, value: '', ...options })
-        },
-      },
+      }
+    )
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    const { pathname } = req.nextUrl
+
+    // Debug log to terminal
+    console.log(`[Middleware] Path: ${pathname} | User: ${user?.email ?? 'none'}`)
+
+    // Protection logic
+    if (pathname.startsWith('/admin')) {
+      if (!user) {
+        console.log(`[Middleware] Redirecting ${pathname} to /login (Unauthorized)`)
+        return NextResponse.redirect(new URL('/login', req.url))
+      }
     }
-  )
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  const { pathname } = req.nextUrl
-
-  // Protection logic
-  if (pathname.startsWith('/admin')) {
-    if (!session) {
-      return NextResponse.redirect(new URL('/login', req.url))
+    if (pathname.startsWith('/login')) {
+      if (user) {
+        console.log(`[Middleware] Redirecting ${pathname} to /admin (Already logged in)`)
+        return NextResponse.redirect(new URL('/admin', req.url))
+      }
     }
-  }
-
-  if (pathname.startsWith('/login')) {
-    if (session) {
-      return NextResponse.redirect(new URL('/admin', req.url))
-    }
+  } catch (e) {
+    console.error('[Middleware] Error:', e)
   }
 
   return res
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/login'],
+  matcher: ['/admin', '/admin/:path*', '/login'],
 }
