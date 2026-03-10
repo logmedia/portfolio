@@ -63,16 +63,29 @@ const tagIconMap: Record<string, { icon: any; color: string }> = {
 };
 
 const markdownComponents = (textColor: string, headingColor: string): Components => ({
-  h1: (props) => <Heading size="xl" mt={10} mb={4} color={headingColor} {...props} />,
-  h2: (props) => <Heading size="lg" mt={8} mb={3} color={headingColor} {...props} />,
-  h3: (props) => <Heading size="md" mt={6} mb={2} color={headingColor} {...props} />,
-  p: (props) => (
+  h1: ({node, ...props}: any) => <Heading size="xl" mt={10} mb={4} color={headingColor} {...props} />,
+  h2: ({node, ...props}: any) => <Heading size="lg" mt={8} mb={3} color={headingColor} {...props} />,
+  h3: ({node, ...props}: any) => <Heading size="md" mt={6} mb={2} color={headingColor} {...props} />,
+  p: ({node, ...props}: any) => (
     <Text fontSize="lg" color={textColor} lineHeight="tall" mb={6} {...props} />
   ),
-  ul: (props) => <Stack as="ul" pl={6} spacing={3} mb={6} {...props} />,
-  li: (props) => <Text as="li" fontSize="md" color={textColor} {...props} />,
-  code: (props) => (
-    <Box as="code" bg="whiteAlpha.100" px={2} py={0.5} borderRadius="md" fontFamily="monospace" fontSize="sm" {...props} />
+  ul: ({node, children, ...props}: any) => (
+    <Box as="ul" pl={6} mb={6} sx={{ '& > li': { mb: 2 } }} {...props}>
+      {children}
+    </Box>
+  ),
+  li: ({node, ...props}: any) => <Box as="li" fontSize="md" color={textColor} {...props} />,
+  code: ({node, inline, ...props}: any) => (
+    <Box 
+      as="code" 
+      bg="whiteAlpha.100" 
+      px={2} 
+      py={0.5} 
+      borderRadius="md" 
+      fontFamily="monospace" 
+      fontSize="sm" 
+      {...props} 
+    />
   ),
 });
 
