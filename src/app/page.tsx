@@ -3,8 +3,9 @@ import { Sidebar } from "@/components/Sidebar";
 import { Post } from "@/components/Post";
 import { SkillsCard } from "@/components/SkillsCard";
 import { StacksCard } from "@/components/StacksCard";
-import { Box, Flex, Text as ChakraText } from "@chakra-ui/react";
+import { Box, Flex, Text as ChakraText, Heading, Icon } from "@chakra-ui/react";
 import { fetchPosts, fetchProfile } from "@/lib/supabase/queries";
+import { Code } from "phosphor-react";
 
 export const revalidate = 3600; // ISR: Revalidate every hour for high performance
 
@@ -40,6 +41,14 @@ export default async function Home() {
         </Box>
         <Box as="main" w="100%">
           <Flex direction="column" gap={{ base: 6, md: 8 }}>
+            
+            <Flex align="center" gap={3} px={2}>
+              <Icon as={Code} fontSize="24px" color="brand.500" />
+              <Heading size="lg" color="gray.800" _dark={{ color: "gray.100" }} letterSpacing="tight">
+                Últimos Projetos
+              </Heading>
+            </Flex>
+
             {posts.map(post => (
               <Post key={post.id} post={post} profile={profile} />
             ))}
