@@ -1,8 +1,19 @@
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
+import { mode } from "@chakra-ui/theme-tools";
 
 const config: ThemeConfig = {
   initialColorMode: "dark",
   useSystemColorMode: false,
+};
+
+const styles = {
+  global: (props: any) => ({
+    body: {
+      bg: mode("gray.50", "var(--gray-900, #121214)")(props),
+      color: mode("gray.800", "gray.300")(props),
+      WebkitFontSmoothing: "antialiased",
+    },
+  }),
 };
 
 const colors = {
@@ -62,6 +73,6 @@ const components = {
   },
 };
 
-const theme = extendTheme({ config, colors, fonts, components });
+const theme = extendTheme({ config, styles, colors, fonts, components });
 
 export default theme;
