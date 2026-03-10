@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex, Text, Stack, Heading, Icon } from "@chakra-ui/react";
+import { Box, Flex, Text, Stack, Heading, Icon, useColorModeValue } from "@chakra-ui/react";
 import { Cpu, Palette, Code, Database, BracketsCurly, Lightning } from "phosphor-react";
 
 interface Skill {
@@ -20,17 +20,25 @@ const SKILLS: Skill[] = [
 ];
 
 export function SkillsCard() {
+  const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
+  const borderColor = useColorModeValue("white", "whiteAlpha.100");
+  const headingColor = useColorModeValue("gray.800", "gray.100");
+  const textColor = useColorModeValue("gray.700", "gray.200");
+  const subTextColor = useColorModeValue("gray.500", "gray.400");
+  const trackBg = useColorModeValue("gray.200", "whiteAlpha.100");
+  const cardShadow = useColorModeValue("0 4px 20px 0 rgba(0, 0, 0, 0.05)", "0 8px 32px 0 rgba(0, 0, 0, 0.37)");
+
   return (
     <Box
-      bg="rgba(32, 32, 36, 0.4)"
+      bg={bg}
       backdropFilter="blur(16px)"
       borderRadius="2xl"
       p={{ base: 5, md: 8 }}
-      boxShadow="0 8px 32px 0 rgba(0, 0, 0, 0.37)"
+      boxShadow={cardShadow}
       border="1px solid"
-      borderColor="whiteAlpha.100"
+      borderColor={borderColor}
     >
-      <Heading size="md" color="gray.100" mb={6} display="flex" alignItems="center" gap={2}>
+      <Heading size="md" color={headingColor} mb={6} display="flex" alignItems="center" gap={2}>
         Habilidades
       </Heading>
 
@@ -40,15 +48,15 @@ export function SkillsCard() {
             <Flex justify="space-between" align="center" mb={2}>
               <Flex align="center" gap={2}>
                 <Icon as={skill.icon} color={skill.color} fontSize="20px" />
-                <Text color="gray.200" fontWeight="medium" fontSize="sm">
+                <Text color={textColor} fontWeight="medium" fontSize="sm">
                   {skill.name}
                 </Text>
               </Flex>
-              <Text color="gray.400" fontSize="xs">
+              <Text color={subTextColor} fontSize="xs">
                 {skill.level}%
               </Text>
             </Flex>
-            <Box h="6px" w="full" bg="whiteAlpha.100" borderRadius="full" overflow="hidden">
+            <Box h="6px" w="full" bg={trackBg} borderRadius="full" overflow="hidden">
               <Box
                 h="full"
                 w={`${skill.level}%`}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex, Avatar, Text, Link, Icon, Stack, HStack } from "@chakra-ui/react";
+import { Box, Flex, Avatar, Text, Link, Icon, Stack, HStack, useColorModeValue } from "@chakra-ui/react";
 import { GithubLogo, LinkedinLogo, InstagramLogo, Globe } from "phosphor-react";
 
 interface Profile {
@@ -35,16 +35,22 @@ interface SidebarProps {
 export function Sidebar({ profile }: SidebarProps) {
   const { name, role, bio, avatarUrl, coverUrl, socials } = { ...DEFAULT_PROFILE, ...profile };
 
+  const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
+  const borderColor = useColorModeValue("white", "whiteAlpha.100");
+  const textColor = useColorModeValue("gray.800", "gray.100");
+  const mutedTextColor = useColorModeValue("gray.600", "gray.400");
+  const cardShadow = useColorModeValue("0 4px 20px 0 rgba(0, 0, 0, 0.05)", "0 8px 32px 0 rgba(0, 0, 0, 0.37)");
+
   return (
     <Box
       as="aside"
-      bg="rgba(32, 32, 36, 0.4)"
+      bg={bg}
       backdropFilter="blur(16px)"
       borderRadius="2xl"
       overflow="hidden"
-      boxShadow="0 8px 32px 0 rgba(0, 0, 0, 0.37)"
+      boxShadow={cardShadow}
       border="1px solid"
-      borderColor="whiteAlpha.100"
+      borderColor={borderColor}
       mb={6}
     >
       <Box h="120px" bgImage={`url(${coverUrl})`} bgSize="cover" bgPos="center" />
@@ -64,7 +70,7 @@ export function Sidebar({ profile }: SidebarProps) {
         />
         
         <Stack spacing={1} align="center">
-          <Text color="gray.100" fontWeight="bold" fontSize="xl" lineHeight="1.2">
+          <Text color={textColor} fontWeight="bold" fontSize="xl" lineHeight="1.2">
             {name}
           </Text>
           <Text fontSize="sm" color="brand.500" fontWeight="semibold" letterSpacing="wider" textTransform="uppercase">
@@ -72,7 +78,7 @@ export function Sidebar({ profile }: SidebarProps) {
           </Text>
         </Stack>
 
-        <Text color="gray.400" fontSize="sm" textAlign="center" lineHeight="1.6" maxW="220px">
+        <Text color={mutedTextColor} fontSize="sm" textAlign="center" lineHeight="1.6" maxW="220px">
           {bio}
         </Text>
 
@@ -87,7 +93,7 @@ export function Sidebar({ profile }: SidebarProps) {
                 key={social.label} 
                 href={social.url} 
                 isExternal 
-                color="gray.400" 
+                color={mutedTextColor} 
                 _hover={{ color: "brand.500", transform: "translateY(-2px)" }}
                 transition="all 0.2s"
               >

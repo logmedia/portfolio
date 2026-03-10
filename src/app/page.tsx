@@ -42,7 +42,7 @@ export default async function Home() {
               <Post key={post.id} post={post} profile={profile} />
             ))}
             {posts.length === 0 && (
-              <ChakraText color="whiteAlpha.500" textAlign="center" mt={10}>
+              <ChakraText color="gray.500" _dark={{ color: "whiteAlpha.500" }} textAlign="center" mt={10}>
                 Nenhum post publicado ainda.
               </ChakraText>
             )}

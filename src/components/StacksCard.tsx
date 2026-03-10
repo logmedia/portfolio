@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex, Text, Heading, Icon, SimpleGrid, Tooltip } from "@chakra-ui/react";
+import { Box, Flex, Text, Heading, Icon, SimpleGrid, Tooltip, useColorModeValue } from "@chakra-ui/react";
 import { FaWordpress, FaPhp, FaReact, FaGitAlt, FaNodeJs, FaFigma } from "react-icons/fa";
 import { SiNextdotjs, SiTypescript, SiTailwindcss, SiJavascript, SiPostgresql, SiFirebase } from "react-icons/si";
 
@@ -22,18 +22,26 @@ const STACKS: StackItem[] = [
 ];
 
 export function StacksCard() {
+  const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
+  const borderColor = useColorModeValue("white", "whiteAlpha.100");
+  const headingColor = useColorModeValue("gray.800", "gray.100");
+  const cardShadow = useColorModeValue("0 4px 20px 0 rgba(0, 0, 0, 0.05)", "0 8px 32px 0 rgba(0, 0, 0, 0.37)");
+  
+  // Custom logic to flip the Next.js icon black when in light mode
+  const nextJsColor = useColorModeValue("black", "white");
+
   return (
     <Box
-      bg="rgba(32, 32, 36, 0.4)"
+      bg={bg}
       backdropFilter="blur(16px)"
       borderRadius="2xl"
       p={{ base: 5, md: 8 }}
       mt={6}
-      boxShadow="0 8px 32px 0 rgba(0, 0, 0, 0.37)"
+      boxShadow={cardShadow}
       border="1px solid"
-      borderColor="whiteAlpha.100"
+      borderColor={borderColor}
     >
-      <Heading size="md" color="gray.100" mb={6} display="flex" alignItems="center" gap={2}>
+      <Heading size="md" color={headingColor} mb={6} display="flex" alignItems="center" gap={2}>
         Stacks & Ferramentas
       </Heading>
 
@@ -48,7 +56,7 @@ export function StacksCard() {
             display="inline-flex"
             title={stack.name}
           >
-            <Icon as={stack.icon} color={stack.color} fontSize="32px" />
+            <Icon as={stack.icon} color={stack.name === "Next.js" ? nextJsColor : stack.color} fontSize="32px" />
           </Box>
         ))}
       </Flex>
