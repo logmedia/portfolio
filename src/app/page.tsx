@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { Post } from "@/components/Post";
@@ -50,7 +51,9 @@ export default async function Home({ searchParams }: { searchParams: { stack?: s
             
             <FeedTitle />
             
-            <StackFilter stacks={stacks} />
+            <Suspense fallback={null}>
+              <StackFilter stacks={stacks} />
+            </Suspense>
 
             {filteredPosts.map(post => (
               <Post key={post.id} post={post} profile={profile} />
