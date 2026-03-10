@@ -164,7 +164,7 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
                 Ícone Key
                 <HStack spacing={2} bg="blackAlpha.400" px={2} py={1} borderRadius="md" border="1px solid" borderColor="whiteAlpha.100">
                   <Text fontSize="10px" color="whiteAlpha.400">Preview:</Text>
-                  <Box p={1} bg="whiteAlpha.100" borderRadius="md">
+                  <Box p={1.5} bg="white" borderRadius="md" display="flex" alignItems="center" justifyContent="center" boxShadow="sm">
                     <Icon as={getIconComponent(formData.icon)} color={formData.color || "brand.500"} fontSize="20px" key={formData.icon} />
                   </Box>
                 </HStack>
