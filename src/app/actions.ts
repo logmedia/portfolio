@@ -201,12 +201,15 @@ export async function savePost(formData: FormData) {
     }
 
     // Garantir que existe um perfil para este usuário no banco (evita erro de FK)
-    const { data: profile } = await (supabase as any).from("profiles").select("id").eq("id", user.id).single();
-    if (!profile) {
-      await (supabase as any).from("profiles").insert({
-        id: user.id,
-        name: user.email?.split("@")[0] || "Usuário", // Fallback básico
-      });
+    // Se não existir, criamos um básico usando upsert por segurança
+    const { error: profileError } = await (supabase as any).from("profiles").upsert({
+      id: user.id,
+      name: user.email?.split("@")[0] || "Admin",
+    }, { onConflict: "id" });
+
+    if (profileError) {
+      console.error("Erro ao sincronizar perfil:", profileError);
+      return { success: false, message: `Erro ao preparar perfil: ${profileError.message}` };
     }
 
     // Pegar IDs das stacks do formData (enviados como stacks[])
