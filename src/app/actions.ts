@@ -229,8 +229,10 @@ export async function savePost(formData: FormData) {
       performance: parsed.data.performance,
       difficulty: parsed.data.difficulty,
       status: parsed.data.status,
-      author_id: user.id, // Restaurando o vínculo de autor
+      author_id: user.id,
     };
+
+    console.log("Saving project payload:", payload);
 
     const { data: post, error } = await (supabase as any)
       .from("posts")
@@ -243,9 +245,14 @@ export async function savePost(formData: FormData) {
       return { success: false, message: `Erro no banco: ${error?.message || "Sem resposta do post"}` };
     }
 
+    console.log("Project saved successfully:", post);
+
     // Sincronizar stacks (Muitos-para-Muitos)
     // 1. Remover relações antigas
-    await (supabase as any).from("post_stacks").delete().eq("post_id", (post as any).id);
+    const { error: deleteError } = await (supabase as any).from("post_stacks").delete().eq("post_id", (post as any).id);
+    if (deleteError) {
+      console.error("Error deleting old stacks:", deleteError);
+    }
 
     // 2. Inserir novas relações
     if (selectedStackIds.length > 0) {
@@ -253,14 +260,35 @@ export async function savePost(formData: FormData) {
         post_id: (post as any).id,
         stack_id: stackId
       }));
-      await (supabase as any).from("post_stacks").insert(relations);
+      const { error: insertError } = await (supabase as any).from("post_stacks").insert(relations);
+      if (insertError) {
+        console.error("Error inserting new stacks:", insertError);
+      }
     }
 
     revalidatePath("/admin");
     revalidatePath("/");
-    revalidatePath(`/post/${(post as any).slug}`);
+    revalidatePath(`/projeto/${(post as any).slug}`);
     
-    return { success: true };
+    // Buscar o post atualizado com stacks para o frontend sincronizar
+    const { data: updatedPost } = await (supabase as any)
+      .from("posts")
+      .select(`
+        *,
+        stacks:post_stacks(
+          stack:stacks(*)
+        )
+      `)
+      .eq("id", post.id)
+      .single();
+
+    // Formatar o retorno para o tipo Post esperado pelo frontend
+    const formattedPost = updatedPost ? {
+      ...updatedPost,
+      stacks: updatedPost.stacks?.map((s: any) => s.stack).filter(Boolean) || []
+    } : post;
+
+    return { success: true, post: formattedPost };
   } catch (error) {
     console.error("savePost fatal error:", error);
     return { success: false, message: "Erro inesperado ao salvar projeto." };

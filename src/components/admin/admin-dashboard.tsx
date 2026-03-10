@@ -27,6 +27,15 @@ import {
   Text,
   Textarea,
   useToast,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverBody,
+  PopoverFooter,
+  PopoverArrow,
+  PopoverCloseButton,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { deletePost, savePost, saveProfile, signOut } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack } from "@/types/content";
@@ -96,11 +105,15 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
         return;
       }
       toast({ title: "Projeto salvo com sucesso!", status: "success" });
+      
+      // Sincronizar o estado local com o que o banco retornou
+      if (result.post) {
+        setSelectedPost(result.post as Post);
+      }
     });
   };
 
   const handleDeletePost = (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.")) return;
     
     startDeleteTransition(async () => {
       const result = await deletePost(id);
@@ -234,107 +247,134 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                     <CardBody>
                       <form key={selectedPost?.id ?? "new-project"} action={handlePostSubmit}>
                         <input type="hidden" name="id" value={safePostId} />
-                        <ChakraStack spacing={4}>
-                          <FormControl isRequired>
-                            <FormLabel>Título do Projeto</FormLabel>
-                            <Input name="title" defaultValue={selectedPost?.title ?? ""} bg="blackAlpha.300" />
-                          </FormControl>
-                          <FormControl isRequired>
-                            <FormLabel>Slug</FormLabel>
-                            <Input name="slug" defaultValue={selectedPost?.slug ?? ""} bg="blackAlpha.300" />
-                          </FormControl>
+                        <ChakraStack spacing={6}>
+                          {/* Top Action Bar */}
+                          <HStack justify="space-between" align="center" bg="blackAlpha.400" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(8px)">
+                            <Text fontWeight="bold" fontSize="sm" ml={2}>
+                              {selectedPost ? "Editando Projeto" : "Novo Projeto"}
+                            </Text>
+                            <Button type="submit" isLoading={isSavingPost} loadingText="Salvando" colorScheme="brand" size="sm" px={8}>
+                              Salvar
+                            </Button>
+                          </HStack>
+
+                          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
+                            <FormControl isRequired>
+                              <FormLabel fontSize="sm">Título do Projeto</FormLabel>
+                              <Input name="title" defaultValue={selectedPost?.title ?? ""} bg="blackAlpha.300" />
+                            </FormControl>
+                            <FormControl isRequired>
+                              <FormLabel fontSize="sm">Slug</FormLabel>
+                              <Input name="slug" defaultValue={selectedPost?.slug ?? ""} bg="blackAlpha.300" />
+                            </FormControl>
+                          </Grid>
+
                           <FormControl>
-                            <FormLabel>Subtítulo / Especialidade</FormLabel>
+                            <FormLabel fontSize="sm">Subtítulo / Especialidade</FormLabel>
                             <Input name="subtitle" defaultValue={selectedPost?.subtitle ?? ""} bg="blackAlpha.300" />
                           </FormControl>
 
                           <Box border="1px solid" borderColor="whiteAlpha.100" p={5} borderRadius="xl" bg="blackAlpha.200">
-                            <FormLabel fontWeight="bold" mb={4}>Tecnologias do Projeto</FormLabel>
+                            <FormLabel fontWeight="bold" mb={4} fontSize="sm">Tecnologias do Projeto</FormLabel>
                             <StackSelector 
                               allStacks={stacks}
                               selectedStackIds={selectedStackIds}
                               onChange={setSelectedStackIds}
                             />
-                            {stacks.length === 0 && (
-                              <Text fontSize="xs" color="whiteAlpha.500" mt={2}>
-                                Nenhuma stack cadastrada. Vá até a aba "Stacks" primeiro.
-                              </Text>
-                            )}
                           </Box>
 
-                          <FormControl>
-                            <FormLabel>Hero image (URL)</FormLabel>
-                            <Input name="heroImage" defaultValue={selectedPost?.hero_image_url ?? ""} bg="blackAlpha.300" />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>Galeria (URLs por linha)</FormLabel>
-                            <Textarea name="gallery" defaultValue={selectedPost?.gallery?.join("\n") ?? ""} rows={3} bg="blackAlpha.300" />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>Link Externo (Demo/Repo)</FormLabel>
-                            <Input name="externalLink" defaultValue={selectedPost?.external_link ?? ""} bg="blackAlpha.300" />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>Nível de Avaliação (1-5)</FormLabel>
-                            <Select name="rating" defaultValue={String(selectedPost?.rating ?? 5)} bg="blackAlpha.300">
-                              <option value="">Nenhum</option>
-                              {[1, 2, 3, 4, 5].map((number) => (
-                                <option key={number} value={number}>
-                                  {number} estrelas
-                                </option>
-                              ))}
-                            </Select>
-                          </FormControl>
-                          <Grid templateColumns="1fr 1fr" gap={4}>
+                          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
                             <FormControl>
-                              <FormLabel>Performance (%)</FormLabel>
-                              <Input 
-                                type="number" 
-                                name="performance" 
-                                defaultValue={selectedPost?.performance ?? 100} 
-                                min={0} 
-                                max={100} 
-                                bg="blackAlpha.300"
-                              />
+                              <FormLabel fontSize="sm">Hero image (URL)</FormLabel>
+                              <Input name="heroImage" defaultValue={selectedPost?.hero_image_url ?? ""} bg="blackAlpha.300" />
                             </FormControl>
                             <FormControl>
-                              <FormLabel>Dificuldade Tech (1-5)</FormLabel>
-                              <Select name="difficulty" defaultValue={String(selectedPost?.difficulty ?? 1)} bg="blackAlpha.300">
+                              <FormLabel fontSize="sm">Link Externo (Demo/Repo)</FormLabel>
+                              <Input name="externalLink" defaultValue={selectedPost?.external_link ?? ""} bg="blackAlpha.300" />
+                            </FormControl>
+                          </Grid>
+
+                          <FormControl>
+                            <FormLabel fontSize="sm">Galeria (URLs por linha)</FormLabel>
+                            <Textarea name="gallery" defaultValue={selectedPost?.gallery?.join("\n") ?? ""} rows={2} bg="blackAlpha.300" />
+                          </FormControl>
+
+                          <Grid templateColumns="repeat(3, 1fr)" gap={4}>
+                            <FormControl>
+                              <FormLabel fontSize="sm">Avaliação (1-5)</FormLabel>
+                              <Select name="rating" defaultValue={String(selectedPost?.rating ?? 5)} bg="blackAlpha.300" size="sm">
+                                <option value="">Nenhum</option>
                                 {[1, 2, 3, 4, 5].map((number) => (
-                                  <option key={number} value={number}>
-                                    Nível {number}
-                                  </option>
+                                  <option key={number} value={number}>{number} estrelas</option>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel fontSize="sm">Perf. (%)</FormLabel>
+                              <Input type="number" name="performance" defaultValue={selectedPost?.performance ?? 100} min={0} max={100} bg="blackAlpha.300" size="sm" />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel fontSize="sm">Dificuldade</FormLabel>
+                              <Select name="difficulty" defaultValue={String(selectedPost?.difficulty ?? 1)} bg="blackAlpha.300" size="sm">
+                                {[1, 2, 3, 4, 5].map((number) => (
+                                  <option key={number} value={number}>Nível {number}</option>
                                 ))}
                               </Select>
                             </FormControl>
                           </Grid>
+
                           <FormControl>
-                            <FormLabel>Status de Visibilidade</FormLabel>
+                            <FormLabel fontSize="sm">Status de Visibilidade</FormLabel>
                             <Select name="status" defaultValue={selectedPost?.status ?? "draft"} bg="blackAlpha.300">
                               <option value="draft">Rascunho (Privado)</option>
                               <option value="published">Publicado (Visível)</option>
                             </Select>
                           </FormControl>
+
                           <FormControl>
-                            <FormLabel>Documentação / Conteúdo (Markdown)</FormLabel>
+                            <FormLabel fontSize="sm">Documentação / Conteúdo (Markdown)</FormLabel>
                             <Textarea name="content" defaultValue={selectedPost?.content ?? ""} rows={6} bg="blackAlpha.300" />
                           </FormControl>
-                          <HStack spacing={4}>
-                            <Button type="submit" isLoading={isSavingPost} loadingText="Salvando" colorScheme="brand" flex={1}>
-                              Salvar Projeto
-                            </Button>
-                            {selectedPost && (
-                              <Button 
-                                variant="outline" 
-                                colorScheme="red" 
-                                onClick={() => handleDeletePost(selectedPost.id)}
-                                isLoading={isDeletingPost}
-                                leftIcon={<Trash />}
-                              >
-                                Excluir
-                              </Button>
-                            )}
-                          </HStack>
+
+                          <Divider borderColor="whiteAlpha.100" />
+
+                          {/* Danger Zone */}
+                          {selectedPost && (
+                            <Box p={4} border="1px solid" borderColor="red.900" bg="red.900" borderRadius="xl" opacity={0.8} _hover={{ opacity: 1 }} transition="all 0.2s">
+                              <HStack justify="space-between">
+                                <ChakraStack spacing={0}>
+                                  <Text fontSize="sm" fontWeight="bold" color="red.200">Zona de Perigo</Text>
+                                  <Text fontSize="xs" color="red.300">Excluir este projeto permanentemente</Text>
+                                </ChakraStack>
+                                
+                                <Popover placement="top-end">
+                                  <PopoverTrigger>
+                                    <Button variant="ghost" colorScheme="red" size="sm" leftIcon={<Trash />}>
+                                      Excluir
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent bg="gray.800" borderColor="red.500">
+                                    <PopoverArrow bg="gray.800" />
+                                    <PopoverHeader fontWeight="bold" border="0">Confirmar Exclusão?</PopoverHeader>
+                                    <PopoverBody fontSize="sm">
+                                      Esta ação não pode ser desfeita. O projeto será removido do banco de dados.
+                                    </PopoverBody>
+                                    <PopoverFooter border="0" display="flex" justifyContent="flex-end">
+                                      <ButtonGroup size="sm">
+                                        <Button 
+                                          colorScheme="red" 
+                                          onClick={() => handleDeletePost(selectedPost.id)}
+                                          isLoading={isDeletingPost}
+                                        >
+                                          Sim, Excluir
+                                        </Button>
+                                      </ButtonGroup>
+                                    </PopoverFooter>
+                                  </PopoverContent>
+                                </Popover>
+                              </HStack>
+                            </Box>
+                          )}
                         </ChakraStack>
                       </form>
                     </CardBody>
