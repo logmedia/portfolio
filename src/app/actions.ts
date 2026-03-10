@@ -269,6 +269,13 @@ export async function saveStack(formData: FormData) {
     }
 
     const supabase = await createSupabaseServerClient();
+    
+    // Check authentication for admin actions
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, message: "Não autorizado. Faça login novamente." };
+    }
+
     const payload = {
       id: parsed.data.id || undefined,
       name: parsed.data.name,
@@ -276,11 +283,14 @@ export async function saveStack(formData: FormData) {
       color: parsed.data.color || null,
     };
 
-    const { error } = await (supabase as any).from("stacks").upsert(payload, { onConflict: "id" });
+    // Use onConflict 'name' as fallback to avoid duplicate names and handle new entries better
+    const { error } = await (supabase as any)
+      .from("stacks")
+      .upsert(payload, { onConflict: parsed.data.id ? "id" : "name" });
 
     if (error) {
       console.error("saveStack error:", error);
-      return { success: false, message: "Erro ao salvar stack." };
+      return { success: false, message: `Erro no banco: ${error.message}` };
     }
 
     revalidatePath("/admin");
