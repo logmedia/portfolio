@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useTransition } from "react";
-import ReactMarkdown from "react-markdown";
-import type { Components } from "react-markdown";
 import Link from "next/link";
 import {
   Avatar,
@@ -44,32 +42,80 @@ const pulseRing = keyframes`
 `;
 
 
-const markdownComponents = (textColor: string, headingColor: string): Components => ({
-  h1: ({node, ...props}: any) => <Heading size="xl" mt={10} mb={4} color={headingColor} {...props} />,
-  h2: ({node, ...props}: any) => <Heading size="lg" mt={8} mb={3} color={headingColor} {...props} />,
-  h3: ({node, ...props}: any) => <Heading size="md" mt={6} mb={2} color={headingColor} {...props} />,
-  p: ({node, ...props}: any) => (
-    <Text fontSize="lg" color={textColor} lineHeight="tall" mb={6} {...props} />
-  ),
-  ul: ({node, children, ...props}: any) => (
-    <Box as="ul" pl={6} mb={6} sx={{ '& > li': { mb: 2 } }} {...props}>
-      {children}
-    </Box>
-  ),
-  li: ({node, ...props}: any) => <Box as="li" fontSize="md" color={textColor} {...props} />,
-  code: ({node, inline, ...props}: any) => (
+const HTMLContent = ({ html, color, headingColor }: { html: string; color: string; headingColor: string }) => {
+  return (
     <Box 
-      as="code" 
-      bg="whiteAlpha.100" 
-      px={2} 
-      py={0.5} 
-      borderRadius="md" 
-      fontFamily="monospace" 
-      fontSize="sm" 
-      {...props} 
+      dangerouslySetInnerHTML={{ __html: html }} 
+      sx={{
+        "h1, h2, h3, h4, h5, h6": {
+          color: headingColor,
+          fontWeight: "bold",
+          mt: 10,
+          mb: 4,
+          lineHeight: "1.2",
+        },
+        h1: { fontSize: "3xl" },
+        h2: { fontSize: "2xl" },
+        h3: { fontSize: "xl" },
+        p: { fontSize: "lg", mb: 6, lineHeight: "tall", color: color },
+        "ul, ol": { mb: 6, pl: 6, color: color },
+        li: { mb: 2, fontSize: "md" },
+        strong: { color: headingColor, fontWeight: "bold" },
+        a: { color: "brand.400", textDecoration: "underline" },
+        blockquote: {
+          borderLeft: "4px solid",
+          borderColor: "brand.400",
+          pl: 4,
+          py: 3,
+          mb: 6,
+          fontStyle: "italic",
+          bg: "whiteAlpha.50",
+          borderRadius: "0 8px 8px 0",
+        },
+        table: {
+          width: "100%",
+          mb: 8,
+          borderCollapse: "collapse",
+          border: "1px solid",
+          borderColor: "whiteAlpha.100",
+        },
+        "th, td": {
+          border: "1px solid",
+          borderColor: "whiteAlpha.100",
+          p: 3,
+          textAlign: "left",
+        },
+        th: {
+          bg: "whiteAlpha.100",
+          fontWeight: "bold",
+        },
+        img: {
+          maxWidth: "100%",
+          height: "auto",
+          borderRadius: "xl",
+          my: 8,
+        },
+        pre: {
+          bg: "blackAlpha.500",
+          p: 4,
+          borderRadius: "xl",
+          overflowX: "auto",
+          mb: 8,
+          border: "1px solid",
+          borderColor: "whiteAlpha.100",
+        },
+        code: {
+          fontFamily: "monospace",
+          fontSize: "0.9em",
+          bg: "whiteAlpha.100",
+          px: 1.5,
+          py: 0.5,
+          borderRadius: "md",
+        }
+      }}
     />
-  ),
-});
+  );
+};
 
 type PostDetailClientProps = {
   post: Post;
@@ -180,10 +226,12 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
                 </Box>
               )}
 
-              <Box className="markdown-content">
-                <ReactMarkdown components={markdownComponents(textColor, headingColor)}>
-                  {post.content ?? "Conteúdo em breve."}
-                </ReactMarkdown>
+              <Box className="html-content">
+                {post.content ? (
+                  <HTMLContent html={post.content} color={textColor} headingColor={headingColor} />
+                ) : (
+                  <Text color={subTextColor}>Conteúdo em breve.</Text>
+                )}
               </Box>
 
               {post.gallery && post.gallery.length > 0 && (

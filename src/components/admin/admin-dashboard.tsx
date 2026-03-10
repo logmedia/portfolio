@@ -46,7 +46,14 @@ import { StackSelector } from "./stack-selector";
 import { MediaPicker } from "./media-picker";
 import { GalleryManager } from "./gallery-manager";
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import type { GalleryItem } from "@/types/content";
+
+// Importar SunEditor dinamicamente para evitar problemas de SSR
+const SunEditor = dynamic(() => import("suneditor-react"), {
+  ssr: false,
+});
+import "suneditor/dist/css/suneditor.min.css";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -70,11 +77,13 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const [selectedStackIds, setSelectedStackIds] = useState<string[]>([]);
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [postContent, setPostContent] = useState("");
 
   // Sincronizar stacks quando o post selecionado muda
   useEffect(() => {
     setSelectedStackIds(selectedPost?.stacks?.map(s => s.id) ?? []);
     setHeroImageUrl(selectedPost?.hero_image_url ?? "");
+    setPostContent(selectedPost?.content ?? "");
     // Parse gallery: pode ser GalleryItem[] ou string[] legado
     const rawGallery = selectedPost?.gallery;
     if (Array.isArray(rawGallery)) {
@@ -317,6 +326,35 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <Input name="subtitle" defaultValue={selectedPost?.subtitle ?? ""} bg="blackAlpha.300" />
                           </FormControl>
 
+                          <FormControl>
+                            <FormLabel fontSize="sm">Documentação / Conteúdo (HTML)</FormLabel>
+                            <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="whiteAlpha.200">
+                              <SunEditor
+                                setContents={postContent}
+                                onChange={(content) => {
+                                  setPostContent(content);
+                                  setIsDirty(true);
+                                }}
+                                setOptions={{
+                                  height: "300",
+                                  buttonList: [
+                                    ["undo", "redo"],
+                                    ["font", "fontSize", "formatBlock"],
+                                    ["bold", "underline", "italic", "strike", "subscript", "superscript"],
+                                    ["fontColor", "hiliteColor", "textStyle"],
+                                    ["removeFormat"],
+                                    ["outdent", "indent"],
+                                    ["align", "horizontalRule", "list", "lineHeight"],
+                                    ["table", "link", "image", "video"],
+                                    ["fullScreen", "showBlocks", "codeView"],
+                                    ["preview", "print"],
+                                  ],
+                                }}
+                              />
+                            </Box>
+                            <input type="hidden" name="content" value={postContent} />
+                          </FormControl>
+
                           <Box border="1px solid" borderColor="whiteAlpha.100" p={5} borderRadius="xl" bg="blackAlpha.200">
                             <FormLabel fontWeight="bold" mb={4} fontSize="sm">Tecnologias do Projeto</FormLabel>
                             <StackSelector 
@@ -394,10 +432,6 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             </Select>
                           </FormControl>
 
-                          <FormControl>
-                            <FormLabel fontSize="sm">Documentação / Conteúdo (Markdown)</FormLabel>
-                            <Textarea name="content" defaultValue={selectedPost?.content ?? ""} rows={6} bg="blackAlpha.300" />
-                          </FormControl>
 
                           <Divider borderColor="whiteAlpha.100" />
 
