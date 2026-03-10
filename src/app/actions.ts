@@ -155,7 +155,7 @@ const postSchema = z.object({
   rating: z.preprocess((val) => (val === "" || val === null ? null : Number(val)), z.number().min(0).max(5).nullable()),
   performance: z.preprocess((val) => Number(val ?? 100), z.number().min(0).max(100)),
   difficulty: z.preprocess((val) => Number(val ?? 1), z.number().min(1).max(5)),
-  status: z.enum(["draft", "published"]),
+  status: z.enum(["draft", "published", "trash"]),
 });
 
 const parseGallery = (input?: string) => {
@@ -302,28 +302,88 @@ export async function savePost(formData: FormData) {
   }
 }
 
-export async function deletePost(id: string) {
+export async function moveToTrash(id: string) {
   try {
     const supabase = await createSupabaseServerClient();
-    
-    // Check authentication
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, message: "Não autorizado." };
-    }
+    if (!user) return { success: false, message: "Não autorizado." };
 
-    const { error } = await (supabase as any).from("posts").delete().eq("id", id);
+    const { error } = await (supabase as any)
+      .from("posts")
+      .update({ status: "trash" })
+      .eq("id", id);
 
-    if (error) {
-      return { success: false, message: "Erro ao excluir projeto." };
-    }
+    if (error) return { success: false, message: "Erro ao mover para lixeira." };
 
     revalidatePath("/admin");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    return { success: false, message: "Erro crítico ao mover para lixeira." };
+  }
+}
+
+export async function restoreFromTrash(id: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autorizado." };
+
+    const { error } = await (supabase as any)
+      .from("posts")
+      .update({ status: "draft" })
+      .eq("id", id);
+
+    if (error) return { success: false, message: "Erro ao restaurar projeto." };
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: "Erro crítico ao restaurar projeto." };
+  }
+}
+
+export async function permanentlyDeletePost(id: string, mediaToDelete: { id: string, path: string }[] = []) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autorizado." };
+
+    // 1. Limpar mídias selecionadas (Storage + DB)
+    if (mediaToDelete.length > 0) {
+      console.log(`[permanentlyDeletePost] Deleting ${mediaToDelete.length} media files...`);
+      
+      // Deletar do Storage
+      const paths = mediaToDelete.map(m => m.path);
+      const { error: storageError } = await supabase.storage.from("media").remove(paths);
+      if (storageError) console.error("Error removing media from storage:", storageError);
+
+      // Deletar do Banco (Tabela media)
+      const mediaIds = mediaToDelete.map(m => m.id);
+      const { error: dbMediaError } = await (supabase as any)
+        .from("media")
+        .delete()
+        .in("id", mediaIds);
+      if (dbMediaError) console.error("Error removing media from DB:", dbMediaError);
+    }
+
+    // 2. Excluir o projeto permanentemente
+    const { error } = await (supabase as any).from("posts").delete().eq("id", id);
+
+    if (error) return { success: false, message: "Erro ao excluir projeto permanentemente." };
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Permanently delete error:", error);
     return { success: false, message: "Erro crítico ao excluir projeto." };
   }
+}
+
+export async function deletePost(id: string) {
+  return moveToTrash(id);
 }
 
 const stackSchema = z.object({

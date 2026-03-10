@@ -42,7 +42,7 @@ export type Post = {
   rating?: number | null;
   performance?: number;
   difficulty?: number;
-  status?: "draft" | "published";
+  status?: "draft" | "published" | "trash";
   published_at?: string | null;
 };
 

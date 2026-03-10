@@ -39,21 +39,15 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { deletePost, savePost, saveProfile, signOut } from "@/app/actions";
-import type { Post, Profile, Comment as ContentComment, Stack } from "@/types/content";
-import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash } from "phosphor-react";
+import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem } from "@/types/content";
+import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash, Recycle } from "phosphor-react";
 import { StacksManagement } from "./stacks-management";
+import { TrashManager } from "./trash-manager";
 import { StackSelector } from "./stack-selector";
 import { MediaPicker } from "./media-picker";
 import { GalleryManager } from "./gallery-manager";
 import { useEffect } from "react";
-import dynamic from "next/dynamic";
-import type { GalleryItem } from "@/types/content";
-
-// Importar SunEditor dinamicamente para evitar problemas de SSR
-const SunEditor = dynamic(() => import("suneditor-react"), {
-  ssr: false,
-});
-import "suneditor/dist/css/suneditor.min.css";
+import { ModernEditor } from "./modern-editor";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -143,6 +137,8 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
     });
   };
 
+  const activePosts = useMemo(() => posts.filter(p => p.status !== 'trash'), [posts]);
+
   const handleDeletePost = (id: string) => {
     
     startDeleteTransition(async () => {
@@ -182,6 +178,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
             <Tab fontWeight="semibold"><Icon as={Desktop} mr={2} /> Projetos</Tab>
             <Tab fontWeight="semibold"><Icon as={StackIcon} mr={2} /> Stacks</Tab>
             <Tab fontWeight="semibold"><Icon as={ChatCircleText} mr={2} /> Comentários</Tab>
+            <Tab fontWeight="semibold"><Icon as={Recycle} mr={2} /> Lixeira</Tab>
           </TabList>
           <TabPanels>
             <TabPanel px={0} pt={8}>
@@ -329,26 +326,11 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                           <FormControl>
                             <FormLabel fontSize="sm">Documentação / Conteúdo (HTML)</FormLabel>
                             <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="whiteAlpha.200">
-                              <SunEditor
-                                setContents={postContent}
+                              <ModernEditor
+                                initialContent={postContent}
                                 onChange={(content) => {
                                   setPostContent(content);
                                   setIsDirty(true);
-                                }}
-                                setOptions={{
-                                  height: "300",
-                                  buttonList: [
-                                    ["undo", "redo"],
-                                    ["font", "fontSize", "formatBlock"],
-                                    ["bold", "underline", "italic", "strike", "subscript", "superscript"],
-                                    ["fontColor", "hiliteColor", "textStyle"],
-                                    ["removeFormat"],
-                                    ["outdent", "indent"],
-                                    ["align", "horizontalRule", "list", "lineHeight"],
-                                    ["table", "link", "image", "video"],
-                                    ["fullScreen", "showBlocks", "codeView"],
-                                    ["preview", "print"],
-                                  ],
                                 }}
                               />
                             </Box>
@@ -447,7 +429,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                                 <Popover placement="top-end">
                                   <PopoverTrigger>
                                     <Button variant="ghost" colorScheme="red" size="sm" leftIcon={<Trash />}>
-                                      Excluir
+                                      Mover para Lixeira
                                     </Button>
                                   </PopoverTrigger>
                                   <PopoverContent bg="gray.800" borderColor="red.500">
@@ -488,7 +470,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                           </Button>
                         </HStack>
                         <ChakraStack spacing={3} maxH="600px" overflowY="auto">
-                          {posts.map((post) => (
+                          {activePosts.map((post) => (
                             <Card
                               key={post.id}
                               borderColor={selectedPost?.id === post.id ? "brand.400" : "whiteAlpha.200"}
@@ -518,7 +500,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                               </CardBody>
                             </Card>
                           ))}
-                          {posts.length === 0 && (
+                          {activePosts.length === 0 && (
                             <Text color="whiteAlpha.500">Nenhum projeto cadastrado.</Text>
                           )}
                         </ChakraStack>
@@ -591,6 +573,10 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                   </ChakraStack>
                 </CardBody>
               </Card>
+            </TabPanel>
+
+            <TabPanel px={0} pt={8}>
+              <TrashManager posts={posts} />
             </TabPanel>
           </TabPanels>
         </Tabs>
