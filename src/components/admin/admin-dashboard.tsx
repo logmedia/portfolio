@@ -58,6 +58,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const [isSavingPost, startPostTransition] = useTransition();
   const [isDeletingPost, startDeleteTransition] = useTransition();
   const [isLoggingOut, startLogoutTransition] = useTransition();
+  const [isDirty, setIsDirty] = useState(false);
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const safeProfileId = uuidRegex.test(profile.id ?? "") ? profile.id : "";
   const safePostId = uuidRegex.test(selectedPost?.id ?? "") ? selectedPost?.id : "";
@@ -68,6 +69,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   // Sincronizar stacks quando o post selecionado muda
   useEffect(() => {
     setSelectedStackIds(selectedPost?.stacks?.map(s => s.id) ?? []);
+    setIsDirty(false); // Reset dirty state when changing post
   }, [selectedPost]);
 
   // Auxiliar para verificar se a stack está selecionada no post
@@ -105,6 +107,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
         return;
       }
       toast({ title: "Projeto salvo com sucesso!", status: "success" });
+      setIsDirty(false);
       
       // Sincronizar o estado local com o que o banco retornou
       if (result.post) {
@@ -245,7 +248,11 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                 <GridItem>
                   <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                     <CardBody>
-                      <form key={selectedPost?.id ?? "new-project"} action={handlePostSubmit}>
+                      <form 
+                        key={selectedPost?.id ?? "new-project"} 
+                        action={handlePostSubmit}
+                        onChange={() => setIsDirty(true)}
+                      >
                         <input type="hidden" name="id" value={safePostId} />
                         <ChakraStack spacing={6}>
                           {/* Top Action Bar */}
@@ -253,21 +260,23 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <Text fontWeight="bold" fontSize="sm" ml={2}>
                               {selectedPost ? "Editando Projeto" : "Novo Projeto"}
                             </Text>
-                            <Button type="submit" isLoading={isSavingPost} loadingText="Salvando" colorScheme="brand" size="sm" px={8}>
+                            <Button 
+                              type="submit" 
+                              isLoading={isSavingPost} 
+                              isDisabled={!isDirty && !!selectedPost}
+                              loadingText="Salvando" 
+                              colorScheme="brand" 
+                              size="sm" 
+                              px={8}
+                            >
                               Salvar
                             </Button>
                           </HStack>
 
-                          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
-                            <FormControl isRequired>
-                              <FormLabel fontSize="sm">Título do Projeto</FormLabel>
-                              <Input name="title" defaultValue={selectedPost?.title ?? ""} bg="blackAlpha.300" />
-                            </FormControl>
-                            <FormControl isRequired>
-                              <FormLabel fontSize="sm">Slug</FormLabel>
-                              <Input name="slug" defaultValue={selectedPost?.slug ?? ""} bg="blackAlpha.300" />
-                            </FormControl>
-                          </Grid>
+                          <FormControl isRequired>
+                            <FormLabel fontSize="sm">Título do Projeto</FormLabel>
+                            <Input name="title" defaultValue={selectedPost?.title ?? ""} bg="blackAlpha.300" />
+                          </FormControl>
 
                           <FormControl>
                             <FormLabel fontSize="sm">Subtítulo / Especialidade</FormLabel>
@@ -279,9 +288,17 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <StackSelector 
                               allStacks={stacks}
                               selectedStackIds={selectedStackIds}
-                              onChange={setSelectedStackIds}
+                              onChange={(ids) => {
+                                setSelectedStackIds(ids);
+                                setIsDirty(true);
+                              }}
                             />
                           </Box>
+
+                          <FormControl isRequired>
+                            <FormLabel fontSize="sm">Slug (URL amigável)</FormLabel>
+                            <Input name="slug" defaultValue={selectedPost?.slug ?? ""} bg="blackAlpha.300" />
+                          </FormControl>
 
                           <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
                             <FormControl>
