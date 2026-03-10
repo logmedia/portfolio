@@ -32,6 +32,8 @@ import { savePost, saveProfile, signOut } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack } from "@/types/content";
 import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon } from "phosphor-react";
 import { StacksManagement } from "./stacks-management";
+import { StackSelector } from "./stack-selector";
+import { useEffect } from "react";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -49,6 +51,14 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const safeProfileId = uuidRegex.test(profile.id ?? "") ? profile.id : "";
   const safePostId = uuidRegex.test(selectedPost?.id ?? "") ? selectedPost?.id : "";
+  
+  // Estado local para as stacks selecionadas no projeto atual
+  const [selectedStackIds, setSelectedStackIds] = useState<string[]>([]);
+
+  // Sincronizar stacks quando o post selecionado muda
+  useEffect(() => {
+    setSelectedStackIds(selectedPost?.stacks?.map(s => s.id) ?? []);
+  }, [selectedPost]);
 
   // Auxiliar para verificar se a stack está selecionada no post
   const isStackSelected = (stackId: string) => {
@@ -223,23 +233,17 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <Input name="subtitle" defaultValue={selectedPost?.subtitle ?? ""} bg="blackAlpha.300" />
                           </FormControl>
 
-                          <Box border="1px solid" borderColor="whiteAlpha.200" p={4} borderRadius="md" bg="blackAlpha.100">
-                            <FormLabel fontWeight="bold">Tecnologias (Stacks)</FormLabel>
-                            <Grid templateColumns="repeat(auto-fill, minmax(140px, 1fr))" gap={2}>
-                              {stacks.map(stack => (
-                                <HStack key={stack.id} spacing={2} p={2} borderRadius="md" _hover={{ bg: "whiteAlpha.100" }}>
-                                  <input 
-                                    type="checkbox" 
-                                    name="stacks[]" 
-                                    value={stack.id} 
-                                    defaultChecked={isStackSelected(stack.id)}
-                                  />
-                                  <Text fontSize="sm">{stack.name}</Text>
-                                </HStack>
-                              ))}
-                            </Grid>
+                          <Box border="1px solid" borderColor="whiteAlpha.100" p={5} borderRadius="xl" bg="blackAlpha.200">
+                            <FormLabel fontWeight="bold" mb={4}>Tecnologias do Projeto</FormLabel>
+                            <StackSelector 
+                              allStacks={stacks}
+                              selectedStackIds={selectedStackIds}
+                              onChange={setSelectedStackIds}
+                            />
                             {stacks.length === 0 && (
-                              <Text fontSize="xs" color="whiteAlpha.500">Nenhuma stack cadastrada. Vá até a aba "Stacks" primeiro.</Text>
+                              <Text fontSize="xs" color="whiteAlpha.500" mt={2}>
+                                Nenhuma stack cadastrada. Vá até a aba "Stacks" primeiro.
+                              </Text>
                             )}
                           </Box>
 
