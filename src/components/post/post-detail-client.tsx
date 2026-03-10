@@ -33,8 +33,9 @@ import { keyframes } from "@emotion/react";
 import { ArrowLeft, BookOpen, Clock, Crosshair, Code, GitMerge, ChartBar, Globe } from "phosphor-react";
 import { getIconComponent } from "@/lib/utils/icons";
 
-import type { Comment, Post, Profile } from "@/types/content";
+import type { Comment, Post, Profile, GalleryItem } from "@/types/content";
 import { createComment } from "@/app/actions";
+import { GalleryCarousel } from "@/components/gallery-carousel";
 
 const pulseRing = keyframes`
   0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
@@ -188,13 +189,7 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
               {post.gallery && post.gallery.length > 0 && (
                 <Box mt={16}>
                   <Heading size="md" mb={6} color={headingColor}>Galeria do Projeto</Heading>
-                  <SimpleGrid columns={{ base: 1, md: 2 }} gap={6}>
-                    {post.gallery.map((url, index) => (
-                      <Box key={index} borderRadius="xl" overflow="hidden" border="1px solid" borderColor={borderColor}>
-                        <img src={url} alt={`Gallery ${index}`} style={{ width: "100%", height: "auto" }} />
-                      </Box>
-                    ))}
-                  </SimpleGrid>
+                  <GalleryCarousel items={post.gallery as unknown as GalleryItem[]} />
                 </Box>
               )}
             </Box>
