@@ -31,8 +31,7 @@ import {
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { ArrowLeft, BookOpen, Clock, Crosshair, Code, GitMerge, ChartBar, Globe } from "phosphor-react";
-import { FaWordpress, FaPhp, FaReact, FaGitAlt, FaNodeJs, FaFigma } from "react-icons/fa";
-import { SiNextdotjs, SiTypescript, SiTailwindcss, SiJavascript, SiPostgresql, SiFirebase, SiSupabase } from "react-icons/si";
+import { getIconComponent } from "@/lib/utils/icons";
 
 import type { Comment, Post, Profile } from "@/types/content";
 import { createComment } from "@/app/actions";
@@ -43,24 +42,6 @@ const pulseRing = keyframes`
   100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
 `;
 
-const tagIconMap: Record<string, { icon: any; color: string }> = {
-  react: { icon: FaReact, color: "#61DAFB" },
-  nextjs: { icon: SiNextdotjs, color: "gray.500" }, 
-  typescript: { icon: SiTypescript, color: "#3178C6" },
-  javascript: { icon: SiJavascript, color: "#F7DF1E" },
-  nodejs: { icon: FaNodeJs, color: "#339933" },
-  tailwind: { icon: SiTailwindcss, color: "#06B6D4" },
-  postgresql: { icon: SiPostgresql, color: "#4169E1" },
-  supabase: { icon: SiSupabase, color: "#3ECF8E" },
-  figma: { icon: FaFigma, color: "#F24E1E" },
-  design: { icon: FaFigma, color: "#F24E1E" },
-  php: { icon: FaPhp, color: "#777BB4" },
-  wordpress: { icon: FaWordpress, color: "#21759B" },
-  git: { icon: FaGitAlt, color: "#F05032" },
-  realtime: { icon: Clock, color: "#3ECF8E" },
-  tokens: { icon: Code, color: "#06B6D4" },
-  firebase: { icon: SiFirebase, color: "#FFCA28" },
-};
 
 const markdownComponents = (textColor: string, headingColor: string): Components => ({
   h1: ({node, ...props}: any) => <Heading size="xl" mt={10} mb={4} color={headingColor} {...props} />,
@@ -270,9 +251,8 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
                   </Text>
                   <Flex gap={3} flexWrap="wrap">
                     {post.stacks && post.stacks.length > 0 ? post.stacks.map(stack => {
-                      const iconKey = (stack.icon || stack.name).toLowerCase();
-                      const item = tagIconMap[iconKey] || { icon: Code, color: stack.color || "gray.400" };
-                      const stackColor = stack.color || (item.color as string);
+                      const ResolvedIcon = getIconComponent(stack.icon);
+                      const stackColor = stack.color || "brand.500";
                       
                       return (
                         <Tooltip key={stack.id} label={stack.name} hasArrow>
@@ -288,7 +268,7 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
                             _hover={{ borderColor: stackColor, transform: "scale(1.1)" }}
                             transition="all 0.2s"
                           >
-                            <Icon as={item.icon} color={iconKey === 'nextjs' ? nextJsColor : stackColor} fontSize="22px" />
+                            <Icon as={ResolvedIcon} color={stack.icon?.toLowerCase() === 'nextjs' ? nextJsColor : stackColor} fontSize="22px" />
                           </Flex>
                         </Tooltip>
                       );

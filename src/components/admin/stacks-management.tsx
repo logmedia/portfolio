@@ -20,11 +20,12 @@ import {
   useToast,
   Text
 } from "@chakra-ui/react";
-import { Trash, PencilSimple, Plus, MagnifyingGlass } from "phosphor-react";
-import { useState, useTransition, useMemo } from "react";
+import { Trash, PencilSimple, Plus, MagnifyingGlass, BracketsCurly } from "phosphor-react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import { saveStack, deleteStack } from "@/app/actions";
 import type { Stack } from "@/types/content";
 import { PREDEFINED_STACKS, type PredefinedStack } from "@/lib/constants/stacks";
+import { getIconComponent } from "@/lib/utils/icons";
 
 type StacksManagementProps = {
   stacks: Stack[];
@@ -158,16 +159,24 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
               />
             </FormControl>
             <FormControl>
-              <FormLabel fontSize="sm">Ícone Key</FormLabel>
+              <FormLabel fontSize="sm" display="flex" justifyContent="space-between" alignItems="center">
+                Ícone Key
+                <HStack spacing={2} bg="blackAlpha.400" px={2} py={1} borderRadius="md" border="1px solid" borderColor="whiteAlpha.100">
+                  <Text fontSize="10px" color="whiteAlpha.400">Preview:</Text>
+                  <Icon as={getIconComponent(formData.icon)} color={formData.color || "brand.500"} fontSize="16px" />
+                </HStack>
+              </FormLabel>
               <Input 
                 name="icon" 
                 value={formData.icon} 
                 onChange={(e) => setFormData({...formData, icon: e.target.value})}
-                placeholder="Ex: FaReact ou BracketsCurly" 
+                placeholder="Ex: FaReact ou SiNextdotjs" 
                 size="sm" 
                 bg="blackAlpha.300"
               />
-              <Text fontSize="10px" color="whiteAlpha.400" mt={1}>Prefixo Fa (FontAwesome) ou Si (SimpleIcons)</Text>
+              <Text fontSize="10px" color="whiteAlpha.400" mt={1}>
+                Busque no <Box as="a" href="https://react-icons.github.io/react-icons/" target="_blank" color="brand.400" textDecoration="underline">React Icons</Box> (Fa/Si)
+              </Text>
             </FormControl>
             <FormControl>
               <FormLabel fontSize="sm">Cor (Hex)</FormLabel>
@@ -212,7 +221,12 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
             {stacks.map((stack) => (
               <Tr key={stack.id} _hover={{ bg: "whiteAlpha.50" }}>
                 <Td fontWeight="medium" py={4}>{stack.name}</Td>
-                <Td color="whiteAlpha.700">{stack.icon || "-"}</Td>
+                <Td color="whiteAlpha.700">
+                  <HStack>
+                    <Icon as={getIconComponent(stack.icon)} color={stack.color || "gray.400"} />
+                    <Text fontSize="xs">{stack.icon || "-"}</Text>
+                  </HStack>
+                </Td>
                 <Td>
                    <HStack>
                      <Box w={3} h={3} borderRadius="full" bg={stack.color || "gray.500"} boxShadow={`0 0 10px ${stack.color || "transparent"}`} />
