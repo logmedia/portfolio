@@ -40,11 +40,21 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const filteredLibrary = useMemo(() => {
-    return PREDEFINED_STACKS.filter(s => 
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.category.toLowerCase().includes(searchQuery.toLowerCase())
+    const search = searchQuery.toLowerCase();
+    const lib = PREDEFINED_STACKS.filter(s => 
+      s.name.toLowerCase().includes(search) ||
+      s.category.toLowerCase().includes(search)
     );
-  }, [searchQuery]);
+
+    // Sort: already added items to the end
+    return [...lib].sort((a, b) => {
+      const aExists = stacks.some(s => s.name.toLowerCase() === a.name.toLowerCase());
+      const bExists = stacks.some(s => s.name.toLowerCase() === b.name.toLowerCase());
+      if (aExists && !bExists) return 1;
+      if (!aExists && bExists) return -1;
+      return 0;
+    });
+  }, [searchQuery, stacks]);
 
   const onDragStart = (e: React.DragEvent, stack: PredefinedStack) => {
     e.dataTransfer.setData("application/json", JSON.stringify(stack));
@@ -162,28 +172,36 @@ export function StacksManagement({ stacks }: StacksManagementProps) {
             '&::-webkit-scrollbar-track': { bg: 'transparent' },
             '&::-webkit-scrollbar-thumb': { bg: 'whiteAlpha.200', borderRadius: 'full' },
           }}>
-            {filteredLibrary.map((s) => (
-              <Box 
-                key={s.name} 
-                p={2} 
-                bg="whiteAlpha.50" 
-                borderRadius="md" 
-                cursor="grab" 
-                draggable
-                onDragStart={(e) => onDragStart(e, s)}
-                border="1px solid"
-                borderColor="transparent"
-                _hover={{ bg: "brand.500", color: "white", borderColor: "brand.300" }} 
-                _active={{ cursor: "grabbing" }}
-                transition="all 0.2s"
-                onClick={() => handleSelectPredefined(s)}
-              >
-                <HStack spacing={2}>
-                  <Icon as={getIconComponent(s.icon)} fontSize="14px" />
-                  <Text fontSize="xs" fontWeight="medium" isTruncated>{s.name}</Text>
-                </HStack>
-              </Box>
-            ))}
+            {filteredLibrary.map((s) => {
+              const isAdded = stacks.some(libItem => libItem.name.toLowerCase() === s.name.toLowerCase());
+              
+              return (
+                <Box 
+                  key={s.name} 
+                  p={2} 
+                  bg={isAdded ? "whiteAlpha.50" : "whiteAlpha.50"} 
+                  borderRadius="md" 
+                  cursor={isAdded ? "default" : "grab"} 
+                  draggable={!isAdded}
+                  onDragStart={(e) => isAdded ? e.preventDefault() : onDragStart(e, s)}
+                  border="1px solid"
+                  borderColor={isAdded ? "transparent" : "transparent"}
+                  opacity={isAdded ? 0.4 : 1}
+                  filter={isAdded ? "grayscale(100%)" : "none"}
+                  _hover={isAdded ? {} : { bg: "brand.500", color: "white", borderColor: "brand.300" }} 
+                  _active={isAdded ? {} : { cursor: "grabbing" }}
+                  transition="all 0.2s"
+                  onClick={() => !isAdded && handleSelectPredefined(s)}
+                  position="relative"
+                >
+                  <HStack spacing={2}>
+                    <Icon as={getIconComponent(s.icon)} fontSize="14px" />
+                    <Text fontSize="xs" fontWeight="medium" isTruncated>{s.name}</Text>
+                    {isAdded && <Icon as={Plus} transform="rotate(45deg)" color="green.400" fontSize="10px" ml="auto" />}
+                  </HStack>
+                </Box>
+              );
+            })}
           </Grid>
         </Box>
 
