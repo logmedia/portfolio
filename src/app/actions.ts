@@ -217,7 +217,6 @@ export async function savePost(formData: FormData) {
       performance: parsed.data.performance,
       difficulty: parsed.data.difficulty,
       status: parsed.data.status,
-      author_id: user.id, // Associate with current user
     };
 
     const { data: post, error } = await (supabase as any)
