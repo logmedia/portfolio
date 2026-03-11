@@ -160,8 +160,7 @@ export async function fetchProfileByHandle(handle: string): Promise<Profile | nu
     
     const { data, error } = await query.single();
 
-    if (error) throw new Error("Supabase Error: " + error.message);
-    if (!data) return null;
+    if (error || !data) return null;
 
     const profileData = data as any;
     return {

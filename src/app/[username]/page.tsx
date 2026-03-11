@@ -7,30 +7,23 @@ import { PortfolioContent } from "@/components/PortfolioContent";
 export const dynamic = "force-dynamic";
 
 interface UserPortfolioProps {
-  params: {
+  params: Promise<{
     username: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     stack?: string;
-  };
+  }>;
 }
 
 export default async function UserPortfolio({ params, searchParams }: UserPortfolioProps) {
-  const profile = await fetchProfileByHandle(params.username);
+  const resolvedParams = await params;
+  const username = resolvedParams.username;
+  const resolvedSearchParams = await searchParams;
+
+  const profile = await fetchProfileByHandle(username);
 
   if (!profile) {
-    // TEMPORARY DEBUG: Print the raw handle and profile fetching result instead of 404
-    return (
-      <Box p={8} bg="black" color="white" minH="100vh">
-        <h1 style={{color: "white"}}>Debug Info for /{params.username}</h1>
-        <pre>{JSON.stringify({ 
-          handle: params.username, 
-          profileResult: profile,
-          envUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? "Exists" : "Missing",
-          envKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "Exists" : "Missing"
-        }, null, 2)}</pre>
-      </Box>
-    );
+    notFound();
   }
 
   const [posts, stacks] = await Promise.all([
@@ -45,7 +38,7 @@ export default async function UserPortfolio({ params, searchParams }: UserPortfo
         profile={profile} 
         posts={posts} 
         stacks={stacks} 
-        searchParams={searchParams} 
+        searchParams={resolvedSearchParams} 
       />
     </Box>
   );
