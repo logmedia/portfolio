@@ -6,7 +6,7 @@ import NextLink from "next/link";
 import Image from "next/image";
 import { Moon, Sun, List, ShieldCheck } from "phosphor-react";
 import { NotificationsDropdown } from "./NotificationsDropdown";
-import { fetchAdminProfile } from "@/lib/supabase/queries";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/supabase/queries";
 
 export function Header() {
@@ -16,7 +16,21 @@ export function Header() {
 
   useEffect(() => {
     setMounted(true);
-    fetchAdminProfile().then(data => setProfile(data as Profile));
+    
+    const loadProfile = async () => {
+      const supabase = createSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (data) setProfile(data as Profile);
+      }
+    };
+
+    loadProfile();
   }, []);
 
   if (!mounted) {

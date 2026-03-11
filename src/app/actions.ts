@@ -835,3 +835,120 @@ export async function updateProfile(data: Partial<{
   revalidatePath("/explore");
   return { success: true };
 }
+
+export async function updateCommentStatus(commentId: string, status: 'approved' | 'rejected') {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autenticado." };
+
+    // Verificar se o usuário é admin
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if ((profile as any)?.role !== 'admin') {
+      return { success: false, message: "Acesso negado." };
+    }
+
+    const { error } = await (supabase.from("comments") as any)
+      .update({ status })
+      .eq("id", commentId);
+
+    if (error) throw error;
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("updateCommentStatus ERROR:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+export async function deleteComment(commentId: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autenticado." };
+
+    const { error } = await (supabase.from("comments") as any)
+      .delete()
+      .eq("id", commentId);
+
+    if (error) throw error;
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("deleteComment ERROR:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+export async function generateAICover(prompt: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autenticado." };
+
+    console.log("[generateAICover] Generating for prompt:", prompt);
+    
+    // Sanitize prompt for URL
+    const sanitizedPrompt = encodeURIComponent(prompt);
+    const seed = Math.floor(Math.random() * 1000000);
+    const aiUrl = `https://pollinations.ai/p/${sanitizedPrompt}?width=1920&height=400&model=flux&seed=${seed}`;
+
+    // 1. Fetch generated image
+    const response = await fetch(aiUrl);
+    if (!response.ok) throw new Error("Falha ao gerar imagem com IA.");
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 2. Upload to Supabase Storage
+    const now = new Date();
+    const filename = `ai-cover-${Date.now()}.jpg`;
+    const path = `uploads/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/ai/${filename}`;
+
+    const { error: storageError } = await supabase.storage
+      .from("media")
+      .upload(path, buffer, {
+        contentType: 'image/jpeg',
+        upsert: true
+      });
+
+    if (storageError) throw storageError;
+
+    const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
+
+    // 3. Register in media table
+    const { data: mediaRecord, error: dbError } = await (supabase as any)
+      .from("media")
+      .insert({
+        filename: filename,
+        path: path,
+        url: publicUrl,
+        type: 'image/jpeg',
+        size: buffer.length,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+
+    // 4. Update profile cover_url automatically
+    await updateProfile({ cover_url: publicUrl });
+
+    return { 
+      success: true, 
+      url: publicUrl,
+      media: JSON.parse(JSON.stringify(mediaRecord, (k, v) => typeof v === 'bigint' ? v.toString() : v))
+    };
+  } catch (error: any) {
+    console.error("generateAICover ERROR:", error);
+    return { success: false, message: error.message || "Erro ao processar imagem IA." };
+  }
+}

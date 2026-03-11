@@ -1,6 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import { createServerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 import type { Post, Profile, Comment, Stack } from "@/types/content";
 export type { Post, Profile, Comment, Stack };
 import type { Database } from "./types";

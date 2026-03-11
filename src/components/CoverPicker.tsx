@@ -29,7 +29,7 @@ import {
 } from "@chakra-ui/react";
 import { Sparkles, Upload, Image as ImageIcon, Check } from "lucide-react";
 import { useState } from "react";
-import { updateProfile } from "@/app/actions";
+import { updateProfile, generateAICover } from "@/app/actions";
 import { MediaPicker } from "./admin/media-picker";
 
 const PRESETS = [
@@ -78,17 +78,33 @@ export function CoverPicker({ currentCover, onUpdate }: CoverPickerProps) {
     if (!aiPrompt) return;
     
     setIsGenerating(true);
-    // Simulação de geração por IA
-    // Em um cenário real, chamaria uma API como DALL-E ou Stable Diffusion
-    setTimeout(async () => {
+    try {
+      const result = await generateAICover(aiPrompt);
+      
+      if (result.success) {
+        setSelectedCover(result.url);
+        toast({
+          title: "Capa gerada com sucesso!",
+          status: "success",
+          duration: 5000,
+        });
+        if (onUpdate) onUpdate();
+      } else {
+        toast({
+          title: "Erro ao gerar imagem",
+          description: result.message,
+          status: "error",
+        });
+      }
+    } catch (error: any) {
       toast({
-        title: "IA solicitada!",
-        description: "Em um ambiente real, sua imagem seria gerada agora. Para esta demonstração, use os presets ou o upload.",
-        status: "info",
-        duration: 5000,
+        title: "Erro crítico",
+        description: error.message,
+        status: "error",
       });
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   return (

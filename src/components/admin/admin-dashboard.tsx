@@ -38,7 +38,7 @@ import {
   ButtonGroup,
   VStack,
 } from "@chakra-ui/react";
-import { deletePost, savePost, saveProfile, signOut } from "@/app/actions";
+import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem } from "@/types/content";
 import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash, Recycle } from "phosphor-react";
 import { StacksManagement } from "./stacks-management";
@@ -65,6 +65,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const [isSavingPost, startPostTransition] = useTransition();
   const [isDeletingPost, startDeleteTransition] = useTransition();
   const [isLoggingOut, startLogoutTransition] = useTransition();
+  const [isCommentPending, startCommentTransition] = useTransition();
   const [isDirty, setIsDirty] = useState(false);
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const safeProfileId = uuidRegex.test(profile.id ?? "") ? profile.id : "";
@@ -163,7 +164,28 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
         return;
       }
       toast({ title: "Projeto excluído com sucesso!", status: "success" });
-      setSelectedPost(null);
+    });
+  };
+  
+  const handleCommentStatus = (id: string, status: 'approved' | 'rejected') => {
+    startCommentTransition(async () => {
+      const result = await updateCommentStatus(id, status);
+      if (result.success) {
+        toast({ title: `Comentário ${status === 'approved' ? 'aprovado' : 'rejeitado'}!`, status: "success" });
+      } else {
+        toast({ title: result.message ?? "Erro ao processar comentário", status: "error" });
+      }
+    });
+  };
+
+  const handleDeleteComment = (id: string) => {
+    startCommentTransition(async () => {
+      const result = await removeCommentAction(id);
+      if (result.success) {
+        toast({ title: "Comentário excluído!", status: "success" });
+      } else {
+        toast({ title: result.message ?? "Erro ao excluir comentário", status: "error" });
+      }
     });
   };
 
@@ -609,11 +631,34 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                           </HStack>
                           <Text color="whiteAlpha.800" fontSize="sm">{comment.content}</Text>
                           <HStack mt={3} spacing={2}>
-                            <Button size="xs" colorScheme="green" variant="solid" isDisabled>
+                            <Button 
+                              size="xs" 
+                              colorScheme="green" 
+                              variant="solid" 
+                              isLoading={isCommentPending}
+                              onClick={() => handleCommentStatus(comment.id, 'approved')}
+                              isDisabled={comment.status === 'approved'}
+                            >
                               Aprovar
                             </Button>
-                            <Button size="xs" colorScheme="red" variant="ghost" isDisabled>
+                            <Button 
+                              size="xs" 
+                              colorScheme="orange" 
+                              variant="ghost"
+                              isLoading={isCommentPending}
+                              onClick={() => handleCommentStatus(comment.id, 'rejected')}
+                              isDisabled={comment.status === 'rejected'}
+                            >
                               Rejeitar
+                            </Button>
+                            <Button 
+                              size="xs" 
+                              colorScheme="red" 
+                              variant="ghost"
+                              isLoading={isCommentPending}
+                              onClick={() => handleDeleteComment(comment.id)}
+                            >
+                              Excluir
                             </Button>
                           </HStack>
                         </Box>
