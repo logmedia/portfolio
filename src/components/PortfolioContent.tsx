@@ -38,8 +38,8 @@ export function PortfolioContent({ profile, posts, stacks, searchParams }: Portf
           name: profile.name,
           role: profile.role ?? "",
           bio: profile.bio ?? "",
-          avatarUrl: profile.avatar_url ?? "",
-          coverUrl: profile.cover_url ?? "",
+          avatar_url: profile.avatar_url ?? "",
+          cover_url: profile.cover_url ?? "",
           socials: profile.socials
         }} />
         <SkillsCard skills={profile.skills} />

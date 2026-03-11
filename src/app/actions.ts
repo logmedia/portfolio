@@ -704,3 +704,134 @@ export async function deleteMedia(id: string, path: string) {
     return { success: false, message: "Erro crítico ao deletar mídia." };
   }
 }
+
+export async function adminUpdateUserStatus(targetUserId: string, newStatus: 'active' | 'blocked') {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autenticado." };
+
+    // Verificar se o usuário atual é admin
+    const { data: adminProfile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if ((adminProfile as any)?.role !== 'admin') {
+      return { success: false, message: "Acesso negado. Apenas administradores." };
+    }
+
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({ status: newStatus })
+      .eq("id", targetUserId);
+
+    if (error) return { success: false, message: "Erro ao atualizar status." };
+
+    revalidatePath("/explore");
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: "Erro crítico ao atualizar usuário." };
+  }
+}
+
+export async function adminDeleteUser(targetUserId: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autenticado." };
+
+    // Verificar se o usuário atual é admin
+    const { data: adminProfile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if ((adminProfile as any)?.role !== 'admin') {
+      return { success: false, message: "Acesso negado." };
+    }
+
+    // Deletar perfil (posts serão deletados em cascata se configurado, ou precisam ser lidados)
+    // No Supabase, se tiver cascata de delete está ok.
+    const { error } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("id", targetUserId);
+
+    if (error) return { success: false, message: "Erro ao deletar usuário." };
+
+    revalidatePath("/explore");
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: "Erro crítico ao deletar usuário." };
+  }
+}
+
+export async function adminSendNotification(targetUserId: string | null, title: string, content: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autenticado." };
+
+    // Verificar se o usuário atual é admin
+    const { data: adminProfile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if ((adminProfile as any)?.role !== 'admin') {
+      return { success: false, message: "Acesso negado." };
+    }
+
+    const { error } = await (supabase as any)
+      .from("notifications")
+      .insert({
+        user_id: targetUserId, // null significa global
+        title,
+        content,
+        type
+      });
+
+    if (error) return { success: false, message: "Erro ao enviar notificação." };
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: "Erro ao processar notificação." };
+  }
+}
+
+/**
+ * Atualiza campos específicos do perfil (sem usar form data se preferir)
+ */
+export async function updateProfile(data: Partial<{
+  name: string;
+  role: string;
+  bio: string;
+  avatar_url: string;
+  cover_url: string;
+  github_username: string;
+}>) {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, message: "Não autenticado" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(data as any)
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("updateProfile ERROR:", error);
+    return { success: false, message: "Erro ao atualizar perfil" };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/explore");
+  return { success: true };
+}

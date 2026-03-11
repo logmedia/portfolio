@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import type { Post, Profile, Comment, Stack } from "@/types/content";
+export type { Post, Profile, Comment, Stack };
 import type { Database } from "./types";
 
 const createPublicClient = () => {
@@ -120,26 +121,25 @@ export async function fetchProfile(userId?: string): Promise<Profile> {
 }
 
 /**
- * Versão do fetchProfile para ser usada no lado do servidor com autenticação
+ * Busca o perfil do administrador logado (Server-side)
  */
-export async function fetchAdminProfile(userId: string): Promise<Profile> {
+export async function fetchAdminProfile(): Promise<Profile | null> {
   try {
     const { createSupabaseServerClient } = await import("./server");
     const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
     
+    if (!user) return null;
+
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", userId)
+      .eq("id", user.id)
       .single();
 
-    if (error || !data) {
-      console.warn("Could not fetch admin profile, falling back to public fetch");
-      return fetchProfile(userId);
-    }
-
+    if (error || !data) return null;
+    
     const profileData = data as any;
-
     return {
       id: profileData.id,
       name: profileData.name,
@@ -147,19 +147,19 @@ export async function fetchAdminProfile(userId: string): Promise<Profile> {
       bio: profileData.bio ?? undefined,
       avatar_url: profileData.avatar_url ?? undefined,
       cover_url: profileData.cover_url ?? undefined,
-      socials: (profileData.socials as Profile["socials"]) ?? [],
-      stacks: (profileData.stacks as string[]) ?? [],
-      skills: (profileData.skills as any[]) ?? [],
+      socials: profileData.socials ?? [],
+      stacks: profileData.stacks ?? [],
+      skills: profileData.skills ?? [],
       github_username: profileData.github_username ?? undefined,
-    };
+    } as Profile;
   } catch (error) {
     console.error("fetchAdminProfile ERROR:", error);
-    return fetchProfile(userId);
+    return null;
   }
 }
 
 /**
- * Busca todos os perfis cadastrados que possuem algum projeto (ou todos)
+ * Busca todos os perfis ativos e configurados para o diretório
  */
 export async function fetchAllProfiles(): Promise<Profile[]> {
   try {
@@ -167,12 +167,34 @@ export async function fetchAllProfiles(): Promise<Profile[]> {
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
+      .eq("status", "active")
+      .not("github_username", "is", null)
+      .not("name", "is", null)
       .order("name", { ascending: true });
 
     if (error || !data) return [];
     return data as Profile[];
   } catch (error) {
     console.error("fetchAllProfiles ERROR:", error);
+    return [];
+  }
+}
+
+/**
+ * Busca todos os usuários (apenas para Admins)
+ */
+export async function fetchAdminUsers(): Promise<Profile[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error || !data) return [];
+    return data as Profile[];
+  } catch (error) {
+    console.error("fetchAdminUsers ERROR:", error);
     return [];
   }
 }
@@ -411,5 +433,33 @@ export async function fetchRecentComments(limit = 20): Promise<Comment[]> {
   } catch (error) {
     console.error("fetchRecentComments", error);
     return fallbackComments.slice(0, limit);
+  }
+}
+
+/**
+ * Busca notificações do usuário atual + globais
+ */
+export async function fetchNotifications(): Promise<any[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    let query = supabase
+      .from("notifications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (user) {
+      query = query.or(`user_id.eq.${user.id},user_id.is.null`);
+    } else {
+      query = query.is("user_id", null);
+    }
+
+    const { data, error } = await query;
+    if (error || !data) return [];
+    return data;
+  } catch (error) {
+    console.error("fetchNotifications ERROR:", error);
+    return [];
   }
 }

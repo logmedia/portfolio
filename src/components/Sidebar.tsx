@@ -7,8 +7,8 @@ interface Profile {
   name: string;
   role: string;
   bio?: string;
-  avatarUrl: string;
-  coverUrl: string;
+  avatar_url: string;
+  cover_url: string;
   socials?: { label: string; url: string }[];
 }
 
@@ -16,8 +16,8 @@ const DEFAULT_PROFILE: Profile = {
   name: "José Renato",
   role: "Web Developer",
   bio: "Crio experiências web modernas focadas em performance e design.",
-  avatarUrl: "https://avatars.githubusercontent.com/u/99501874?v=4",
-  coverUrl:
+  avatar_url: "https://avatars.githubusercontent.com/u/99501874?v=4",
+  cover_url:
     "https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?q=60&w=500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 };
 
@@ -33,7 +33,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ profile }: SidebarProps) {
-  const { name, role, bio, avatarUrl, coverUrl, socials } = { ...DEFAULT_PROFILE, ...profile };
+  const { name, role, bio, avatar_url, cover_url, socials } = { ...DEFAULT_PROFILE, ...profile };
 
   const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
   const borderColor = useColorModeValue("white", "whiteAlpha.100");
@@ -53,12 +53,12 @@ export function Sidebar({ profile }: SidebarProps) {
       borderColor={borderColor}
       mb={6}
     >
-      <Box h="120px" bgImage={`url(${coverUrl})`} bgSize="cover" bgPos="center" />
+      <Box h="120px" bgImage={`url(${cover_url})`} bgSize="cover" bgPos="center" />
       
       <Stack spacing={4} align="center" px={6} pb={8} position="relative">
         <Avatar
           size="2xl"
-          src={avatarUrl}
+          src={avatar_url}
           name={name}
           mt="-60px"
           border="4px solid"

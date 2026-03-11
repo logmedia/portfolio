@@ -4,14 +4,19 @@ import { Flex, HStack, Link as ChakraLink, IconButton, useColorMode, Menu, MenuB
 import { useState, useEffect } from "react";
 import NextLink from "next/link";
 import Image from "next/image";
-import { Moon, Sun, List } from "phosphor-react";
+import { Moon, Sun, List, ShieldCheck } from "phosphor-react";
+import { NotificationsDropdown } from "./NotificationsDropdown";
+import { fetchAdminProfile } from "@/lib/supabase/queries";
+import { Profile } from "@/lib/supabase/queries";
 
 export function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
   const [mounted, setMounted] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    fetchAdminProfile().then(data => setProfile(data as Profile));
   }, []);
 
   if (!mounted) {
@@ -62,6 +67,14 @@ export function Header() {
             Meu Painel
           </ChakraLink>
         </NextLink>
+        {profile?.role === 'admin' && (
+          <NextLink href="/admin/users" passHref legacyBehavior>
+            <ChakraLink fontWeight="bold" display="flex" alignItems="center" gap={1} color="brand.500" _hover={{ opacity: 0.8, textDecoration: "none" }} transition="opacity 0.2s">
+              <ShieldCheck size={18} />
+              Gestão
+            </ChakraLink>
+          </NextLink>
+        )}
       </HStack>
 
       <HStack spacing={4}>
@@ -76,6 +89,8 @@ export function Header() {
           _hover={{ bg: colorMode === "light" ? "blackAlpha.100" : "whiteAlpha.200" }}
           transition="all 0.2s"
         />
+
+        {profile && <NotificationsDropdown />}
 
         <Button
           as={NextLink}
@@ -118,6 +133,13 @@ export function Header() {
               <NextLink href="/admin" passHref legacyBehavior>
                 <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Meu Painel</MenuItem>
               </NextLink>
+              {profile?.role === 'admin' && (
+                <NextLink href="/admin/users" passHref legacyBehavior>
+                  <MenuItem color="brand.500" fontWeight="bold" bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>
+                    Gestão Geral
+                  </MenuItem>
+                </NextLink>
+              )}
             </MenuList>
           </Menu>
         </Box>

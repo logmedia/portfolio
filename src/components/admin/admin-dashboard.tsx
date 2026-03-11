@@ -49,6 +49,7 @@ import { GalleryManager } from "./gallery-manager";
 import { useEffect } from "react";
 import { ModernEditor } from "./modern-editor";
 import { GithubActivity } from "./github-activity";
+import { CoverPicker } from "../CoverPicker";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -101,6 +102,15 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   // Auxiliar para verificar se a stack está selecionada no post
   const isStackSelected = (stackId: string) => {
     return selectedPost?.stacks?.some(s => s.id === stackId) ?? false;
+  };
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   };
 
   const pendingComments = useMemo(
@@ -215,14 +225,16 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                                 setIsDirty(true);
                               }} 
                             />
-                            <MediaPicker 
-                              label="Capa do Perfil" 
-                              value={profileCoverUrl} 
-                              onChange={(url) => {
-                                setProfileCoverUrl(url);
-                                setIsDirty(true);
-                              }} 
-                            />
+                            <VStack align="start" spacing={2}>
+                              <FormLabel mb={0}>Capa do Perfil</FormLabel>
+                              <CoverPicker 
+                                currentCover={profileCoverUrl} 
+                                onUpdate={() => {
+                                  // Opcional: recarregar dados ou apenas deixar o form cuidar
+                                }}
+                              />
+                              <Text fontSize="xs" color="whiteAlpha.400">Presets modernos, Upload ou IA</Text>
+                            </VStack>
                           </Grid>
                           {/* Hidden inputs to maintain form functionality with old schema */}
                           <input type="hidden" name="avatarUrl" value={profileAvatarUrl} />
@@ -341,7 +353,21 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
 
                           <FormControl isRequired>
                             <FormLabel fontSize="sm">Título do Projeto</FormLabel>
-                            <Input name="title" defaultValue={selectedPost?.title ?? ""} bg="blackAlpha.300" />
+                            <Input 
+                              name="title" 
+                              defaultValue={selectedPost?.title ?? ""} 
+                              bg="blackAlpha.300"
+                              onChange={(e) => {
+                                setIsDirty(true);
+                                if (!selectedPost) {
+                                  // Apenas auto-gera se for um novo projeto
+                                  const slugInput = document.querySelector('input[name="slug"]') as HTMLInputElement;
+                                  if (slugInput) {
+                                    slugInput.value = generateSlug(e.target.value);
+                                  }
+                                }
+                              }}
+                            />
                           </FormControl>
 
                           <FormControl>
