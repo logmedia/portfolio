@@ -1,6 +1,6 @@
 "use client";
 
-import { Flex, HStack, Link as ChakraLink, IconButton, useColorMode, Menu, MenuButton, MenuList, MenuItem, Box } from "@chakra-ui/react";
+import { Flex, HStack, Link as ChakraLink, IconButton, useColorMode, Menu, MenuButton, MenuList, MenuItem, Box, Button } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import NextLink from "next/link";
 import Image from "next/image";
