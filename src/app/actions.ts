@@ -591,9 +591,13 @@ export async function getMediaLibrary() {
   console.log("[getMediaLibrary] Start");
   try {
     const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autorizado." };
+
     const { data, error } = await (supabase as any)
       .from("media")
       .select("*")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -633,7 +637,7 @@ export async function uploadMedia(formData: FormData) {
     const buffer = Buffer.from(arrayBuffer);
 
     const now = new Date();
-    const path = `uploads/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const path = `uploads/${user.id}/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
     console.log("[uploadMedia] Uploading to storage path:", path);
 
@@ -690,6 +694,10 @@ export async function deleteMedia(id: string, path: string) {
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, message: "Não autorizado." };
+
+    if (!path.startsWith(`uploads/${user.id}/`)) {
+      return { success: false, message: "Você não tem permissão para deletar este arquivo." };
+    }
 
     // 1. Deletar do Storage
     const { error: storageError } = await supabase.storage.from("media").remove([path]);
@@ -909,7 +917,7 @@ export async function generateAICover(prompt: string) {
     // 2. Upload to Supabase Storage
     const now = new Date();
     const filename = `ai-cover-${Date.now()}.jpg`;
-    const path = `uploads/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/ai/${filename}`;
+    const path = `uploads/${user.id}/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/ai/${filename}`;
 
     const { error: storageError } = await supabase.storage
       .from("media")
