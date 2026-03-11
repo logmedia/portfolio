@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Moon, Sun, List, ShieldCheck } from "phosphor-react";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { Profile } from "@/lib/supabase/queries";
+import type { Profile } from "@/types/content";
 
 export function Header() {
   const { colorMode, toggleColorMode } = useColorMode();

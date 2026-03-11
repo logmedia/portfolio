@@ -118,43 +118,6 @@ export async function fetchProfile(userId?: string): Promise<Profile> {
   }
 }
 
-/**
- * Busca o perfil do administrador logado (Server-side)
- */
-export async function fetchAdminProfile(): Promise<Profile | null> {
-  try {
-    const { createSupabaseServerClient } = await import("./server");
-    const supabase = await createSupabaseServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) return null;
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    if (error || !data) return null;
-    
-    const profileData = data as any;
-    return {
-      id: profileData.id,
-      name: profileData.name,
-      role: profileData.role ?? undefined,
-      bio: profileData.bio ?? undefined,
-      avatar_url: profileData.avatar_url ?? undefined,
-      cover_url: profileData.cover_url ?? undefined,
-      socials: profileData.socials ?? [],
-      stacks: profileData.stacks ?? [],
-      skills: profileData.skills ?? [],
-      github_username: profileData.github_username ?? undefined,
-    } as Profile;
-  } catch (error) {
-    console.error("fetchAdminProfile ERROR:", error);
-    return null;
-  }
-}
 
 /**
  * Busca todos os perfis ativos e configurados para o diretório
@@ -178,24 +141,6 @@ export async function fetchAllProfiles(): Promise<Profile[]> {
   }
 }
 
-/**
- * Busca todos os usuários (apenas para Admins)
- */
-export async function fetchAdminUsers(): Promise<Profile[]> {
-  try {
-    const supabase = createPublicClient();
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error || !data) return [];
-    return data as Profile[];
-  } catch (error) {
-    console.error("fetchAdminUsers ERROR:", error);
-    return [];
-  }
-}
 
 /**
  * Busca um perfil específico pelo handle (github_username ou ID se o handle parecer um UUID)
@@ -311,39 +256,6 @@ export async function fetchPostsByAuthor(authorId: string): Promise<Post[]> {
   }
 }
 
-/**
- * Versão do fetchPosts para ser usada no lado do servidor com autenticação e filtro de autor
- */
-export async function fetchAdminPosts(userId: string): Promise<Post[]> {
-  try {
-    const { createSupabaseServerClient } = await import("./server");
-    const supabase = await createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from("posts")
-      .select(`
-        *,
-        stacks:post_stacks(
-          stack:stacks(*)
-        )
-      `)
-      .eq("author_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error || !data) {
-      console.warn("Could not fetch admin posts", error);
-      return [];
-    }
-
-    return data.map((post: any) => ({
-      ...post,
-      stacks: post.stacks?.map((ps: any) => ps.stack).filter(Boolean) || []
-    })) as Post[];
-  } catch (error) {
-    console.error("fetchAdminPosts ERROR:", error);
-    return [];
-  }
-}
 
 export async function fetchPostBySlug(slug: string): Promise<Post | null> {
   try {

@@ -1,5 +1,7 @@
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
-import { fetchPosts, fetchAdminPosts, fetchAdminProfile, fetchRecentComments, fetchStacks } from "@/lib/supabase/queries";
+import { fetchAdminPosts, fetchAdminProfile } from "@/lib/supabase/admin-queries";
+import { fetchRecentComments, fetchStacks } from "@/lib/supabase/queries";
+import type { Profile } from "@/types/content";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { syncProfileWithGitHub } from "@/app/actions";
 import { redirect } from "next/navigation";
@@ -16,12 +18,18 @@ export default async function AdminPage() {
     }
 
     let profile = await fetchAdminProfile(user.id);
+    if (!profile) {
+      redirect("/login");
+    }
 
     // Sincronizar com GitHub se houver um username vinculado
     if (profile.github_username) {
       await syncProfileWithGitHub(profile.github_username);
       // Re-fetch para ter os dados atualizados no dashboard
       profile = await fetchAdminProfile(user.id);
+      if (!profile) {
+        redirect("/login");
+      }
     }
 
     const [posts, comments, stacks] = await Promise.all([
@@ -30,7 +38,7 @@ export default async function AdminPage() {
       fetchStacks(),
     ]);
 
-    return <AdminDashboard profile={profile} posts={posts} comments={comments} stacks={stacks} />;
+    return <AdminDashboard profile={profile as Profile} posts={posts} comments={comments} stacks={stacks} />;
   } catch (error) {
     console.error("AdminPage error:", error);
     redirect("/login");

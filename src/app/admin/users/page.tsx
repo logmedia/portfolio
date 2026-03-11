@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { Box } from "@chakra-ui/react";
-import { fetchAdminUsers, fetchAdminProfile } from "@/lib/supabase/queries";
+import { fetchAdminUsers, fetchAdminProfile } from "@/lib/supabase/admin-queries";
 import { UserManagementContent } from "@/components/UserManagementContent";
 import { redirect } from "next/navigation";
 
