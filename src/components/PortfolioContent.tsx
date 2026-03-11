@@ -23,6 +23,16 @@ export function PortfolioContent({ profile, posts, stacks, searchParams }: Portf
     ? posts.filter(post => post.stacks?.some((s: any) => s.id === searchParams.stack))
     : posts;
 
+  // Filtrar apenas as stacks que realmente existem nos projetos do usuário
+  const activeStackIds = new Set<string>();
+  posts.forEach(post => {
+    post.stacks?.forEach((s: any) => {
+      if (s.id) activeStackIds.add(s.id);
+    });
+  });
+  
+  const activeStacks = stacks.filter(stack => activeStackIds.has(stack.id));
+
   return (
     <Box
       maxW="70rem"
@@ -51,7 +61,7 @@ export function PortfolioContent({ profile, posts, stacks, searchParams }: Portf
           <FeedTitle />
           
           <Suspense fallback={null}>
-            <StackFilter stacks={stacks} />
+            <StackFilter stacks={activeStacks} />
           </Suspense>
 
           {filteredPosts.map(post => (
