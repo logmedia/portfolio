@@ -20,6 +20,7 @@ export type Profile = {
   socials?: SocialLink[];
   stacks?: string[];
   skills?: any[];
+  github_username?: string;
 };
 
 export type GalleryItem = {

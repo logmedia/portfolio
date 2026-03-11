@@ -20,9 +20,11 @@ import {
   InputGroup,
   InputRightElement,
   IconButton,
+  HStack,
+  Divider,
 } from "@chakra-ui/react";
-import { Lock, Envelope, Eye, EyeSlash, Terminal } from "phosphor-react";
-import { signIn } from "@/app/actions";
+import { Lock, Envelope, Eye, EyeSlash, Terminal, GithubLogo } from "phosphor-react";
+import { signIn, signInWithGitHub } from "@/app/actions";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -58,6 +60,26 @@ export default function LoginPage() {
       
       router.push("/admin");
       router.refresh();
+    });
+  };
+
+  const handleGitHubLogin = () => {
+    startTransition(async () => {
+      const result = await signInWithGitHub();
+      if (!result.success) {
+        toast({
+          title: "Erro ao conectar com GitHub",
+          description: result.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+      
+      if (result.url) {
+        window.location.href = result.url;
+      }
     });
   };
 
@@ -169,6 +191,27 @@ export default function LoginPage() {
                     boxShadow="0 4px 15px rgba(59, 130, 246, 0.3)"
                   >
                     Iniciar Sessão_
+                  </Button>
+
+                  <HStack px={4}>
+                    <Divider borderColor="whiteAlpha.100" />
+                    <Text fontSize="xs" color="whiteAlpha.400" whiteSpace="nowrap">OU ACESSAR COM</Text>
+                    <Divider borderColor="whiteAlpha.100" />
+                  </HStack>
+
+                  <Button
+                    leftIcon={<Icon as={GithubLogo} weight="fill" />}
+                    onClick={handleGitHubLogin}
+                    variant="outline"
+                    size="lg"
+                    borderRadius="xl"
+                    h="60px"
+                    borderColor="whiteAlpha.200"
+                    _hover={{ bg: "whiteAlpha.100", borderColor: "whiteAlpha.300" }}
+                    isLoading={isPending}
+                    fontSize="md"
+                  >
+                    GitHub_
                   </Button>
                 </Stack>
               </form>

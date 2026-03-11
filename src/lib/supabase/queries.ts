@@ -105,6 +105,7 @@ export async function fetchProfile(): Promise<Profile> {
       socials: (profileData.socials as Profile["socials"]) ?? [],
       stacks: (profileData.stacks as string[]) ?? [],
       skills: (profileData.skills as any[]) ?? [],
+      github_username: profileData.github_username ?? undefined,
     };
   } catch (error) {
     console.error("fetchProfile ERROR:", error);

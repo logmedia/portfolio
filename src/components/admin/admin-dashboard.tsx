@@ -48,6 +48,7 @@ import { MediaPicker } from "./media-picker";
 import { GalleryManager } from "./gallery-manager";
 import { useEffect } from "react";
 import { ModernEditor } from "./modern-editor";
+import { GithubActivity } from "./github-activity";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -205,10 +206,14 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <FormLabel>Avatar URL</FormLabel>
                             <Input name="avatarUrl" defaultValue={profile.avatar_url ?? ""} bg="blackAlpha.300" />
                           </FormControl>
-                          <FormControl>
-                            <FormLabel>Capa URL</FormLabel>
-                            <Input name="coverUrl" defaultValue={profile.cover_url ?? ""} bg="blackAlpha.300" />
-                          </FormControl>
+                           <FormControl>
+                             <FormLabel>Capa URL</FormLabel>
+                             <Input name="coverUrl" defaultValue={profile.cover_url ?? ""} bg="blackAlpha.300" />
+                           </FormControl>
+                           <FormControl>
+                             <FormLabel>GitHub Username (para gráfico)</FormLabel>
+                             <Input name="github_username" defaultValue={(profile as any).github_username ?? ""} placeholder="ex: josh" bg="blackAlpha.300" />
+                           </FormControl>
                           <FormControl>
                             <FormLabel>Redes sociais</FormLabel>
                             <Textarea
@@ -251,16 +256,20 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                 <GridItem>
                   <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                     <CardBody>
-                      <ChakraStack spacing={4}>
-                        <Heading size="md">Dashboard de Controle</Heading>
-                        <Text color="whiteAlpha.700" fontSize="sm">
-                          Configure URLs públicas hospedadas no Supabase Storage ou em CDNs confiáveis.
-                        </Text>
-                        <Divider borderColor="whiteAlpha.200" />
-                        <Text color="whiteAlpha.700" fontSize="sm">
-                          Dica: Use ícones do Phosphor para uma estética consistente em todo o site.
-                        </Text>
-                      </ChakraStack>
+                       <ChakraStack spacing={4}>
+                         <Heading size="md">Dashboard de Controle</Heading>
+                         <Text color="whiteAlpha.700" fontSize="sm">
+                           Configure URLs públicas hospedadas no Supabase Storage ou em CDNs confiáveis.
+                         </Text>
+                         <Divider borderColor="whiteAlpha.200" />
+                         
+                         <GithubActivity username={(profile as any).github_username} />
+
+                         <Divider borderColor="whiteAlpha.200" />
+                         <Text color="whiteAlpha.700" fontSize="sm">
+                           Dica: Use ícones do Phosphor para uma estética consistente em todo o site.
+                         </Text>
+                       </ChakraStack>
                     </CardBody>
                   </Card>
                 </GridItem>

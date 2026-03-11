@@ -455,6 +455,67 @@ export async function deleteStack(id: string) {
   }
 }
 
+export async function signInWithGitHub() {
+  try {
+    const supabase = await createSupabaseServerClient();
+    
+    // In a server action,เราต้อง handle redirect specifically for OAuth
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      console.error("signInWithGitHub error:", error);
+      return { success: false, message: error.message };
+    }
+
+    if (data.url) {
+      return { success: true, url: data.url };
+    }
+
+    return { success: false, message: "Não foi possível gerar a URL de autenticação." };
+  } catch (error: any) {
+    console.error("signInWithGitHub fatal error:", error);
+    return { success: false, message: "Erro inesperado ao iniciar login com GitHub." };
+  }
+}
+
+export async function syncProfileWithGitHub(githubUsername: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !githubUsername) return { success: false, message: "Não autenticado ou username ausente" };
+
+    // Buscar dados mais recentes do GitHub API
+    const response = await fetch(`https://api.github.com/users/${githubUsername}`);
+    if (!response.ok) {
+      console.warn("Could not fetch data from GitHub API", response.statusText);
+      return { success: false, message: "Erro ao buscar dados do GitHub" };
+    }
+
+    const githubData = await response.json();
+
+    // Atualizar perfil com dados novos do Git
+    const { error } = await (supabase.from("profiles").update as any)({
+      name: githubData.name || githubData.login,
+      avatar_url: githubData.avatar_url,
+      bio: githubData.bio || null,
+      updated_at: new Date().toISOString(),
+    } as any).eq("id", user.id);
+
+    if (error) throw error;
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error("syncProfileWithGitHub ERROR:", error);
+    return { success: false, message: error.message };
+  }
+}
+
 export async function signIn(formData: FormData) {
   try {
     const email = formData.get("email") as string;
