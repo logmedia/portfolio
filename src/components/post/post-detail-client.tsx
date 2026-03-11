@@ -30,6 +30,7 @@ import {
 import { keyframes } from "@emotion/react";
 import { ArrowLeft, BookOpen, Clock, Crosshair, Code, GitMerge, ChartBar, Globe } from "phosphor-react";
 import { getIconComponent } from "@/lib/utils/icons";
+import Image from "next/image";
 
 import type { Comment, Post, Profile, GalleryItem } from "@/types/content";
 import { createComment } from "@/app/actions";
@@ -242,8 +243,8 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
             {/* Left Content Column */}
             <Box flex="1" p={{ base: 6, md: 10 }} borderRight={{ lg: "1px solid" }} borderColor={borderColor}>
               {post.hero_image_url && (
-                <Box borderRadius="2xl" overflow="hidden" mb={10} border="1px solid" borderColor={borderColor}>
-                  <img src={post.hero_image_url} alt={post.title} style={{ width: "100%", height: "auto" }} />
+                <Box borderRadius="2xl" overflow="hidden" mb={10} border="1px solid" borderColor={borderColor} position="relative" w="100%" h={{ base: "250px", md: "400px" }}>
+                  <Image src={post.hero_image_url} alt={post.title} fill style={{ objectFit: "cover" }} sizes="(max-width: 768px) 100vw, 800px" priority />
                 </Box>
               )}
 

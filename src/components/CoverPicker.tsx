@@ -77,11 +77,27 @@ export function CoverPicker({ currentCover, onUpdate }: CoverPickerProps) {
   const handleGenerateAI = async () => {
     if (!aiPrompt) return;
     
+    // Basic frontend rate limiting: 1 request per minute
+    const lastGen = localStorage.getItem('last_ai_gen');
+    if (lastGen) {
+      const diff = Date.now() - parseInt(lastGen);
+      if (diff < 60000) {
+        toast({
+          title: "Limite atingido",
+          description: `Por favor, aguarde ${Math.ceil((60000 - diff) / 1000)}s antes de gerar outra imagem.`,
+          status: "warning",
+          duration: 3000,
+        });
+        return;
+      }
+    }
+    
     setIsGenerating(true);
     try {
       const result = await generateAICover(aiPrompt);
       
       if (result.success) {
+        localStorage.setItem('last_ai_gen', Date.now().toString());
         setSelectedCover(result.url);
         toast({
           title: "Capa gerada com sucesso!",

@@ -1,7 +1,8 @@
 "use client";
 
-import { Box, Flex, Avatar, Text, Link, Icon, Stack, HStack, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, Text, Link, Icon, Stack, HStack, useColorModeValue } from "@chakra-ui/react";
 import { GithubLogo, LinkedinLogo, InstagramLogo, Globe } from "phosphor-react";
+import Image from "next/image";
 
 interface Profile {
   name: string;
@@ -53,21 +54,42 @@ export function Sidebar({ profile }: SidebarProps) {
       borderColor={borderColor}
       mb={6}
     >
-      <Box h="120px" bgImage={`url(${cover_url})`} bgSize="cover" bgPos="center" />
+      <Box h="120px" w="full" position="relative">
+        <Image
+          src={cover_url}
+          alt={`Cover image for ${name}`}
+          fill
+          style={{ objectFit: "cover", objectPosition: "center" }}
+          sizes="(max-width: 768px) 100vw, 400px"
+          priority
+        />
+      </Box>
       
       <Stack spacing={4} align="center" px={6} pb={8} position="relative">
-        <Avatar
-          size="2xl"
-          src={avatar_url}
-          name={name}
+        <Box
           mt="-60px"
+          w="128px"
+          h="128px"
+          borderRadius="full"
           border="4px solid"
-          borderColor="brand.900" 
+          borderColor="brand.900"
           outline="2px solid"
           outlineColor="brand.500"
           bg="brand.800"
           boxShadow="xl"
-        />
+          position="relative"
+          overflow="hidden"
+          flexShrink={0}
+        >
+          <Image
+            src={avatar_url}
+            alt={`${name} avatar`}
+            fill
+            style={{ objectFit: "cover" }}
+            sizes="128px"
+            priority
+          />
+        </Box>
         
         <Stack spacing={1} align="center">
           <Text color={textColor} fontWeight="bold" fontSize="xl" lineHeight="1.2">

@@ -37,6 +37,7 @@ import {
   PopoverCloseButton,
   ButtonGroup,
   VStack,
+  Spinner,
 } from "@chakra-ui/react";
 import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem } from "@/types/content";
@@ -47,7 +48,17 @@ import { StackSelector } from "./stack-selector";
 import { MediaPicker } from "./media-picker";
 import { GalleryManager } from "./gallery-manager";
 import { useEffect } from "react";
-import { ModernEditor } from "./modern-editor";
+import dynamic from "next/dynamic";
+
+const ModernEditor = dynamic(() => import("./modern-editor").then(mod => mod.ModernEditor), {
+  ssr: false,
+  loading: () => (
+    <Box p={20} textAlign="center">
+      <Spinner size="xl" color="brand.500" thickness="4px" />
+      <Text mt={4} color="gray.400" fontFamily="monospace">Carregando editor avançado...</Text>
+    </Box>
+  )
+});
 import { GithubActivity } from "./github-activity";
 import { CoverPicker } from "../CoverPicker";
 

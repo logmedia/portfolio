@@ -7,6 +7,7 @@ import type { Post as PostType, Profile } from "@/types/content";
 
 import { BookOpen, Clock, Crosshair, Code, GitMerge, ChartBar } from "phosphor-react";
 import { getIconComponent } from "@/lib/utils/icons";
+import Image from "next/image";
 
 interface PostProps {
   post: PostType;
@@ -100,10 +101,12 @@ export function Post({ post, profile }: PostProps) {
           <VStack spacing={6} align="stretch">
             {/* Small Hero Image */}
             <Box h="120px" borderRadius="xl" overflow="hidden" position="relative" border="1px solid" borderColor={borderColor}>
-              <img 
+              <Image 
                 src={imgSrc} 
                 alt={`Capa do post ${post.title}`}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                fill
+                style={{ objectFit: "cover" }}
+                sizes="(max-width: 768px) 100vw, 260px"
                 onError={() => setImgSrc("/nano_banana.png")}
               />
             </Box>
