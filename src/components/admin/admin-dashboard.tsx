@@ -73,6 +73,10 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [postContent, setPostContent] = useState("");
+  
+  // Profile media state
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState(profile.avatar_url ?? "");
+  const [profileCoverUrl, setProfileCoverUrl] = useState(profile.cover_url ?? "");
 
   // Sincronizar stacks quando o post selecionado muda
   useEffect(() => {
@@ -202,14 +206,27 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <FormLabel>Bio</FormLabel>
                             <Textarea name="bio" defaultValue={profile.bio ?? ""} rows={4} bg="blackAlpha.300" />
                           </FormControl>
-                          <FormControl>
-                            <FormLabel>Avatar URL</FormLabel>
-                            <Input name="avatarUrl" defaultValue={profile.avatar_url ?? ""} bg="blackAlpha.300" />
-                          </FormControl>
-                           <FormControl>
-                             <FormLabel>Capa URL</FormLabel>
-                             <Input name="coverUrl" defaultValue={profile.cover_url ?? ""} bg="blackAlpha.300" />
-                           </FormControl>
+                          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
+                            <MediaPicker 
+                              label="Avatar (Foto de Perfil)" 
+                              value={profileAvatarUrl} 
+                              onChange={(url) => {
+                                setProfileAvatarUrl(url);
+                                setIsDirty(true);
+                              }} 
+                            />
+                            <MediaPicker 
+                              label="Capa do Perfil" 
+                              value={profileCoverUrl} 
+                              onChange={(url) => {
+                                setProfileCoverUrl(url);
+                                setIsDirty(true);
+                              }} 
+                            />
+                          </Grid>
+                          {/* Hidden inputs to maintain form functionality with old schema */}
+                          <input type="hidden" name="avatarUrl" value={profileAvatarUrl} />
+                          <input type="hidden" name="coverUrl" value={profileCoverUrl} />
                            <FormControl>
                              <FormLabel>GitHub Username (para gráfico)</FormLabel>
                              <Input name="github_username" defaultValue={(profile as any).github_username ?? ""} placeholder="ex: josh" bg="blackAlpha.300" />
