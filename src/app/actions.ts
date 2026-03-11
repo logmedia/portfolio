@@ -226,6 +226,19 @@ export async function savePost(formData: FormData) {
     // Pegar IDs das stacks do formData (enviados como stacks[])
     const selectedStackIds = formData.getAll("stacks[]").map(id => id.toString());
 
+    // Segurança: Se for um update (tem ID), validar se o post pertence ao usuário
+    if (parsed.data.id) {
+      const { data: existingPost } = await supabase
+        .from("posts")
+        .select("author_id")
+        .eq("id", parsed.data.id)
+        .single();
+      
+      if (existingPost && (existingPost as any).author_id !== user.id) {
+        return { success: false, message: "Você não tem permissão para editar este projeto." };
+      }
+    }
+
     const payload = {
       id: parsed.data.id || undefined,
       title: parsed.data.title,
@@ -247,7 +260,7 @@ export async function savePost(formData: FormData) {
 
     const { data: post, error } = await (supabase as any)
       .from("posts")
-      .upsert(payload as any, { onConflict: "slug" })
+      .upsert(payload as any, { onConflict: "id" })
       .select()
       .single();
 

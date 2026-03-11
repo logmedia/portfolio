@@ -203,6 +203,40 @@ export async function fetchPosts(): Promise<Post[]> {
   }
 }
 
+/**
+ * Versão do fetchPosts para ser usada no lado do servidor com autenticação e filtro de autor
+ */
+export async function fetchAdminPosts(userId: string): Promise<Post[]> {
+  try {
+    const { createSupabaseServerClient } = await import("./server");
+    const supabase = await createSupabaseServerClient();
+    
+    const { data, error } = await supabase
+      .from("posts")
+      .select(`
+        *,
+        stacks:post_stacks(
+          stack:stacks(*)
+        )
+      `)
+      .eq("author_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error || !data) {
+      console.warn("Could not fetch admin posts", error);
+      return [];
+    }
+
+    return data.map((post: any) => ({
+      ...post,
+      stacks: post.stacks?.map((ps: any) => ps.stack).filter(Boolean) || []
+    })) as Post[];
+  } catch (error) {
+    console.error("fetchAdminPosts ERROR:", error);
+    return [];
+  }
+}
+
 export async function fetchPostBySlug(slug: string): Promise<Post | null> {
   try {
     const supabase = createPublicClient();

@@ -1,5 +1,5 @@
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
-import { fetchPosts, fetchAdminProfile, fetchRecentComments, fetchStacks } from "@/lib/supabase/queries";
+import { fetchPosts, fetchAdminPosts, fetchAdminProfile, fetchRecentComments, fetchStacks } from "@/lib/supabase/queries";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { syncProfileWithGitHub } from "@/app/actions";
 import { redirect } from "next/navigation";
@@ -25,7 +25,7 @@ export default async function AdminPage() {
     }
 
     const [posts, comments, stacks] = await Promise.all([
-      fetchPosts(),
+      fetchAdminPosts(user.id),
       fetchRecentComments(),
       fetchStacks(),
     ]);
