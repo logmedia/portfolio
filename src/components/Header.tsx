@@ -54,22 +54,12 @@ export function Header() {
       <HStack spacing={8} as="nav" display={{ base: "none", md: "flex" }}>
         <NextLink href="/" passHref legacyBehavior>
           <ChakraLink fontWeight="bold" color={colorMode === "light" ? "gray.800" : "gray.100"} _hover={{ color: "brand.500", textDecoration: "none" }} transition="color 0.2s">
-            Início
+            Explorar
           </ChakraLink>
         </NextLink>
-        <NextLink href="#" passHref legacyBehavior>
+        <NextLink href="/admin" passHref legacyBehavior>
           <ChakraLink fontWeight="bold" color={colorMode === "light" ? "gray.800" : "gray.100"} _hover={{ color: "brand.500", textDecoration: "none" }} transition="color 0.2s">
-            Projetos
-          </ChakraLink>
-        </NextLink>
-        <NextLink href="#" passHref legacyBehavior>
-          <ChakraLink fontWeight="bold" color={colorMode === "light" ? "gray.800" : "gray.100"} _hover={{ color: "brand.500", textDecoration: "none" }} transition="color 0.2s">
-            Sobre
-          </ChakraLink>
-        </NextLink>
-        <NextLink href="#" passHref legacyBehavior>
-          <ChakraLink fontWeight="bold" color={colorMode === "light" ? "gray.800" : "gray.100"} _hover={{ color: "brand.500", textDecoration: "none" }} transition="color 0.2s">
-            Contato
+            Meu Painel
           </ChakraLink>
         </NextLink>
       </HStack>

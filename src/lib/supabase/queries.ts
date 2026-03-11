@@ -158,6 +158,64 @@ export async function fetchAdminProfile(userId: string): Promise<Profile> {
   }
 }
 
+/**
+ * Busca todos os perfis cadastrados que possuem algum projeto (ou todos)
+ */
+export async function fetchAllProfiles(): Promise<Profile[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (error || !data) return [];
+    return data as Profile[];
+  } catch (error) {
+    console.error("fetchAllProfiles ERROR:", error);
+    return [];
+  }
+}
+
+/**
+ * Busca um perfil específico pelo handle (github_username ou ID se o handle parecer um UUID)
+ */
+export async function fetchProfileByHandle(handle: string): Promise<Profile | null> {
+  try {
+    const supabase = createPublicClient();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(handle);
+    
+    let query = supabase.from("profiles").select("*");
+    
+    if (isUuid) {
+      query = query.eq("id", handle);
+    } else {
+      query = query.eq("github_username", handle);
+    }
+    
+    const { data, error } = await query.single();
+
+    if (error || !data) return null;
+
+    const profileData = data as any;
+    return {
+      id: profileData.id,
+      name: profileData.name,
+      role: profileData.role ?? undefined,
+      bio: profileData.bio ?? undefined,
+      avatar_url: profileData.avatar_url ?? undefined,
+      cover_url: profileData.cover_url ?? undefined,
+      socials: (profileData.socials as Profile["socials"]) ?? [],
+      stacks: (profileData.stacks as string[]) ?? [],
+      skills: (profileData.skills as any[]) ?? [],
+      github_username: profileData.github_username ?? undefined,
+    };
+  } catch (error) {
+    console.error("fetchProfileByHandle ERROR:", error);
+    return null;
+  }
+}
+
 export async function fetchStacks(): Promise<Stack[]> {
   try {
     const supabase = createPublicClient();
@@ -200,6 +258,36 @@ export async function fetchPosts(): Promise<Post[]> {
   } catch (error) {
     console.error("fetchPosts ERROR:", error);
     return fallbackPosts;
+  }
+}
+
+/**
+ * Busca posts públicos de um autor específico
+ */
+export async function fetchPostsByAuthor(authorId: string): Promise<Post[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("posts")
+      .select(`
+        *,
+        stacks:post_stacks(
+          stack:stacks(*)
+        )
+      `)
+      .eq("author_id", authorId)
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
+
+    if (error || !data) return [];
+
+    return data.map((post: any) => ({
+      ...post,
+      stacks: post.stacks?.map((ps: any) => ps.stack).filter(Boolean) || []
+    })) as Post[];
+  } catch (error) {
+    console.error("fetchPostsByAuthor ERROR:", error);
+    return [];
   }
 }
 
