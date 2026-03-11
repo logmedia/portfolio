@@ -83,35 +83,37 @@ export default function LandingPage() {
             </Text>
 
             <HStack spacing={4} pt={4}>
-              <Button
-                as={NextLink}
-                href="/login"
-                size="lg"
-                colorScheme="brand"
-                px={10}
-                h={14}
-                fontSize="md"
-                fontWeight="bold"
-                rightIcon={<Icon as={ArrowRight} />}
-                _hover={{ transform: 'translateY(-2px)' }}
-                transition="all 0.2s"
-              >
-                Criar meu Portfólio
-              </Button>
-              <Button
-                as={NextLink}
-                href="/explore"
-                size="lg"
-                variant="outline"
-                borderColor="whiteAlpha.300"
-                color="white"
-                px={10}
-                h={14}
-                fontSize="md"
-                _hover={{ bg: 'whiteAlpha.100', borderColor: 'whiteAlpha.400' }}
-              >
-                Explorar Talentos
-              </Button>
+              <NextLink href="/login" passHref legacyBehavior>
+                <Button
+                  as="a"
+                  size="lg"
+                  colorScheme="brand"
+                  px={10}
+                  h={14}
+                  fontSize="md"
+                  fontWeight="bold"
+                  rightIcon={<Icon as={ArrowRight} />}
+                  _hover={{ transform: 'translateY(-2px)', textDecoration: 'none' }}
+                  transition="all 0.2s"
+                >
+                  Criar meu Portfólio
+                </Button>
+              </NextLink>
+              <NextLink href="/explore" passHref legacyBehavior>
+                <Button
+                  as="a"
+                  size="lg"
+                  variant="outline"
+                  borderColor="whiteAlpha.300"
+                  color="white"
+                  px={10}
+                  h={14}
+                  fontSize="md"
+                  _hover={{ bg: 'whiteAlpha.100', borderColor: 'whiteAlpha.400', textDecoration: 'none' }}
+                >
+                  Explorar Talentos
+                </Button>
+              </NextLink>
             </HStack>
 
             {/* Dashboard Preview Mockup */}
@@ -212,21 +214,22 @@ export default function LandingPage() {
             <Text color="whiteAlpha.600" fontSize="lg">
               Comece a construir seu portfólio profissional agora mesmo e faça parte da nossa comunidade.
             </Text>
-            <Button
-              as={NextLink}
-              href="/login"
-              size="xl"
-              px={12}
-              py={8}
-              colorScheme="brand"
-              fontSize="xl"
-              fontWeight="bold"
-              _hover={{ transform: 'scale(1.05)' }}
-              transition="all 0.2s"
-              boxShadow="0 0 20px rgba(0, 153, 255, 0.4)"
-            >
-              Criar meu Portfólio Grátis
-            </Button>
+            <NextLink href="/login" passHref legacyBehavior>
+              <Button
+                as="a"
+                size="xl"
+                px={12}
+                py={8}
+                colorScheme="brand"
+                fontSize="xl"
+                fontWeight="bold"
+                _hover={{ transform: 'scale(1.05)', textDecoration: 'none' }}
+                transition="all 0.2s"
+                boxShadow="0 0 20px rgba(0, 153, 255, 0.4)"
+              >
+                Criar meu Portfólio Grátis
+              </Button>
+            </NextLink>
           </VStack>
         </Container>
       </Box>
