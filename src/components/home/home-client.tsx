@@ -63,7 +63,7 @@ export function HomeClient({ profile, posts }: HomeClientProps) {
               </Text>
             </Stack>
             <HStack spacing={4} wrap="wrap">
-              {profile.socials?.map((social) => {
+              {Array.isArray(profile.socials) && profile.socials.map((social) => {
                 const IconComp = getSocialIcon(social.label);
                 return (
                   <Button
@@ -100,7 +100,7 @@ export function HomeClient({ profile, posts }: HomeClientProps) {
                       Stacks favoritas
                     </Text>
                     <HStack spacing={2} wrap="wrap">
-                      {(profile.stacks ?? ["Next.js", "React", "Tailwind", "Supabase"]).map((stack) => (
+                      {(Array.isArray(profile.stacks) && profile.stacks.length > 0 ? profile.stacks : ["Next.js", "React", "Tailwind", "Supabase"]).map((stack) => (
                         <Tag key={stack} colorScheme="whiteAlpha" rounded="full" px={4} py={2}>
                           {stack}
                         </Tag>
