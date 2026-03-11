@@ -20,9 +20,9 @@ export async function GET(request: Request) {
         // Upsert no perfil para garantir que os dados estejam sincronizados
         await supabase.from("profiles").upsert({
           id: user.id,
-          name: githubData.full_name || githubData.user_name || githubData.preferred_username || user.email?.split("@")[0] || "User",
-          avatar_url: githubData.avatar_url || null,
-          github_username: githubData.user_name || githubData.preferred_username || null,
+          name: githubData.full_name || githubData.user_name || githubData.name || githubData.preferred_username || user.email?.split("@")[0] || "User",
+          avatar_url: githubData.avatar_url || githubData.picture || githubData.avatar || null,
+          github_username: githubData.user_name || githubData.preferred_username || githubData.login || null,
           bio: githubData.bio || null,
           updated_at: new Date().toISOString(),
         } as any, { onConflict: "id" });

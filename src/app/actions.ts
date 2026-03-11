@@ -60,6 +60,7 @@ const profileSchema = z.object({
   socials: socialsSchema,
   stacks: stacksSchema,
   skills: z.string().optional(),
+  github_username: z.string().optional(),
 });
 
 const parseSocials = (input?: string) => {
@@ -109,6 +110,7 @@ export async function saveProfile(formData: FormData) {
     socials: formData.get("socials")?.toString(),
     stacks: formData.get("stacks")?.toString(),
     skills: formData.get("skills")?.toString(),
+    github_username: formData.get("github_username")?.toString(),
   });
 
   if (!parsed.success) {
@@ -130,6 +132,7 @@ export async function saveProfile(formData: FormData) {
     socials: parseSocials(parsed.data.socials),
     stacks: parseStacks(parsed.data.stacks),
     skills: parseSkills(parsed.data.skills),
+    github_username: parsed.data.github_username || null,
   };
 
   const { error } = await supabase.from("profiles").upsert(payload as any, { onConflict: "id" });

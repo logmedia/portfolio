@@ -1,5 +1,5 @@
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
-import { fetchPosts, fetchProfile, fetchRecentComments, fetchStacks } from "@/lib/supabase/queries";
+import { fetchPosts, fetchAdminProfile, fetchRecentComments, fetchStacks } from "@/lib/supabase/queries";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { syncProfileWithGitHub } from "@/app/actions";
 import { redirect } from "next/navigation";
@@ -15,13 +15,13 @@ export default async function AdminPage() {
       redirect("/login");
     }
 
-    let profile = await fetchProfile();
+    let profile = await fetchAdminProfile(user.id);
 
     // Sincronizar com GitHub se houver um username vinculado
     if (profile.github_username) {
       await syncProfileWithGitHub(profile.github_username);
       // Re-fetch para ter os dados atualizados no dashboard
-      profile = await fetchProfile();
+      profile = await fetchAdminProfile(user.id);
     }
 
     const [posts, comments, stacks] = await Promise.all([

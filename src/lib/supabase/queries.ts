@@ -84,10 +84,16 @@ const fallbackComments: Comment[] = [
   },
 ];
 
-export async function fetchProfile(): Promise<Profile> {
+export async function fetchProfile(userId?: string): Promise<Profile> {
   try {
     const supabase = createPublicClient();
-    const { data, error } = await supabase.from("profiles").select("*").single();
+    let query = supabase.from("profiles").select("*");
+    
+    if (userId) {
+      query = query.eq("id", userId);
+    }
+    
+    const { data, error } = await query.single();
 
     if (error || !data) {
       return fallbackProfile;
@@ -110,6 +116,45 @@ export async function fetchProfile(): Promise<Profile> {
   } catch (error) {
     console.error("fetchProfile ERROR:", error);
     return fallbackProfile;
+  }
+}
+
+/**
+ * Versão do fetchProfile para ser usada no lado do servidor com autenticação
+ */
+export async function fetchAdminProfile(userId: string): Promise<Profile> {
+  try {
+    const { createSupabaseServerClient } = await import("./server");
+    const supabase = await createSupabaseServerClient();
+    
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error || !data) {
+      console.warn("Could not fetch admin profile, falling back to public fetch");
+      return fetchProfile(userId);
+    }
+
+    const profileData = data as any;
+
+    return {
+      id: profileData.id,
+      name: profileData.name,
+      role: profileData.role ?? undefined,
+      bio: profileData.bio ?? undefined,
+      avatar_url: profileData.avatar_url ?? undefined,
+      cover_url: profileData.cover_url ?? undefined,
+      socials: (profileData.socials as Profile["socials"]) ?? [],
+      stacks: (profileData.stacks as string[]) ?? [],
+      skills: (profileData.skills as any[]) ?? [],
+      github_username: profileData.github_username ?? undefined,
+    };
+  } catch (error) {
+    console.error("fetchAdminProfile ERROR:", error);
+    return fetchProfile(userId);
   }
 }
 
