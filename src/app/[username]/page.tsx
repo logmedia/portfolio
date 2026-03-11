@@ -4,7 +4,7 @@ import { fetchPostsByAuthor, fetchProfileByHandle, fetchStacks } from "@/lib/sup
 import { notFound } from "next/navigation";
 import { PortfolioContent } from "@/components/PortfolioContent";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 interface UserPortfolioProps {
   params: {
