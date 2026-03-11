@@ -12,8 +12,7 @@ export async function fetchAdminProfile(userId?: string): Promise<Profile | null
     const targetUserId = userId || user?.id;
     if (!targetUserId) return null;
 
-    const { data, error } = await supabase
-      .from("profiles")
+    const { data, error } = await (supabase.from("profiles") as any)
       .select("*")
       .eq("id", targetUserId)
       .single();
@@ -46,8 +45,7 @@ export async function fetchAdminPosts(userId: string): Promise<Post[]> {
   try {
     const supabase = await createSupabaseServerClient();
     
-    const { data, error } = await supabase
-      .from("posts")
+    const { data, error } = await (supabase.from("posts") as any)
       .select(`
         *,
         stacks:post_stacks(
@@ -78,8 +76,7 @@ export async function fetchAdminPosts(userId: string): Promise<Post[]> {
 export async function fetchAdminUsers(): Promise<Profile[]> {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase
-      .from("profiles")
+    const { data, error } = await (supabase.from("profiles") as any)
       .select("*")
       .order("created_at", { ascending: false });
 

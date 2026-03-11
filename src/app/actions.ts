@@ -33,7 +33,7 @@ export async function createComment(formData: FormData) {
     return { success: false, message: "Você precisa estar autenticado." };
   }
 
-  const { error } = await supabase.from("comments").insert({
+  const { error } = await (supabase.from("comments") as any).insert({
     post_id: parsed.data.postId,
     content: parsed.data.content,
     author_id: user.id as any,
@@ -135,7 +135,7 @@ export async function saveProfile(formData: FormData) {
     github_username: parsed.data.github_username || null,
   };
 
-  const { error } = await supabase.from("profiles").upsert(payload as any, { onConflict: "id" });
+  const { error } = await (supabase.from("profiles") as any).upsert(payload as any, { onConflict: "id" });
 
   if (error) {
     return { success: false, message: "Erro ao salvar perfil." };
@@ -525,12 +525,12 @@ export async function syncProfileWithGitHub(githubUsername: string) {
     const githubData = await response.json();
 
     // Atualizar perfil com dados novos do Git
-    const { error } = await (supabase.from("profiles").update as any)({
+    const { error } = await (supabase.from("profiles") as any).update({
       name: githubData.name || githubData.login,
       avatar_url: githubData.avatar_url,
       bio: githubData.bio || null,
       updated_at: new Date().toISOString(),
-    } as any).eq("id", user.id);
+    }).eq("id", user.id);
 
     if (error) throw error;
     
@@ -821,8 +821,7 @@ export async function updateProfile(data: Partial<{
 
   if (!user) return { success: false, message: "Não autenticado" };
 
-  const { error } = await supabase
-    .from("profiles")
+  const { error } = await (supabase.from("profiles") as any)
     .update(data as any)
     .eq("id", user.id);
 
