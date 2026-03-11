@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseCredentials } from "@/lib/env";
@@ -459,11 +460,16 @@ export async function signInWithGitHub() {
   try {
     const supabase = await createSupabaseServerClient();
     
+    const headersList = await headers();
+    const host = headersList.get("host");
+    const protocol = host?.includes("localhost") ? "http" : "https";
+    const origin = `${protocol}://${host}`;
+
     // In a server action,เราต้อง handle redirect specifically for OAuth
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+        redirectTo: `${origin}/auth/callback`,
       },
     });
 
