@@ -105,7 +105,7 @@ export function Sidebar({ profile }: SidebarProps) {
         </Text>
 
         <HStack spacing={4} pt={2}>
-          {(socials ?? [
+          {(Array.isArray(socials) && socials.length > 0 ? socials : [
             { label: "Github", url: "https://github.com" },
             { label: "Linkedin", url: "https://linkedin.com" }
           ]).map((social) => {

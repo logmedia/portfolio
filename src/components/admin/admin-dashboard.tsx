@@ -282,9 +282,9 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                               name="socials"
                               placeholder="Formato: Nome|https://link"
                               defaultValue={
-                                profile.socials
-                                  ?.map((social) => `${social.label}|${social.url}`)
-                                  .join("\n") ?? ""
+                                Array.isArray(profile.socials)
+                                  ? profile.socials.map((social) => `${social.label}|${social.url}`).join("\n")
+                                  : ""
                               }
                               rows={4}
                               bg="blackAlpha.300"
@@ -296,9 +296,9 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                               name="skills"
                               placeholder="Ex: React|95|BracketsCurly"
                               defaultValue={
-                                profile.skills
-                                  ?.map((s) => `${s.name}|${s.level}|${s.icon}`)
-                                  .join("\n") ?? ""
+                                Array.isArray(profile.skills)
+                                  ? profile.skills.map((s) => `${s.name}|${s.level}|${s.icon}`).join("\n")
+                                  : ""
                               }
                               rows={4}
                               bg="blackAlpha.300"
