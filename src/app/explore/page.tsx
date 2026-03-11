@@ -3,7 +3,7 @@ import { Box } from "@chakra-ui/react";
 import { fetchAllProfiles } from "@/lib/supabase/queries";
 import { ExploreContent } from "@/components/ExploreContent";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function UserDirectory() {
   const profiles = await fetchAllProfiles();
