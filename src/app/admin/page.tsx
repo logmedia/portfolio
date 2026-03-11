@@ -18,8 +18,10 @@ export default async function AdminPage() {
     }
 
     let profile = await fetchAdminProfile(user.id);
-    if (!profile) {
-      redirect("/login");
+    if (!profile || profile.role !== 'admin') {
+      // If profile is missing or user is not an admin, send them to the home page
+      // to avoid infinite loops with the login page middleware.
+      redirect("/");
     }
 
     // Sincronizar com GitHub se houver um username vinculado
@@ -27,8 +29,8 @@ export default async function AdminPage() {
       await syncProfileWithGitHub(profile.github_username);
       // Re-fetch para ter os dados atualizados no dashboard
       profile = await fetchAdminProfile(user.id);
-      if (!profile) {
-        redirect("/login");
+      if (!profile || profile.role !== 'admin') {
+        redirect("/");
       }
     }
 
