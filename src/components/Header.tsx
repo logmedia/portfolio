@@ -51,10 +51,10 @@ export function Header() {
         </ChakraLink>
       </NextLink>
 
-      <HStack spacing={8} as="nav" display={{ base: "none", md: "flex" }}>
-        <NextLink href="/" passHref legacyBehavior>
+      <HStack spacing={8} as="nav" display={{ base: "none", lg: "flex" }}>
+        <NextLink href="/explore" passHref legacyBehavior>
           <ChakraLink fontWeight="bold" color={colorMode === "light" ? "gray.800" : "gray.100"} _hover={{ color: "brand.500", textDecoration: "none" }} transition="color 0.2s">
-            Explorar
+            Explorar Talentos
           </ChakraLink>
         </NextLink>
         <NextLink href="/admin" passHref legacyBehavior>
@@ -77,8 +77,21 @@ export function Header() {
           transition="all 0.2s"
         />
 
+        <Button
+          as={NextLink}
+          href="/login"
+          display={{ base: "none", md: "inline-flex" }}
+          size="md"
+          colorScheme="brand"
+          fontWeight="bold"
+          borderRadius="full"
+          px={6}
+        >
+          Começar Agora
+        </Button>
+
         {/* Mobile Menu */}
-        <Box display={{ base: "block", md: "none" }}>
+        <Box display={{ base: "block", lg: "none" }}>
           <Menu>
             <MenuButton
               as={IconButton}
@@ -96,14 +109,14 @@ export function Header() {
               <NextLink href="/" passHref legacyBehavior>
                 <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Início</MenuItem>
               </NextLink>
-              <NextLink href="#" passHref legacyBehavior>
-                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Projetos</MenuItem>
+              <NextLink href="/explore" passHref legacyBehavior>
+                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Explorar</MenuItem>
               </NextLink>
-              <NextLink href="#" passHref legacyBehavior>
-                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Sobre</MenuItem>
+              <NextLink href="/login" passHref legacyBehavior>
+                <MenuItem bg="transparent" fontWeight="bold" color="brand.500" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Entrar / Cadastrar</MenuItem>
               </NextLink>
-              <NextLink href="#" passHref legacyBehavior>
-                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Contato</MenuItem>
+              <NextLink href="/admin" passHref legacyBehavior>
+                <MenuItem bg="transparent" _hover={{ bg: colorMode === "light" ? "gray.50" : "whiteAlpha.100" }}>Meu Painel</MenuItem>
               </NextLink>
             </MenuList>
           </Menu>
