@@ -61,6 +61,7 @@ const ModernEditor = dynamic(() => import("./modern-editor").then(mod => mod.Mod
 });
 import { GithubActivity } from "./github-activity";
 import { CoverPicker } from "../CoverPicker";
+import { SkillsManager } from "./skills-manager";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -291,21 +292,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Habilidades Atuais (Nome|Nível|Ícone)</FormLabel>
-                            <Textarea
-                              name="skills"
-                              placeholder="Ex: React|95|BracketsCurly"
-                              defaultValue={
-                                Array.isArray(profile.skills)
-                                  ? profile.skills.map((s) => `${s.name}|${s.level}|${s.icon}`).join("\n")
-                                  : ""
-                              }
-                              rows={4}
-                              bg="blackAlpha.300"
-                            />
-                            <Text fontSize="xs" color="whiteAlpha.500" mt={1}>
-                              Ícones: Code, Palette, Database, Lightning, BracketsCurly, Cpu
-                            </Text>
+                            <SkillsManager initialSkills={profile.skills || []} />
                           </FormControl>
                           <Button type="submit" isLoading={isSavingProfile} loadingText="Salvando" colorScheme="brand">
                             Salvar Perfil

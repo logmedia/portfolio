@@ -1,8 +1,9 @@
 "use client";
 
-import { Box, Flex, Text, Link, Icon, Stack, HStack, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, Text, Link, Icon, Stack, HStack, useColorModeValue, Divider } from "@chakra-ui/react";
 import { GithubLogo, LinkedinLogo, InstagramLogo, Globe } from "phosphor-react";
 import Image from "next/image";
+import { ChangelogFooter } from "./ChangelogFooter";
 
 interface Profile {
   name: string;
@@ -124,6 +125,11 @@ export function Sidebar({ profile }: SidebarProps) {
             );
           })}
         </HStack>
+
+        <Divider borderColor="whiteAlpha.100" />
+        <Box pt={2}>
+          <ChangelogFooter />
+        </Box>
       </Stack>
     </Box>
   );

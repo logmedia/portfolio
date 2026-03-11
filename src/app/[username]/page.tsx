@@ -31,6 +31,15 @@ export default async function UserPortfolio({ params, searchParams }: UserPortfo
     fetchStacks(),
   ]);
 
+  // Dynamically extract and deduplicate stack names from published projects
+  const uniqueStackNames = Array.from(
+    new Set(
+      posts.flatMap((post) => post.stacks?.map((stack: any) => stack.name) || [])
+    )
+  ).filter(Boolean);
+
+  profile.stacks = uniqueStackNames;
+
   return (
     <Box minH="100vh">
       <Header />
