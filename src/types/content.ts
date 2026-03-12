@@ -22,6 +22,8 @@ export type Profile = {
   stacks?: string[];
   skills?: any[];
   github_username?: string;
+  whatsapp_number?: string;
+  whatsapp_public?: boolean;
   status?: "active" | "blocked";
   created_at?: string;
 };

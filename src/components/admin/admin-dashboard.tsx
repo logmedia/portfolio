@@ -38,6 +38,7 @@ import {
   ButtonGroup,
   VStack,
   Spinner,
+  Checkbox,
 } from "@chakra-ui/react";
 import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction, checkUsernameAvailability, fetchAllProfiles } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem } from "@/types/content";
@@ -414,10 +415,33 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                                  {usernameFeedback.message}
                                </Text>
                              )}
+                           </FormControl>
+
+                             <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={4}>
+                               <FormControl>
+                                 <FormLabel>WhatsApp (apenas números)</FormLabel>
+                                 <Input 
+                                   name="whatsapp_number" 
+                                   defaultValue={profile.whatsapp_number ?? ""} 
+                                   placeholder="ex: 5511999999999" 
+                                   bg="blackAlpha.300" 
+                                   onChange={() => setIsDirty(true)}
+                                 />
+                               </FormControl>
+                               <FormControl display="flex" alignItems="center" pt={8}>
+                                 <Checkbox 
+                                   name="whatsapp_public" 
+                                   defaultChecked={profile.whatsapp_public}
+                                   colorScheme="brand"
+                                   onChange={() => setIsDirty(true)}
+                                 >
+                                   Tornar Público
+                                 </Checkbox>
+                               </FormControl>
+                             </Grid>
                              <Text fontSize="xs" color="whiteAlpha.400" mt={2}>
                                Sua página pública será: portfolio.logmedia.com.br/<b>{profileUsername || "seu-nome"}</b>
                              </Text>
-                           </FormControl>
                           <FormControl>
                             <SocialsManager initialSocials={(profile.socials as any) || []} />
                           </FormControl>

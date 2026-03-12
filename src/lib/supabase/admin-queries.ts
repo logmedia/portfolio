@@ -31,6 +31,8 @@ export async function fetchAdminProfile(userId?: string): Promise<Profile | null
       stacks: profileData.stacks ?? [],
       skills: profileData.skills ?? [],
       github_username: profileData.github_username ?? undefined,
+      whatsapp_number: profileData.whatsapp_number ?? undefined,
+      whatsapp_public: profileData.whatsapp_public ?? false,
     } as Profile;
   } catch (error) {
     console.error("fetchAdminProfile ERROR:", error);

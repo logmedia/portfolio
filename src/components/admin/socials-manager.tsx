@@ -19,7 +19,7 @@ import {
   Grid,
   IconButton,
 } from "@chakra-ui/react";
-import { Plus, Trash, Link as LinkIcon, DotsSixVertical, GithubLogo, LinkedinLogo, TwitterLogo, InstagramLogo, FacebookLogo, YoutubeLogo, GlobeHemisphereWest } from "phosphor-react";
+import { Plus, Trash, Link as LinkIcon, DotsSixVertical, GithubLogo, LinkedinLogo, TwitterLogo, InstagramLogo, FacebookLogo, YoutubeLogo, GlobeHemisphereWest, DiscordLogo } from "phosphor-react";
 import { useState, useMemo, useRef } from "react";
 
 export type SocialItem = {
@@ -36,6 +36,8 @@ const SUGGESTIONS = [
   { label: "LinkedIn", url: "https://linkedin.com/in/" },
   { label: "Twitter", url: "https://twitter.com/" },
   { label: "Instagram", url: "https://instagram.com/" },
+  { label: "Facebook", url: "https://facebook.com/" },
+  { label: "Discord", url: "https://discord.gg/" },
   { label: "YouTube", url: "https://youtube.com/" },
   { label: "Website", url: "https://" },
 ];
@@ -137,6 +139,7 @@ export function SocialsManager({ initialSocials = [] }: SocialsManagerProps) {
     if (l.includes("instagram") || l.includes("ig")) return InstagramLogo;
     if (l.includes("facebook")) return FacebookLogo;
     if (l.includes("youtube")) return YoutubeLogo;
+    if (l.includes("discord")) return DiscordLogo;
     return GlobeHemisphereWest;
   };
 

@@ -15,6 +15,8 @@ export type Database = {
           stacks: Json | null;
           github_username: string | null;
           skills: Json | null;
+          whatsapp_number: string | null;
+          whatsapp_public: boolean | null;
           created_at: string | null;
           updated_at: string | null;
         };

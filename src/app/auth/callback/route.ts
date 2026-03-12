@@ -17,13 +17,30 @@ export async function GET(request: Request) {
       const githubData = user.user_metadata;
       
       if (githubData) {
+        // Buscar perfil atual para manter redes sociais
+        const { data: currentProfile } = await supabase
+          .from("profiles")
+          .select("socials")
+          .eq("id", user.id)
+          .single() as any;
+
+        let socials = (currentProfile?.socials as any[]) || [];
+        const githubUsername = githubData.user_name || githubData.preferred_username || githubData.login || null;
+        const githubUrl = `https://github.com/${githubUsername}`;
+
+        // Adicionar GitHub se não existir
+        if (githubUsername && !socials.some((s: any) => s.label.toLowerCase() === "github")) {
+          socials.push({ label: "GitHub", url: githubUrl });
+        }
+
         // Upsert no perfil para garantir que os dados estejam sincronizados
         await supabase.from("profiles").upsert({
           id: user.id,
           name: githubData.full_name || githubData.user_name || githubData.name || githubData.preferred_username || user.email?.split("@")[0] || "User",
           avatar_url: githubData.avatar_url || githubData.picture || githubData.avatar || null,
-          github_username: githubData.user_name || githubData.preferred_username || githubData.login || null,
+          github_username: githubUsername,
           bio: githubData.bio || null,
+          socials: socials,
           updated_at: new Date().toISOString(),
         } as any, { onConflict: "id" });
       }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Flex, Text, Link, Icon, Stack, HStack, useColorModeValue } from "@chakra-ui/react";
-import { GithubLogo, LinkedinLogo, InstagramLogo, Globe } from "phosphor-react";
+import { GithubLogo, LinkedinLogo, InstagramLogo, Globe, WhatsappLogo, FacebookLogo, DiscordLogo, YoutubeLogo, TwitterLogo } from "phosphor-react";
 import Image from "next/image";
 
 interface Profile {
@@ -12,6 +12,8 @@ interface Profile {
   avatar_url: string;
   cover_url: string;
   socials?: { label: string; url: string }[];
+  whatsapp_number?: string;
+  whatsapp_public?: boolean;
 }
 
 const DEFAULT_PROFILE: Profile = {
@@ -28,6 +30,11 @@ const iconMap: Record<string, any> = {
   github: GithubLogo,
   linkedin: LinkedinLogo,
   instagram: InstagramLogo,
+  facebook: FacebookLogo,
+  discord: DiscordLogo,
+  youtube: YoutubeLogo,
+  twitter: TwitterLogo,
+  x: TwitterLogo,
   site: Globe,
 };
 
@@ -36,7 +43,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ profile }: SidebarProps) {
-  const { name, role, job_title, bio, avatar_url, cover_url, socials } = { ...DEFAULT_PROFILE, ...profile };
+  const { name, role, job_title, bio, avatar_url, cover_url, socials, whatsapp_number, whatsapp_public } = { ...DEFAULT_PROFILE, ...profile };
 
   const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
   const borderColor = useColorModeValue("white", "whiteAlpha.100");
@@ -125,6 +132,18 @@ export function Sidebar({ profile }: SidebarProps) {
               </Link>
             );
           })}
+          
+          {whatsapp_public && whatsapp_number && (
+            <Link
+              href={`https://wa.me/${whatsapp_number.replace(/\D/g, "")}`}
+              isExternal
+              color="green.400"
+              _hover={{ color: "green.500", transform: "translateY(-2px)" }}
+              transition="all 0.2s"
+            >
+              <Icon as={WhatsappLogo} fontSize="24px" />
+            </Link>
+          )}
         </HStack>
       </Stack>
     </Box>

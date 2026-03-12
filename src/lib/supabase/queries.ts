@@ -113,6 +113,8 @@ export async function fetchProfile(userId?: string): Promise<Profile> {
       stacks: (profileData.stacks as string[]) ?? [],
       skills: (profileData.skills as any[]) ?? [],
       github_username: profileData.github_username ?? undefined,
+      whatsapp_number: profileData.whatsapp_number ?? undefined,
+      whatsapp_public: profileData.whatsapp_public ?? false,
     };
   } catch (error) {
     console.error("fetchProfile ERROR:", error);
@@ -177,6 +179,8 @@ export async function fetchProfileByHandle(handle: string): Promise<Profile | nu
       stacks: (profileData.stacks as string[]) ?? [],
       skills: (profileData.skills as any[]) ?? [],
       github_username: profileData.github_username ?? undefined,
+      whatsapp_number: profileData.whatsapp_number ?? undefined,
+      whatsapp_public: profileData.whatsapp_public ?? false,
     };
   } catch (error) {
     console.error("fetchProfileByHandle ERROR:", error);

@@ -85,6 +85,8 @@ const profileSchema = z.object({
   stacks: stacksSchema,
   skills: z.string().optional(),
   github_username: z.string().optional(),
+  whatsapp_number: z.string().optional(),
+  whatsapp_public: z.boolean().optional(),
 });
 
 const parseSocials = (input?: string) => {
@@ -135,6 +137,8 @@ export async function saveProfile(formData: FormData) {
     stacks: formData.get("stacks")?.toString(),
     skills: formData.get("skills")?.toString(),
     github_username: formData.get("github_username")?.toString(),
+    whatsapp_number: formData.get("whatsapp_number")?.toString(),
+    whatsapp_public: formData.get("whatsapp_public") === "on",
   });
 
   if (!parsed.success) {
@@ -157,6 +161,8 @@ export async function saveProfile(formData: FormData) {
     stacks: parseStacks(parsed.data.stacks),
     skills: parseSkills(parsed.data.skills),
     github_username: parsed.data.github_username || null,
+    whatsapp_number: parsed.data.whatsapp_number || null,
+    whatsapp_public: parsed.data.whatsapp_public ?? false,
   };
 
   const { error } = await (supabase.from("profiles") as any)
