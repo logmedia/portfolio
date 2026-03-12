@@ -20,16 +20,12 @@ import {
   InputGroup,
   InputRightElement,
   IconButton,
-  HStack,
-  Divider,
 } from "@chakra-ui/react";
-import { Lock, Envelope, Eye, EyeSlash, Terminal, GithubLogo } from "phosphor-react";
-import { signIn, signInWithGitHub } from "@/app/actions";
+import { Lock, Eye, EyeSlash, Terminal } from "phosphor-react";
+import { updatePassword } from "@/app/actions";
 import { useRouter } from "next/navigation";
-import NextLink from "next/link";
-import { Link } from "@chakra-ui/react";
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, startTransition] = useTransition();
   const toast = useToast();
@@ -40,12 +36,26 @@ export default function LoginPage() {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const headingColor = useColorModeValue("gray.800", "white");
 
-  const handleLogin = (formData: FormData) => {
+  const handleResetPassword = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Senhas não conferem",
+        description: "A confirmação de senha deve ser igual à nova senha.",
+        status: "warning",
+      });
+      return;
+    }
+
     startTransition(async () => {
-      const result = await signIn(formData);
+      const result = await updatePassword(password);
       if (!result.success) {
         toast({
-          title: "Erro de autenticação",
+          title: "Erro ao atualizar",
           description: result.message,
           status: "error",
           duration: 5000,
@@ -55,33 +65,14 @@ export default function LoginPage() {
       }
       
       toast({
-        title: "Acesso autorizado",
-        description: "Redirecionando para o terminal admin...",
+        title: "Senha atualizada!",
+        description: "Sua chave de acesso foi renovada. Redirecionando...",
         status: "success",
       });
       
-      router.push("/admin");
-      router.refresh();
-    });
-  };
-
-  const handleGitHubLogin = () => {
-    startTransition(async () => {
-      const result = await signInWithGitHub();
-      if (!result.success) {
-        toast({
-          title: "Erro ao conectar com GitHub",
-          description: result.message,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
-      
-      if (result.url) {
-        window.location.href = result.url;
-      }
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     });
   };
 
@@ -95,7 +86,6 @@ export default function LoginPage() {
       position="relative"
       overflow="hidden"
     >
-      {/* Background Decor */}
       <Box 
         position="absolute" 
         top="-10%" 
@@ -121,10 +111,10 @@ export default function LoginPage() {
               <Icon as={Terminal} color="white" fontSize="32px" />
             </Box>
             <Heading size="xl" color={headingColor} letterSpacing="tight">
-              Acesso Restrito
+              Nova Chave de Acesso
             </Heading>
             <Text color="whiteAlpha.600" fontFamily="monospace" fontSize="sm">
-              PORTFOLIO_OS v2.0 // ADMIN_LOGIN
+              SISTEMA_SECURE v1.0 // UPDATE_VAULT
             </Text>
           </VStack>
 
@@ -137,25 +127,10 @@ export default function LoginPage() {
             boxShadow="2xl"
           >
             <CardBody p={8}>
-              <form action={handleLogin}>
+              <form onSubmit={handleResetPassword}>
                 <Stack spacing={6}>
                   <FormControl isRequired>
-                    <FormLabel fontSize="sm" color="whiteAlpha.700">Identificação (Email)</FormLabel>
-                    <InputGroup size="lg">
-                      <Input 
-                        name="email"
-                        type="email" 
-                        placeholder="admin@logmedia.com" 
-                        bg="blackAlpha.300"
-                        borderColor={borderColor}
-                        _focus={{ borderColor: "brand.500", boxShadow: "none" }}
-                        borderRadius="xl"
-                      />
-                    </InputGroup>
-                  </FormControl>
-
-                  <FormControl isRequired>
-                    <FormLabel fontSize="sm" color="whiteAlpha.700">Chave de Acesso (Senha)</FormLabel>
+                    <FormLabel fontSize="sm" color="whiteAlpha.700">Nova Senha</FormLabel>
                     <InputGroup size="lg">
                       <Input 
                         name="password"
@@ -179,17 +154,21 @@ export default function LoginPage() {
                         />
                       </InputRightElement>
                     </InputGroup>
-                    <HStack justify="flex-end" mt={2}>
-                      <Link 
-                        as={NextLink} 
-                        href="/forgot-password" 
-                        fontSize="xs" 
-                        color="whiteAlpha.500"
-                        _hover={{ color: "brand.400", textDecoration: "none" }}
-                      >
-                        Esqueceu sua senha?_
-                      </Link>
-                    </HStack>
+                  </FormControl>
+
+                  <FormControl isRequired>
+                    <FormLabel fontSize="sm" color="whiteAlpha.700">Confirmar Nova Senha</FormLabel>
+                    <InputGroup size="lg">
+                      <Input 
+                        name="confirmPassword"
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••" 
+                        bg="blackAlpha.300"
+                        borderColor={borderColor}
+                        _focus={{ borderColor: "brand.500", boxShadow: "none" }}
+                        borderRadius="xl"
+                      />
+                    </InputGroup>
                   </FormControl>
 
                   <Button 
@@ -198,42 +177,17 @@ export default function LoginPage() {
                     size="lg" 
                     borderRadius="xl" 
                     isLoading={isPending}
-                    loadingText="Autenticando..."
+                    loadingText="Atualizando..."
                     h="60px"
                     fontSize="md"
                     boxShadow="0 4px 15px rgba(59, 130, 246, 0.3)"
                   >
-                    Iniciar Sessão_
-                  </Button>
-
-                  <HStack px={4}>
-                    <Divider borderColor="whiteAlpha.100" />
-                    <Text fontSize="xs" color="whiteAlpha.400" whiteSpace="nowrap">OU ACESSAR COM</Text>
-                    <Divider borderColor="whiteAlpha.100" />
-                  </HStack>
-
-                  <Button
-                    leftIcon={<Icon as={GithubLogo} weight="fill" />}
-                    onClick={handleGitHubLogin}
-                    variant="outline"
-                    size="lg"
-                    borderRadius="xl"
-                    h="60px"
-                    borderColor="whiteAlpha.200"
-                    _hover={{ bg: "whiteAlpha.100", borderColor: "whiteAlpha.300" }}
-                    isLoading={isPending}
-                    fontSize="md"
-                  >
-                    GitHub_
+                    Renovar Acesso_
                   </Button>
                 </Stack>
               </form>
             </CardBody>
           </Card>
-          
-          <Text textAlign="center" fontSize="xs" color="whiteAlpha.400" fontFamily="monospace">
-            ID_TOKEN: 0x{Math.random().toString(16).slice(2, 10).toUpperCase()} // SECURE_CONNECTION: TRUE
-          </Text>
         </VStack>
       </Container>
     </Box>

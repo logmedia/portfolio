@@ -371,6 +371,42 @@ export async function moveToTrash(id: string) {
   }
 }
 
+export async function requestPasswordReset(email: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const origin = (await headers()).get("origin");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${origin}/auth/callback?next=/reset-password`,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: "Link de recuperação enviado para seu e-mail." };
+  } catch (error: any) {
+    return { success: false, message: `Erro ao solicitar recuperação: ${error.message}` };
+  }
+}
+
+export async function updatePassword(password: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.auth.updateUser({
+      password: password,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: "Senha atualizada com sucesso!" };
+  } catch (error: any) {
+    return { success: false, message: `Erro ao atualizar senha: ${error.message}` };
+  }
+}
+
 export async function restoreFromTrash(id: string) {
   try {
     const supabase = await createSupabaseServerClient();

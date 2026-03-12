@@ -31,5 +31,6 @@ export async function GET(request: Request) {
   }
 
   // URL para redirecionar após o processo de login
-  return NextResponse.redirect(new URL("/admin", request.url));
+  const next = requestUrl.searchParams.get("next") ?? "/admin";
+  return NextResponse.redirect(new URL(next, request.url));
 }
