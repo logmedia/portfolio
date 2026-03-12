@@ -10,21 +10,34 @@ import {
   HStack,
   Icon,
   Input,
-  Select,
   Slider,
   SliderFilledTrack,
   SliderThumb,
   SliderTrack,
   Tag,
-  TagCloseButton,
   TagLabel,
   Text,
   VStack,
   useColorModeValue,
   Divider,
   Grid,
+  IconButton,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  PopoverHeader,
+  PopoverArrow,
+  PopoverCloseButton,
+  SimpleGrid,
+  Tooltip,
 } from "@chakra-ui/react";
-import { Code, Palette, Database, Lightning, BracketsCurly, Cpu, Plus, Trash } from "phosphor-react";
+import { 
+  Code, Palette, Database, Lightning, BracketsCurly, Cpu, Plus, Trash, 
+  Camera, MusicNotes, ChartBar, Globe, Book, Pen, VideoCamera, 
+  SpeakerHigh, Flask, MagnifyingGlass, DotsSixVertical
+} from "phosphor-react";
+import * as PhosphorIcons from "phosphor-react";
 import { useState, useMemo } from "react";
 
 export type SkillItem = {
@@ -37,22 +50,30 @@ interface SkillsManagerProps {
   initialSkills: SkillItem[];
 }
 
-const ICON_OPTIONS = [
-  { value: "Code", label: "Código", icon: Code },
-  { value: "Palette", label: "Design", icon: Palette },
-  { value: "Database", label: "Banco de Dados", icon: Database },
-  { value: "Lightning", label: "Performance", icon: Lightning },
-  { value: "BracketsCurly", label: "Framework", icon: BracketsCurly },
-  { value: "Cpu", label: "Sistema", icon: Cpu },
+// Curated icons for the "Quick Selection"
+const QUICK_ICONS = [
+  { name: "Code", icon: Code, label: "Desenvolvimento" },
+  { name: "Palette", icon: Palette, label: "Design" },
+  { name: "Camera", icon: Camera, label: "Fotografia" },
+  { name: "MusicNotes", icon: MusicNotes, label: "Música" },
+  { name: "VideoCamera", icon: VideoCamera, label: "Vídeo" },
+  { name: "ChartBar", icon: ChartBar, label: "Marketing/Dados" },
+  { name: "Globe", icon: Globe, label: "Web/Global" },
+  { name: "Pen", icon: Pen, label: "Escrita" },
+  { name: "Lightning", icon: Lightning, label: "Performance" },
 ];
 
-const SUGGESTIONS = ["React", "Next.js", "TypeScript", "Node.js", "UI/UX", "Figma", "Supabase", "Tailwind CSS"];
+const SUGGESTIONS = [
+  "React", "Figma", "Fotografia Digital", "Edição de Áudio", "Gestão de Projetos", 
+  "Estratégia SEO", "Inglês Fluente", "Adobe Premiere", "Python", "UX Design"
+];
 
 export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
   const [skills, setSkills] = useState<SkillItem[]>(initialSkills || []);
   const [newName, setNewName] = useState("");
-  const [newLevel, setNewLevel] = useState(50);
+  const [newLevel, setNewLevel] = useState(80);
   const [newIcon, setNewIcon] = useState("Code");
+  const [iconSearch, setIconSearch] = useState("");
 
   const bg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
   const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
@@ -61,8 +82,8 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
     if (!newName.trim()) return;
     setSkills([...skills, { name: newName.trim(), level: newLevel, icon: newIcon }]);
     setNewName("");
-    setNewLevel(50);
-    setNewIcon("Code");
+    setNewLevel(80);
+    // Keep set to Code or try to guess?
   };
 
   const removeSkill = (index: number) => {
@@ -75,130 +96,226 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
     setSkills(updated);
   };
 
-  // Convert skills back to the legacy string format for the backend action
   const serializedSkills = useMemo(() => {
     return skills.map((s) => `${s.name}|${s.level}|${s.icon}`).join("\n");
   }, [skills]);
 
+  // Helper to get Icon Component from string name
+  const getIconComponent = (iconName: string) => {
+    return (PhosphorIcons as any)[iconName] || (PhosphorIcons as any)[iconName + "Logo"] || Code;
+  };
+
+  // Filter Phosphor icons for search (limit to 60 for performance)
+  const filteredIcons = useMemo(() => {
+    if (!iconSearch) return [];
+    return Object.keys(PhosphorIcons)
+      .filter(key => key.toLowerCase().includes(iconSearch.toLowerCase()) && typeof (PhosphorIcons as any)[key] === "function")
+      .slice(0, 48);
+  }, [iconSearch]);
+
+  const CurrentIcon = getIconComponent(newIcon);
+
   return (
-    <Box p={4} bg={bg} borderRadius="md" border="1px solid" borderColor={borderColor}>
-      {/* Hidden textarea for native form submission */}
+    <Box p={5} bg={bg} borderRadius="xl" border="1px solid" borderColor={borderColor}>
       <textarea name="skills" value={serializedSkills} readOnly style={{ display: "none" }} />
 
       <VStack spacing={6} align="stretch">
         <Heading size="sm" display="flex" alignItems="center" gap={2}>
           <Icon as={Lightning} color="brand.500" />
-          Gerenciador de Habilidades
+          Habilidades & Expertise
         </Heading>
 
         {/* Suggestions */}
         <Box>
-          <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.600" mb={2} textTransform="uppercase">
-            Sugestões Rápidas:
+          <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500" mb={3} textTransform="uppercase" letterSpacing="wider">
+            Sugestões Sugeridas:
           </Text>
           <Flex wrap="wrap" gap={2}>
             {SUGGESTIONS.filter((sug) => !skills.some((s) => s.name.toLowerCase() === sug.toLowerCase())).map((suggestion) => (
               <Tag
                 key={suggestion}
-                size="sm"
+                size="md"
                 variant="subtle"
-                colorScheme="brand"
+                colorScheme="whiteAlpha"
                 cursor="pointer"
-                onClick={() => {
-                  setNewName(suggestion);
-                  // Auto-select icon based on context
-                  if (suggestion.includes("UI") || suggestion.includes("Figma") || suggestion.includes("Design")) setNewIcon("Palette");
-                  else if (suggestion.includes("Base") || suggestion.includes("SQL")) setNewIcon("Database");
-                  else setNewIcon("Code");
-                }}
+                onClick={() => setNewName(suggestion)}
                 _hover={{ bg: "brand.500", color: "white" }}
+                transition="all 0.2s"
+                borderRadius="full"
               >
-                <TagLabel>{suggestion}</TagLabel>
+                <TagLabel py={1}>{suggestion}</TagLabel>
                 <Icon as={Plus} ml={1} />
               </Tag>
             ))}
           </Flex>
         </Box>
 
-        <Divider />
+        <Divider borderColor="whiteAlpha.100" />
 
-        {/* Add New Form */}
-        <Grid templateColumns={{ base: "1fr", md: "2fr 1fr 2fr auto" }} gap={4} alignItems="end">
+        {/* New Form Design */}
+        <Grid templateColumns={{ base: "1fr", md: "auto 2fr 1.5fr auto" }} gap={4} alignItems="end">
+          {/* Icon Picker Popover */}
           <FormControl>
-            <FormLabel fontSize="xs" color="whiteAlpha.700">Nome da Habilidade</FormLabel>
+            <FormLabel fontSize="xs" color="whiteAlpha.600">Ícone</FormLabel>
+            <Popover placement="bottom-start" gutter={12}>
+              <PopoverTrigger>
+                <Button 
+                  size="md" 
+                  variant="outline" 
+                  borderColor="whiteAlpha.200"
+                  _hover={{ bg: 'whiteAlpha.100', borderColor: 'brand.400' }}
+                  w="54px"
+                  p={0}
+                >
+                  <Icon as={CurrentIcon} boxSize={6} color="brand.400" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent bg="gray.800" borderColor="whiteAlpha.200" boxShadow="xl" w="320px">
+                <PopoverArrow bg="gray.800" />
+                <PopoverCloseButton />
+                <PopoverHeader border="none" fontSize="sm" fontWeight="bold" pt={4}>Selecione um Ícone</PopoverHeader>
+                <PopoverBody pb={6}>
+                  <VStack spacing={4} align="stretch">
+                    <Box>
+                      <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Sugestões Rápidas</Text>
+                      <SimpleGrid columns={5} gap={2}>
+                        {QUICK_ICONS.map((item) => (
+                          <Tooltip key={item.name} label={item.label} fontSize="xs">
+                            <IconButton
+                              aria-label={item.name}
+                              icon={<Icon as={item.icon} boxSize={5} />}
+                              size="sm"
+                              variant={newIcon === item.name ? "solid" : "ghost"}
+                              colorScheme={newIcon === item.name ? "brand" : "whiteAlpha"}
+                              onClick={() => setNewIcon(item.name)}
+                            />
+                          </Tooltip>
+                        ))}
+                      </SimpleGrid>
+                    </Box>
+                    
+                    <Divider borderColor="whiteAlpha.100" />
+                    
+                    <Box>
+                      <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Pesquisar Biblioteca</Text>
+                      <Input 
+                        placeholder="Ex: heart, guitar..." 
+                        size="sm" 
+                        variant="filled" 
+                        bg="blackAlpha.400"
+                        _focus={{ bg: "blackAlpha.500" }}
+                        value={iconSearch}
+                        onChange={(e) => setIconSearch(e.target.value)}
+                        mb={3}
+                      />
+                      <SimpleGrid columns={6} gap={2} maxH="150px" overflowY="auto" px={1}>
+                        {filteredIcons.map(iconKey => {
+                          const FoundIcon = PhosphorIcons[iconKey as keyof typeof PhosphorIcons] as any;
+                          return (
+                            <IconButton
+                              key={iconKey}
+                              aria-label={iconKey}
+                              icon={<Icon as={FoundIcon} />}
+                              size="xs"
+                              variant={newIcon === iconKey ? "solid" : "ghost"}
+                              colorScheme={newIcon === iconKey ? "brand" : "whiteAlpha"}
+                              onClick={() => setNewIcon(iconKey)}
+                            />
+                          );
+                        })}
+                      </SimpleGrid>
+                      {iconSearch && filteredIcons.length === 0 && (
+                        <Text fontSize="xs" color="whiteAlpha.400" textAlign="center">Nenhum ícone encontrado</Text>
+                      )}
+                    </Box>
+                  </VStack>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel fontSize="xs" color="whiteAlpha.600">Habilidade / Expertise</FormLabel>
             <Input
-              size="sm"
+              size="md"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Ex: Next.js"
+              placeholder="Ex: Adobe Photoshop"
               bg="blackAlpha.300"
+              borderColor="whiteAlpha.200"
+              _focus={{ borderColor: "brand.500" }}
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
             />
           </FormControl>
 
           <FormControl>
-            <FormLabel fontSize="xs" color="whiteAlpha.700">Ícone</FormLabel>
-            <Select size="sm" value={newIcon} onChange={(e) => setNewIcon(e.target.value)} bg="blackAlpha.300">
-              {ICON_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} style={{ background: "#2D3748" }}>
-                  {opt.label}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl>
-             <FormLabel fontSize="xs" color="whiteAlpha.700">
-               Proficiência: {newLevel}%
+             <FormLabel fontSize="xs" color="whiteAlpha.600">
+               Proficiência: <Text as="span" color="brand.400" fontWeight="bold">{newLevel}%</Text>
              </FormLabel>
-             <Slider
-               aria-label="slider-proficiencia"
-               defaultValue={50}
-               min={0}
-               max={100}
-               step={5}
-               value={newLevel}
-               onChange={(v) => setNewLevel(v)}
-               colorScheme="brand"
-               mt={2}
-               mb={1} // alinhar com o input
-             >
-               <SliderTrack bg="whiteAlpha.200">
-                 <SliderFilledTrack />
-               </SliderTrack>
-               <SliderThumb boxSize={4} />
-             </Slider>
+             <Box pt={2}>
+              <Slider
+                aria-label="slider-proficiencia"
+                min={0}
+                max={100}
+                step={5}
+                value={newLevel}
+                onChange={(v) => setNewLevel(v)}
+                colorScheme="brand"
+              >
+                <SliderTrack bg="whiteAlpha.200" h="6px" borderRadius="full">
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb boxSize={4} border="2px solid" borderColor="brand.500" />
+              </Slider>
+             </Box>
           </FormControl>
 
-          <Button size="sm" colorScheme="brand" onClick={addSkill} isDisabled={!newName.trim()}>
+          <Button 
+            size="md" 
+            colorScheme="brand" 
+            onClick={addSkill} 
+            isDisabled={!newName.trim()}
+            leftIcon={<Plus weight="bold" />}
+            px={8}
+          >
             Adicionar
           </Button>
         </Grid>
 
-        {/* Active Skills List */}
+        {/* Improved Active Skills List */}
         {skills.length > 0 && (
-          <VStack spacing={4} align="stretch" mt={4}>
+          <VStack spacing={3} align="stretch" mt={4}>
             {skills.map((skill, index) => {
-              const SelectedIcon = ICON_OPTIONS.find((opt) => opt.value === skill.icon)?.icon || Code;
+              const SkillIcon = getIconComponent(skill.icon);
               return (
                 <Flex
-                  key={index}
-                  p={3}
+                  key={`${skill.name}-${index}`}
+                  p={4}
                   bg="whiteAlpha.50"
-                  borderRadius="md"
+                  borderRadius="xl"
                   align="center"
-                  justify="space-between"
                   border="1px solid"
                   borderColor="whiteAlpha.100"
-                  transition="all 0.2s"
-                  _hover={{ borderColor: "whiteAlpha.300" }}
+                  transition="all 0.3s"
+                  _hover={{ borderColor: "whiteAlpha.300", bg: "whiteAlpha.100" }}
+                  role="group"
                 >
                   <HStack spacing={4} flex="1">
-                    <Icon as={SelectedIcon} color="brand.400" boxSize={5} />
-                    <Box minW="100px">
-                      <Text fontWeight="medium" fontSize="sm">{skill.name}</Text>
+                    <Box 
+                      p={2} 
+                      bg="blackAlpha.400" 
+                      borderRadius="lg" 
+                      color="brand.400"
+                      transition="transform 0.3s"
+                      _groupHover={{ transform: 'scale(1.1)' }}
+                    >
+                      <Icon as={SkillIcon} boxSize={5} />
                     </Box>
-                    <Box flex="1" px={4}>
+                    <Box minW="140px">
+                      <Text fontWeight="bold" fontSize="sm">{skill.name}</Text>
+                      <Text fontSize="10px" color="whiteAlpha.500" textTransform="uppercase" letterSpacing="wider">Habilidade</Text>
+                    </Box>
+                    <Box flex="1" px={6}>
                        <Slider
                          aria-label={`slider-${skill.name}`}
                          min={0}
@@ -208,25 +325,29 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
                          onChange={(v) => updateSkillLevel(index, v)}
                          colorScheme="brand"
                        >
-                         <SliderTrack bg="whiteAlpha.200">
+                         <SliderTrack bg="whiteAlpha.200" h="5px" borderRadius="full">
                            <SliderFilledTrack />
                          </SliderTrack>
-                         <SliderThumb />
+                         <SliderThumb boxSize={3} />
                        </Slider>
                     </Box>
-                    <Text fontSize="sm" fontWeight="bold" color="whiteAlpha.700" minW="40px" textAlign="right">
-                      {skill.level}%
-                    </Text>
+                    <Box minW="50px" textAlign="right">
+                      <Text fontSize="sm" fontWeight="black" color="brand.400">
+                        {skill.level}%
+                      </Text>
+                    </Box>
                   </HStack>
-                  <Button
+                  <IconButton
+                    aria-label="Remover"
+                    icon={<Trash weight="bold" />}
                     size="sm"
                     variant="ghost"
                     colorScheme="red"
                     onClick={() => removeSkill(index)}
                     ml={4}
-                  >
-                    <Icon as={Trash} />
-                  </Button>
+                    opacity={0.3}
+                    _groupHover={{ opacity: 1 }}
+                  />
                 </Flex>
               );
             })}
@@ -234,9 +355,11 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
         )}
         
         {skills.length === 0 && (
-          <Text fontSize="sm" color="whiteAlpha.400" textAlign="center" py={4}>
-            Nenhuma habilidade adicionada ainda. Use as sugestões ou crie uma nova.
-          </Text>
+          <Box py={10} textAlign="center" border="2px dashed" borderColor="whiteAlpha.100" borderRadius="xl">
+            <Text color="whiteAlpha.400" fontSize="sm">
+              Sua lista de expertises está vazia. Comece adicionando uma acima!
+            </Text>
+          </Box>
         )}
       </VStack>
     </Box>
