@@ -64,6 +64,7 @@ const ModernEditor = dynamic(() => import("./modern-editor").then(mod => mod.Mod
 
 import { CoverPicker } from "../CoverPicker";
 import { SkillsManager } from "./skills-manager";
+import { SocialsManager } from "./socials-manager";
 import { ProfileHeaderEditor } from "../ProfileHeaderEditor";
 
 type AdminDashboardProps = {
@@ -410,18 +411,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                              </Text>
                            </FormControl>
                           <FormControl>
-                            <FormLabel>Redes sociais</FormLabel>
-                            <Textarea
-                              name="socials"
-                              placeholder="Formato: Nome|https://link"
-                              defaultValue={
-                                Array.isArray(profile.socials)
-                                  ? profile.socials.map((social) => `${social.label}|${social.url}`).join("\n")
-                                  : ""
-                              }
-                              rows={4}
-                              bg="blackAlpha.300"
-                            />
+                            <SocialsManager initialSocials={(profile.socials as any) || []} />
                           </FormControl>
                           <FormControl>
                             <SkillsManager initialSkills={profile.skills || []} />
