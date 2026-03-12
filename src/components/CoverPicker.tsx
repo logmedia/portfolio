@@ -40,10 +40,10 @@ const PRESETS = [
 
 interface CoverPickerProps {
   currentCover?: string;
-  onUpdate?: () => void;
+  onChange?: (url: string) => void;
 }
 
-export function CoverPicker({ currentCover, onUpdate }: CoverPickerProps) {
+export function CoverPicker({ currentCover, onChange }: CoverPickerProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedCover, setSelectedCover] = useState(currentCover);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -52,26 +52,9 @@ export function CoverPicker({ currentCover, onUpdate }: CoverPickerProps) {
   const toast = useToast();
 
   const handleSelectPreset = async (url: string) => {
-    setIsLoading(true);
-    const result = await updateProfile({ cover_url: url });
-    
-    if (result.success) {
-      setSelectedCover(url);
-      toast({
-        title: "Capa atualizada!",
-        status: "success",
-        duration: 3000,
-      });
-      if (onUpdate) onUpdate();
-      onClose();
-    } else {
-      toast({
-        title: "Erro ao atualizar",
-        description: result.message,
-        status: "error",
-      });
-    }
-    setIsLoading(false);
+    setSelectedCover(url);
+    if (onChange) onChange(url);
+    onClose();
   };
 
   const handleGenerateAI = async () => {
@@ -104,7 +87,8 @@ export function CoverPicker({ currentCover, onUpdate }: CoverPickerProps) {
           status: "success",
           duration: 5000,
         });
-        if (onUpdate) onUpdate();
+        if (onChange && result.url) onChange(result.url);
+        onClose();
       } else {
         toast({
           title: "Erro ao gerar imagem",
@@ -125,15 +109,63 @@ export function CoverPicker({ currentCover, onUpdate }: CoverPickerProps) {
 
   return (
     <>
-      <Button 
-        leftIcon={<Sparkles size={18} />} 
-        variant="outline" 
-        size="sm" 
-        colorScheme="brand"
-        onClick={onOpen}
+      <Box 
+        w="full" 
+        h="120px" 
+        borderRadius="md" 
+        bg="whiteAlpha.50" 
+        border="1px dashed" 
+        borderColor="whiteAlpha.200"
+        position="relative"
+        overflow="hidden"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        role="group"
       >
-        Mudar Capa
-      </Button>
+        {currentCover ? (
+          <>
+            <Image 
+              src={currentCover} 
+              alt="Capa" 
+              w="full" 
+              h="full" 
+              objectFit="cover" 
+            />
+            <Box 
+              position="absolute" 
+              inset={0} 
+              bg="blackAlpha.600" 
+              opacity={0} 
+              _groupHover={{ opacity: 1 }} 
+              transition="all 0.2s"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Button 
+                leftIcon={<Sparkles size={18} />} 
+                variant="solid" 
+                size="sm" 
+                colorScheme="brand"
+                onClick={onOpen}
+              >
+                Mudar Capa
+              </Button>
+            </Box>
+          </>
+        ) : (
+          <Button 
+            leftIcon={<Sparkles size={18} />} 
+            variant="outline" 
+            size="sm" 
+            colorScheme="brand"
+            onClick={onOpen}
+          >
+            Adicionar Capa
+          </Button>
+        )}
+      </Box>
 
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay backdropFilter="blur(8px)" />

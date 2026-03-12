@@ -263,8 +263,9 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                               <FormLabel mb={0}>Capa do Perfil</FormLabel>
                               <CoverPicker 
                                 currentCover={profileCoverUrl} 
-                                onUpdate={() => {
-                                  // Opcional: recarregar dados ou apenas deixar o form cuidar
+                                onChange={(url) => {
+                                  setProfileCoverUrl(url);
+                                  setIsDirty(true);
                                 }}
                               />
                               <Text fontSize="xs" color="whiteAlpha.400">Presets modernos, Upload ou IA</Text>

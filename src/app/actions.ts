@@ -917,7 +917,7 @@ export async function generateAICover(prompt: string) {
     // Sanitize prompt for URL
     const sanitizedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
-    const aiUrl = `https://pollinations.ai/p/${sanitizedPrompt}?width=1920&height=400&model=flux&seed=${seed}`;
+    const aiUrl = `https://image.pollinations.ai/prompt/${sanitizedPrompt}?width=1920&height=400&nologo=true&seed=${seed}`;
 
     // 1. Fetch generated image
     const response = await fetch(aiUrl);
@@ -958,8 +958,7 @@ export async function generateAICover(prompt: string) {
 
     if (dbError) throw dbError;
 
-    // 4. Update profile cover_url automatically
-    await updateProfile({ cover_url: publicUrl });
+    // We no longer automatically update the profile here. This allows the CoverPicker to be used as a controlled component in forms.
 
     return { 
       success: true, 
