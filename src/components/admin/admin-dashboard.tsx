@@ -642,11 +642,23 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                                 defaultValue={selectedPost?.published_at ? new Date(selectedPost.published_at).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)} 
                                 bg="blackAlpha.300"
                                 color="white"
+                                size="sm"
                                 sx={{
                                   "&::-webkit-calendar-picker-indicator": {
                                     filter: "invert(1)",
-                                    cursor: "pointer"
-                                  }
+                                    opacity: 0.8,
+                                    cursor: "pointer",
+                                    padding: "4px",
+                                    borderRadius: "4px",
+                                    _hover: {
+                                      opacity: 1,
+                                      bg: "whiteAlpha.100"
+                                    }
+                                  },
+                                  "&::-webkit-datetime-edit": {
+                                    color: "whiteAlpha.900"
+                                  },
+                                  colorScheme: "dark"
                                 }}
                               />
                             </FormControl>
