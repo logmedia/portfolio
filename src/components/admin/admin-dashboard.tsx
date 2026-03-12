@@ -341,9 +341,30 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                 <GridItem>
                   <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                     <CardBody>
-                      <form key={profile.id ?? "profile-form"} action={handleProfileSubmit}>
+                      <form 
+                        key={profile.id ?? "profile-form"} 
+                        action={handleProfileSubmit}
+                        onChange={() => setIsDirty(true)}
+                      >
                         <input type="hidden" name="id" value={safeProfileId} />
                         <ChakraStack spacing={4}>
+                          {/* Top Action Bar */}
+                          <HStack justify="space-between" align="center" bg="blackAlpha.400" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(8px)">
+                            <Text fontWeight="bold" fontSize="sm" ml={2}>
+                              Configurações do Perfil
+                            </Text>
+                            <Button 
+                              type="submit" 
+                              isLoading={isSavingProfile} 
+                              loadingText="Salvando" 
+                              colorScheme="brand"
+                              size="sm"
+                              isDisabled={usernameFeedback?.available === false}
+                            >
+                              Salvar Perfil
+                            </Button>
+                          </HStack>
+
                           <FormControl isRequired>
                             <FormLabel>Nome</FormLabel>
                             <Input name="name" defaultValue={profile.name} placeholder="Nome completo" bg="blackAlpha.300" />
@@ -449,15 +470,6 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                           <FormControl>
                             <SkillsManager initialSkills={profile.skills || []} />
                           </FormControl>
-                          <Button 
-                            type="submit" 
-                            isLoading={isSavingProfile} 
-                            loadingText="Salvando" 
-                            colorScheme="brand"
-                            isDisabled={usernameFeedback?.available === false}
-                          >
-                            Salvar Perfil
-                          </Button>
                         </ChakraStack>
                       </form>
                     </CardBody>
