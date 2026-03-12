@@ -1,265 +1,177 @@
-"use client";
+'use client';
 
-import { 
-  Box, 
-  Container, 
-  Heading, 
-  Table, 
-  Thead, 
-  Tbody, 
-  Tr, 
-  Th, 
-  Td, 
-  Badge, 
-  Button, 
-  Avatar, 
-  HStack, 
-  VStack, 
+import { useState, useTransition } from "react";
+import {
+  Box,
+  Button,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Avatar,
+  Badge,
   Text,
-  IconButton,
+  HStack,
   useToast,
-  Link,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  Select
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Portal,
+  Spinner,
+  VStack,
 } from "@chakra-ui/react";
-import { ShieldCheck, UserMinus, UserCheck, Bell, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { adminUpdateUserStatus, adminDeleteUser, adminSendNotification } from "@/app/actions";
+import { DotsThreeVertical, ShieldCheck, UserCircle, Prohibit, CheckCircle } from "phosphor-react";
+import { updateProfileStatus, updateProfileRole } from "@/app/actions";
+import type { Profile } from "@/types/content";
 
 interface UserManagementContentProps {
-  users: any[];
+  users: Profile[];
 }
 
-export function UserManagementContent({ users }: UserManagementContentProps) {
+export function UserManagementContent({ users: initialUsers }: UserManagementContentProps) {
+  const [users, setUsers] = useState<Profile[]>(initialUsers);
+  const [isPending, startTransition] = useTransition();
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [notifData, setNotifData] = useState({ title: '', content: '', type: 'info' });
-  const [loading, setLoading] = useState<string | null>(null);
 
-  const handleToggleStatus = async (userId: string, currentStatus: string) => {
-    setLoading(userId);
-    const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
-    const result = await adminUpdateUserStatus(userId, newStatus as any);
+  const handleToggleStatus = (userId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'blocked' ? 'active' : 'blocked';
     
-    if (result.success) {
-      toast({
-        title: "Sucesso!",
-        description: `Usuário ${newStatus === 'active' ? 'ativado' : 'bloqueado'} com sucesso.`,
-        status: "success",
-        duration: 3000,
-      });
-    } else {
-      toast({
-        title: "Erro",
-        description: result.message,
-        status: "error",
-      });
-    }
-    setLoading(null);
+    startTransition(async () => {
+      const result = await updateProfileStatus(userId, newStatus);
+      if (result.success) {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: newStatus } : u));
+        toast({
+          title: `Usuário ${newStatus === 'blocked' ? 'bloqueado' : 'desbloqueado'}`,
+          status: "success",
+          duration: 3000,
+        });
+      } else {
+        toast({ title: result.message, status: "error" });
+      }
+    });
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Tem certeza que deseja deletar este usuário? Esta ação é irreversível.")) return;
+  const handleToggleRole = (userId: string, currentRole: string) => {
+    const newRole = currentRole === 'admin' ? 'editor' : 'admin';
     
-    setLoading(userId);
-    const result = await adminDeleteUser(userId);
-    
-    if (result.success) {
-      toast({
-        title: "Usuário deletado",
-        status: "info",
-        duration: 3000,
-      });
-    } else {
-      toast({
-        title: "Erro ao deletar",
-        description: result.message,
-        status: "error",
-      });
-    }
-    setLoading(null);
+    startTransition(async () => {
+      const result = await updateProfileRole(userId, newRole);
+      if (result.success) {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+        toast({
+          title: `Permissão alterada para ${newRole}`,
+          status: "success",
+          duration: 3000,
+        });
+      } else {
+        toast({ title: result.message, status: "error" });
+      }
+    });
   };
 
-  const openNotifyModal = (user: any) => {
-    setSelectedUser(user);
-    setNotifData({ title: '', content: '', type: 'info' });
-    onOpen();
-  };
-
-  const handleSendNotif = async () => {
-    const result = await adminSendNotification(
-      selectedUser?.id || null, // null = global
-      notifData.title,
-      notifData.content,
-      notifData.type as any
+  if (!users || users.length === 0) {
+    return (
+      <Box p={8} textAlign="center" bg="whiteAlpha.50" borderRadius="xl">
+        <Text color="whiteAlpha.500">Nenhum outro usuário encontrado.</Text>
+      </Box>
     );
-
-    if (result.success) {
-      toast({
-        title: "Notificação enviada!",
-        status: "success",
-      });
-      onClose();
-    } else {
-      toast({
-        title: "Erro ao enviar",
-        description: result.message,
-        status: "error",
-      });
-    }
-  };
+  }
 
   return (
-    <Container maxW="container.xl" py={10}>
-      <VStack spacing={8} align="stretch">
-        <HStack justify="space-between">
-          <VStack align="start" spacing={0}>
-            <Heading size="lg">Gestão de Usuários</Heading>
-            <Text color="whiteAlpha.600">Administre acessos e envie comunicações globais.</Text>
-          </VStack>
-          <Button 
-            leftIcon={<Bell size={18} />} 
-            colorScheme="brand" 
-            onClick={() => openNotifyModal(null)}
-          >
-            Notificação Global
-          </Button>
-        </HStack>
-
-        <Box bg="whiteAlpha.50" borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" overflow="hidden">
-          <Table variant="simple">
-            <Thead bg="whiteAlpha.100">
-              <Tr>
-                <Th color="whiteAlpha.600">Usuário</Th>
-                <Th color="whiteAlpha.600">Função</Th>
-                <Th color="whiteAlpha.600">Status</Th>
-                <Th color="whiteAlpha.600">Criado em</Th>
-                <Th color="whiteAlpha.600" textAlign="right">Ações</Th>
+    <Box bg="whiteAlpha.50" borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" overflow="hidden">
+      <Box overflowX="auto">
+        <Table variant="simple">
+          <Thead bg="whiteAlpha.100">
+            <Tr>
+              < Th color="whiteAlpha.600">Usuário</Th>
+              <Th color="whiteAlpha.600">Cargo</Th>
+              <Th color="whiteAlpha.600">Status</Th>
+              <Th color="whiteAlpha.600">Entrou em</Th>
+              <Th color="whiteAlpha.600" textAlign="right">Ações</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {users.map((user) => (
+              <Tr key={user.id} _hover={{ bg: "whiteAlpha.50" }} transition="all 0.2s">
+                <Td>
+                  <HStack spacing={3}>
+                    <Avatar size="sm" src={user.avatar_url || ""} name={user.name} />
+                    <VStack align="start" spacing={0}>
+                      <Text fontWeight="bold" fontSize="sm">{user.name}</Text>
+                      <Text fontSize="xs" color="whiteAlpha.500">@{user.github_username || 'sem_username'}</Text>
+                    </VStack>
+                  </HStack>
+                </Td>
+                <Td>
+                  <Badge 
+                    colorScheme={user.role === 'admin' ? "brand" : "gray"} 
+                    variant="subtle"
+                    px={2}
+                    py={0.5}
+                    borderRadius="full"
+                    fontSize="2xs"
+                  >
+                    {user.role === 'admin' ? "Administrador" : "Editor"}
+                  </Badge>
+                </Td>
+                <Td>
+                  <HStack spacing={2}>
+                    <Box 
+                      w={2} 
+                      h={2} 
+                      borderRadius="full" 
+                      bg={user.status === 'blocked' ? "red.400" : "green.400"} 
+                    />
+                    <Text fontSize="xs" color="whiteAlpha.700">
+                      {user.status === 'blocked' ? "Bloqueado" : "Ativo"}
+                    </Text>
+                  </HStack>
+                </Td>
+                <Td fontSize="xs" color="whiteAlpha.600">
+                  {user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '-'}
+                </Td>
+                <Td textAlign="right">
+                  <Menu isLazy>
+                    <MenuButton
+                      as={IconButton}
+                      aria-label="Opções"
+                      icon={<DotsThreeVertical size={18} />}
+                      variant="ghost"
+                      size="sm"
+                      _hover={{ bg: "whiteAlpha.200" }}
+                      isLoading={isPending}
+                    />
+                    <Portal>
+                      <MenuList bg="gray.900" borderColor="whiteAlpha.200">
+                        <MenuItem 
+                          icon={user.status === 'blocked' ? <CheckCircle size={18} /> : <Prohibit size={18} />} 
+                          onClick={() => handleToggleStatus(user.id, user.status || 'active')}
+                          bg="transparent"
+                          _hover={{ bg: "whiteAlpha.100" }}
+                        >
+                          {user.status === 'blocked' ? "Desbloquear" : "Bloquear"}
+                        </MenuItem>
+                        <MenuItem 
+                          icon={user.role === 'admin' ? <UserCircle size={18} /> : <ShieldCheck size={18} />} 
+                          onClick={() => handleToggleRole(user.id, user.role || 'editor')}
+                          bg="transparent"
+                          _hover={{ bg: "whiteAlpha.100" }}
+                        >
+                          {user.role === 'admin' ? "Tornar Editor" : "Tornar Administrador"}
+                        </MenuItem>
+                      </MenuList>
+                    </Portal>
+                  </Menu>
+                </Td>
               </Tr>
-            </Thead>
-            <Tbody>
-              {users.map((user) => (
-                <Tr key={user.id} _hover={{ bg: "whiteAlpha.50" }} transition="all 0.2s">
-                  <Td>
-                    <HStack spacing={3}>
-                      <Avatar size="sm" src={user.avatar_url} name={user.name} />
-                      <VStack align="start" spacing={0}>
-                        <Text fontWeight="bold">{user.name}</Text>
-                        <Text fontSize="xs" color="whiteAlpha.500">{user.github_username || 'Sem GitHub'}</Text>
-                      </VStack>
-                    </HStack>
-                  </Td>
-                  <Td>
-                    <Badge colorScheme={user.role === 'admin' ? 'purple' : 'gray'}>
-                      {user.role}
-                    </Badge>
-                  </Td>
-                  <Td>
-                    <Badge colorScheme={user.status === 'active' ? 'green' : 'red'}>
-                      {user.status === 'active' ? 'Ativo' : 'Bloqueado'}
-                    </Badge>
-                  </Td>
-                  <Td color="whiteAlpha.600" fontSize="sm">
-                    {new Date(user.created_at).toLocaleDateString()}
-                  </Td>
-                  <Td textAlign="right">
-                    <HStack spacing={2} justify="end">
-                      <IconButton
-                        aria-label="Notificar"
-                        icon={<Bell size={16} />}
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => openNotifyModal(user)}
-                      />
-                      <IconButton
-                        aria-label={user.status === 'active' ? "Bloquear" : "Ativar"}
-                        icon={user.status === 'active' ? <UserMinus size={16} /> : <UserCheck size={16} />}
-                        size="sm"
-                        colorScheme={user.status === 'active' ? "orange" : "green"}
-                        variant="ghost"
-                        isLoading={loading === user.id}
-                        onClick={() => handleToggleStatus(user.id, user.status)}
-                      />
-                      <IconButton
-                        aria-label="Deletar"
-                        icon={<Trash2 size={16} />}
-                        size="sm"
-                        colorScheme="red"
-                        variant="ghost"
-                        isLoading={loading === user.id}
-                        onClick={() => handleDeleteUser(user.id)}
-                      />
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </Box>
-      </VStack>
-
-      <Modal isOpen={isOpen} onClose={onClose} size="lg">
-        <ModalOverlay backdropFilter="blur(4px)" />
-        <ModalContent bg="gray.900" border="1px solid" borderColor="whiteAlpha.200">
-          <ModalHeader>
-            {selectedUser ? `Notificar: ${selectedUser.name}` : "Enviar Notificação Global"}
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>Título</FormLabel>
-                <Input 
-                  placeholder="Ex: Novo recurso disponível!" 
-                  value={notifData.title}
-                  onChange={(e) => setNotifData({...notifData, title: e.target.value})}
-                />
-              </FormControl>
-
-              <FormControl isRequired>
-                <FormLabel>Conteúdo</FormLabel>
-                <Textarea 
-                  placeholder="Escreva sua mensagem aqui..." 
-                  value={notifData.content}
-                  onChange={(e) => setNotifData({...notifData, content: e.target.value})}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Tipo de Alerta</FormLabel>
-                <Select 
-                  value={notifData.type}
-                  onChange={(e) => setNotifData({...notifData, type: e.target.value})}
-                >
-                  <option value="info">💡 Informativo (Azul)</option>
-                  <option value="success">✅ Sucesso (Verde)</option>
-                  <option value="warning">⚠️ Aviso (Laranja)</option>
-                  <option value="error">🚨 Erro/Crítico (Vermelho)</option>
-                </Select>
-              </FormControl>
-            </VStack>
-          </ModalBody>
-
-          <ModalFooter borderTop="1px solid" borderColor="whiteAlpha.100">
-            <Button variant="ghost" mr={3} onClick={onClose}>Cancelar</Button>
-            <Button colorScheme="brand" onClick={handleSendNotif}>
-              Enviar Agora
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </Container>
+            ))}
+          </Tbody>
+        </Table>
+      </Box>
+    </Box>
   );
 }

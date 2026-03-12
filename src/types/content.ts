@@ -13,7 +13,8 @@ export type Stack = {
 export type Profile = {
   id: string;
   name: string;
-  role?: string;
+  role?: "admin" | "editor"; // Access control
+  job_title?: string; // e.g. "Web Developer"
   bio?: string;
   avatar_url?: string;
   cover_url?: string;
@@ -21,6 +22,8 @@ export type Profile = {
   stacks?: string[];
   skills?: any[];
   github_username?: string;
+  status?: "active" | "blocked";
+  created_at?: string;
 };
 
 export type GalleryItem = {

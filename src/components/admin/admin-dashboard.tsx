@@ -39,9 +39,10 @@ import {
   VStack,
   Spinner,
 } from "@chakra-ui/react";
-import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction, checkUsernameAvailability } from "@/app/actions";
+import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction, checkUsernameAvailability, fetchAllProfiles } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem } from "@/types/content";
-import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash, Recycle } from "phosphor-react";
+import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash, Recycle, Users } from "phosphor-react";
+import { UserManagementContent } from "../UserManagementContent";
 import { StacksManagement } from "./stacks-management";
 import { TrashManager } from "./trash-manager";
 import { StackSelector } from "./stack-selector";
@@ -91,6 +92,16 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   // Profile media state
   const [profileAvatarUrl, setProfileAvatarUrl] = useState(profile.avatar_url ?? "");
   const [profileCoverUrl, setProfileCoverUrl] = useState(profile.cover_url ?? "");
+
+  // Admin state
+  const [allUsers, setAllUsers] = useState<Profile[]>([]);
+  const isAdmin = (profile as any).role === 'admin';
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAllProfiles().then(data => setAllUsers(data as any));
+    }
+  }, [isAdmin, profile.id]);
 
   // Profile username state
   const [profileUsername, setProfileUsername] = useState((profile as any).github_username ?? "");
@@ -257,6 +268,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
             <Tab fontWeight="semibold"><Icon as={StackIcon} mr={2} /> Stacks</Tab>
             <Tab fontWeight="semibold"><Icon as={ChatCircleText} mr={2} /> Comentários</Tab>
             <Tab fontWeight="semibold"><Icon as={Recycle} mr={2} /> Lixeira</Tab>
+            {isAdmin && <Tab fontWeight="semibold"><Icon as={Users} mr={2} /> Usuários</Tab>}
           </TabList>
           <TabPanels>
             <TabPanel px={0} pt={8}>
@@ -272,8 +284,8 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <Input name="name" defaultValue={profile.name} placeholder="Nome completo" bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Cargo</FormLabel>
-                            <Input name="role" defaultValue={profile.role ?? ""} bg="blackAlpha.300" />
+                            <FormLabel>Cargo Atual</FormLabel>
+                            <Input name="role" defaultValue={(profile as any).job_title ?? ""} bg="blackAlpha.300" />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Bio</FormLabel>
@@ -744,6 +756,11 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
             <TabPanel px={0} pt={8}>
               <TrashManager posts={posts} />
             </TabPanel>
+            {isAdmin && (
+              <TabPanel px={0} pt={8}>
+                <UserManagementContent users={allUsers} />
+              </TabPanel>
+            )}
           </TabPanels>
         </Tabs>
       </ChakraStack>

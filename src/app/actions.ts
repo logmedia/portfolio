@@ -53,6 +53,7 @@ const stacksSchema = z.string().optional();
 const profileSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(3),
+  jobTitle: z.string().optional(),
   role: z.string().optional(),
   bio: z.string().optional(),
   avatarUrl: z.string().url().optional().or(z.literal("")),
@@ -103,7 +104,7 @@ export async function saveProfile(formData: FormData) {
   const parsed = profileSchema.safeParse({
     id: formData.get("id")?.toString(),
     name: formData.get("name")?.toString(),
-    role: formData.get("role")?.toString(),
+    jobTitle: formData.get("role")?.toString(), // Map the form field 'role' (job title) to jobTitle
     bio: formData.get("bio")?.toString(),
     avatarUrl: formData.get("avatarUrl")?.toString(),
     coverUrl: formData.get("coverUrl")?.toString(),
@@ -125,7 +126,7 @@ export async function saveProfile(formData: FormData) {
   const payload = {
     id: parsed.data.id,
     name: parsed.data.name,
-    role: parsed.data.role ?? null,
+    job_title: parsed.data.jobTitle ?? null,
     bio: parsed.data.bio ?? null,
     avatar_url: parsed.data.avatarUrl || null,
     cover_url: parsed.data.coverUrl || null,
@@ -258,21 +259,35 @@ export async function savePost(formData: FormData) {
 
     console.log("Saving project payload:", payload);
 
-    const { data: post, error } = await (supabase as any)
-      .from("posts")
-      .upsert(payload as any, { onConflict: "id" })
-      .select()
-      .single();
+    let currentSlug = payload.slug;
+    let post = null;
+    let error = null;
+    let success = false;
+    let attempts = 0;
 
-    if (error || !post) {
-      console.error("savePost error:", error);
+    // Slug Auto-Resolver Logic
+    while (!success && attempts < 5) {
+      const response = await (supabase as any)
+        .from("posts")
+        .upsert({ ...payload, slug: currentSlug } as any, { onConflict: "id" })
+        .select()
+        .single();
       
-      // Handle unique slug constraint gracefully
-      if (error?.message?.includes("posts_slug_key")) {
-        return { success: false, message: "Este slug (URL amigável) já está em uso por outro projeto. Por favor, escolha um diferente." };
+      if (!response.error) {
+        post = response.data;
+        success = true;
+      } else if (response.error.message?.includes("posts_author_slug_key")) {
+        attempts++;
+        currentSlug = `${payload.slug}-${attempts}`;
+      } else {
+        error = response.error;
+        break;
       }
-      
-      return { success: false, message: `Erro no banco: ${error?.message || "Sem resposta do post"}` };
+    }
+
+    if (!success || !post) {
+      console.error("savePost error after attempts:", error);
+      return { success: false, message: `Erro no banco: ${error?.message || "Conflito de slug persistente"}` };
     }
 
     console.log("Project saved successfully:", post);
@@ -1004,4 +1019,89 @@ export async function checkUsernameAvailability(username: string, currentUserId:
     console.error("checkUsernameAvailability ERROR:", error);
     return { available: false, message: "Erro no servidor." };
   }
+}
+
+export async function fetchAllProfiles() {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return [];
+
+  // Verify if current user is admin
+  const { data: currentUser } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if ((currentUser as any)?.role !== 'admin') {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching profiles:", error);
+    return [];
+  }
+
+  return data;
+}
+
+export async function updateProfileStatus(profileId: string, status: 'active' | 'blocked') {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return { success: false, message: "Não autorizado." };
+
+  // Verify admin
+  const { data: adminUser } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if ((adminUser as any)?.role !== 'admin') {
+    return { success: false, message: "Acesso negado." };
+  }
+
+  const { error } = await (supabase as any)
+    .from("profiles")
+    .update({ status })
+    .eq("id", profileId);
+
+  if (error) return { success: false, message: error.message };
+  
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function updateProfileRole(profileId: string, role: 'admin' | 'editor') {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return { success: false, message: "Não autorizado." };
+
+  const { data: adminUser } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if ((adminUser as any)?.role !== 'admin') {
+    return { success: false, message: "Acesso negado." };
+  }
+
+  const { error } = await (supabase as any)
+    .from("profiles")
+    .update({ role })
+    .eq("id", profileId);
+
+  if (error) return { success: false, message: error.message };
+  
+  revalidatePath("/admin");
+  return { success: true };
 }
