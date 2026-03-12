@@ -26,7 +26,7 @@ export async function fetchAdminProfile(userId?: string): Promise<Profile | null
       role: profileData.role ?? undefined,
       bio: profileData.bio ?? undefined,
       avatar_url: profileData.avatar_url ?? undefined,
-      cover_url: profileData.cover_url ?? undefined,
+      cover_url: profileData.cover_url || "/covers/abstract-tech.png",
       socials: profileData.socials ?? [],
       stacks: profileData.stacks ?? [],
       skills: profileData.skills ?? [],
