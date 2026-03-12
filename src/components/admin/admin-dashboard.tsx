@@ -81,6 +81,13 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const [isLoggingOut, startLogoutTransition] = useTransition();
   const [isCommentPending, startCommentTransition] = useTransition();
   const [isDirty, setIsDirty] = useState(false);
+  const [localPosts, setLocalPosts] = useState<Post[]>(posts);
+
+  // Sync with props when they change (SSR)
+  useEffect(() => {
+    setLocalPosts(posts);
+  }, [posts]);
+
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const safeProfileId = uuidRegex.test(profile.id ?? "") ? profile.id : "";
   const safePostId = uuidRegex.test(selectedPost?.id ?? "") ? selectedPost?.id : "";
@@ -201,15 +208,23 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
       
       // Sincronizar o estado local com o que o banco retornou
       if (result.post) {
-        setSelectedPost(result.post as Post);
+        const savedPost = result.post as Post;
+        setSelectedPost(savedPost);
+        setLocalPosts(prev => {
+          // Se o post já existia (por ID ou slug se for fallback), atualiza. Caso contrário, adiciona.
+          const exists = prev.find(p => p.id === savedPost.id || p.slug === savedPost.slug);
+          if (exists) {
+            return prev.map(p => (p.id === savedPost.id || (p.slug === savedPost.slug && !uuidRegex.test(p.id))) ? savedPost : p);
+          }
+          return [savedPost, ...prev];
+        });
       }
     });
   };
 
-  const activePosts = useMemo(() => posts.filter(p => p.status !== 'trash'), [posts]);
+  const activePosts = useMemo(() => localPosts.filter(p => p.status !== 'trash'), [localPosts]);
 
   const handleDeletePost = (id: string) => {
-    
     startDeleteTransition(async () => {
       const result = await deletePost(id);
       if (!result.success) {
@@ -217,6 +232,8 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
         return;
       }
       toast({ title: "Projeto excluído com sucesso!", status: "success" });
+      setLocalPosts(prev => prev.filter(p => p.id !== id));
+      if (selectedPost?.id === id) setSelectedPost(null);
     });
   };
   
@@ -588,13 +605,31 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             </FormControl>
                           </Grid>
 
-                          <FormControl>
-                            <FormLabel fontSize="sm">Status de Visibilidade</FormLabel>
-                            <Select name="status" defaultValue={selectedPost?.status ?? "draft"} bg="blackAlpha.300">
-                              <option value="draft">Rascunho (Privado)</option>
-                              <option value="published">Publicado (Visível)</option>
-                            </Select>
-                          </FormControl>
+                          <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                            <FormControl>
+                              <FormLabel fontSize="sm">Status de Visibilidade</FormLabel>
+                              <Select name="status" defaultValue={selectedPost?.status ?? "draft"} bg="blackAlpha.300">
+                                <option value="draft">Rascunho (Privado)</option>
+                                <option value="published">Publicado (Visível)</option>
+                              </Select>
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel fontSize="sm">Data de Publicação</FormLabel>
+                              <Input 
+                                type="datetime-local" 
+                                name="publishedAt" 
+                                defaultValue={selectedPost?.published_at ? new Date(selectedPost.published_at).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)} 
+                                bg="blackAlpha.300"
+                                color="white"
+                                sx={{
+                                  "&::-webkit-calendar-picker-indicator": {
+                                    filter: "invert(1)",
+                                    cursor: "pointer"
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                          </Grid>
 
 
                           <Divider borderColor="whiteAlpha.100" />

@@ -163,6 +163,7 @@ const postSchema = z.object({
   performance: z.preprocess((val) => Number(val ?? 100), z.number().min(0).max(100)),
   difficulty: z.preprocess((val) => Number(val ?? 1), z.number().min(1).max(5)),
   status: z.enum(["draft", "published", "trash"]),
+  publishedAt: z.string().optional().nullable(),
 });
 
 const parseGallery = (input?: string) => {
@@ -195,7 +196,8 @@ export async function savePost(formData: FormData) {
       rating: formData.get("rating")?.toString(),
       performance: formData.get("performance")?.toString(),
       difficulty: formData.get("difficulty")?.toString(),
-      status: formData.get("status")?.toString() as "draft" | "published",
+      status: formData.get("status")?.toString() as "draft" | "published" | "trash",
+      publishedAt: formData.get("publishedAt")?.toString(),
     });
 
     if (!parsed.success) {
@@ -252,10 +254,9 @@ export async function savePost(formData: FormData) {
       gallery: parseGallery(parsed.data.gallery),
       tags: parseStacks(parsed.data.tags), // Mantemos tags legadas
       external_link: parsed.data.externalLink || null,
-      rating: parsed.data.rating,
-      performance: parsed.data.performance,
       difficulty: parsed.data.difficulty,
       status: parsed.data.status,
+      published_at: parsed.data.publishedAt || new Date().toISOString(),
       author_id: user.id,
     };
 
@@ -318,23 +319,12 @@ export async function savePost(formData: FormData) {
       }
     }
 
-    revalidatePath("/admin");
-    revalidatePath("/");
+    // 3. Revalidações
     revalidatePath(`/projeto/${(post as any).slug}`);
+    revalidatePath("/admin", 'page');
+    revalidatePath("/", 'layout');
 
-    // Revalidate the author's public profile to ensure dynamic stacks are updated
-    const { data } = await supabase
-      .from("profiles")
-      .select("github_username, id")
-      .eq("id", user.id)
-      .single();
-      
-    if (data) {
-      const authorProfile = data as any;
-      revalidatePath(`/${authorProfile.github_username || authorProfile.id}`);
-    }
-    
-    // Buscar o post atualizado com stacks para o frontend sincronizar
+    // 4. Buscar o post atualizado com stacks para o frontend sincronizar
     const { data: updatedPost } = await (supabase as any)
       .from("posts")
       .select(`
@@ -343,7 +333,7 @@ export async function savePost(formData: FormData) {
           stack:stacks(*)
         )
       `)
-      .eq("id", post.id)
+      .eq("id", (post as any).id)
       .single();
 
     // Formatar o retorno para o tipo Post esperado pelo frontend
@@ -352,10 +342,10 @@ export async function savePost(formData: FormData) {
       stacks: updatedPost.stacks?.map((s: any) => s.stack).filter(Boolean) || []
     } : post;
 
-    return { success: true, post: formattedPost };
-  } catch (error) {
-    console.error("savePost fatal error:", error);
-    return { success: false, message: "Erro inesperado ao salvar projeto." };
+    return { success: true, post: formattedPost as Post };
+  } catch (error: any) {
+    console.error("savePost error:", error);
+    return { success: false, message: `Erro ao salvar: ${error.message}` };
   }
 }
 
