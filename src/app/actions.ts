@@ -276,9 +276,14 @@ export async function savePost(formData: FormData) {
       if (!response.error) {
         post = response.data;
         success = true;
-      } else if (response.error.message?.includes("posts_author_slug_key")) {
+      } else if (
+        response.error.code === "23505" || 
+        response.error.message?.includes("posts_author_slug_key") ||
+        response.error.message?.includes("duplicate key value violates unique constraint")
+      ) {
         attempts++;
         currentSlug = `${payload.slug}-${attempts}`;
+        console.warn(`Slug conflict detected. Retrying with: ${currentSlug} (Attempt ${attempts})`);
       } else {
         error = response.error;
         break;

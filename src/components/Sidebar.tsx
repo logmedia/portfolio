@@ -6,7 +6,8 @@ import Image from "next/image";
 
 interface Profile {
   name: string;
-  role: string;
+  role: "admin" | "editor";
+  job_title?: string;
   bio?: string;
   avatar_url: string;
   cover_url: string;
@@ -15,7 +16,8 @@ interface Profile {
 
 const DEFAULT_PROFILE: Profile = {
   name: "José Renato",
-  role: "Web Developer",
+  role: "admin",
+  job_title: "Web Developer",
   bio: "Crio experiências web modernas focadas em performance e design.",
   avatar_url: "https://avatars.githubusercontent.com/u/99501874?v=4",
   cover_url:
@@ -34,7 +36,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ profile }: SidebarProps) {
-  const { name, role, bio, avatar_url, cover_url, socials } = { ...DEFAULT_PROFILE, ...profile };
+  const { name, role, job_title, bio, avatar_url, cover_url, socials } = { ...DEFAULT_PROFILE, ...profile };
 
   const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
   const borderColor = useColorModeValue("white", "whiteAlpha.100");
@@ -96,7 +98,7 @@ export function Sidebar({ profile }: SidebarProps) {
             {name}
           </Text>
           <Text fontSize="sm" color="brand.500" fontWeight="semibold" letterSpacing="wider" textTransform="uppercase">
-            {role}
+            {profile?.job_title || job_title || role}
           </Text>
         </Stack>
 
