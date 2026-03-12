@@ -63,6 +63,7 @@ const ModernEditor = dynamic(() => import("./modern-editor").then(mod => mod.Mod
 import { GithubActivity } from "./github-activity";
 import { CoverPicker } from "../CoverPicker";
 import { SkillsManager } from "./skills-manager";
+import { ProfileHeaderEditor } from "../ProfileHeaderEditor";
 
 type AdminDashboardProps = {
   profile: Profile;
@@ -291,26 +292,39 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <FormLabel>Bio</FormLabel>
                             <Textarea name="bio" defaultValue={profile.bio ?? ""} rows={4} bg="blackAlpha.300" />
                           </FormControl>
+                          <Box mb={6}>
+                            <ProfileHeaderEditor 
+                              avatarUrl={profileAvatarUrl}
+                              coverUrl={profileCoverUrl}
+                              onAvatarChange={(url) => {
+                                setProfileAvatarUrl(url);
+                                setIsDirty(true);
+                              }}
+                              onCoverChange={(url) => {
+                                setProfileCoverUrl(url);
+                                setIsDirty(true);
+                              }}
+                              userName={profile.name}
+                            />
+                          </Box>
+
                           <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
                             <MediaPicker 
-                              label="Avatar (Foto de Perfil)" 
+                              label="Alterar Avatar" 
                               value={profileAvatarUrl} 
                               onChange={(url) => {
                                 setProfileAvatarUrl(url);
                                 setIsDirty(true);
                               }} 
                             />
-                            <VStack align="start" spacing={2}>
-                              <FormLabel mb={0}>Capa do Perfil</FormLabel>
-                              <CoverPicker 
-                                currentCover={profileCoverUrl} 
-                                onChange={(url) => {
-                                  setProfileCoverUrl(url);
-                                  setIsDirty(true);
-                                }}
-                              />
-                              <Text fontSize="xs" color="whiteAlpha.400">Presets modernos, Upload ou IA</Text>
-                            </VStack>
+                            <MediaPicker 
+                              label="Alterar Capa" 
+                              value={profileCoverUrl} 
+                              onChange={(url) => {
+                                setProfileCoverUrl(url);
+                                setIsDirty(true);
+                              }} 
+                            />
                           </Grid>
                           {/* Hidden inputs to maintain form functionality with old schema */}
                           <input type="hidden" name="avatarUrl" value={profileAvatarUrl} />
