@@ -76,7 +76,7 @@ type AdminDashboardProps = {
 
 export function AdminDashboard({ profile, posts, comments, stacks, activities }: AdminDashboardProps) {
   const toast = useToast();
-  const [selectedPost, setSelectedPost] = useState<Post | null>(posts[0] ?? null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isSavingProfile, startProfileTransition] = useTransition();
   const [isSavingPost, startPostTransition] = useTransition();
   const [isDeletingPost, startDeleteTransition] = useTransition();
