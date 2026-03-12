@@ -35,7 +35,8 @@ import {
 import { 
   Code, Palette, Database, Lightning, BracketsCurly, Cpu, Plus, Trash, 
   Camera, MusicNotes, ChartBar, Globe, Book, Pen, VideoCamera, 
-  SpeakerHigh, Flask, MagnifyingGlass, DotsSixVertical
+  SpeakerHigh, Flask, MagnifyingGlass, DotsSixVertical, BezierCurve, FilmStrip,
+  Strategy, UserCircle, Briefcase, TrendUp
 } from "phosphor-react";
 import * as PhosphorIcons from "phosphor-react";
 import { useState, useMemo } from "react";
@@ -53,19 +54,22 @@ interface SkillsManagerProps {
 // Curated icons for the "Quick Selection"
 const QUICK_ICONS = [
   { name: "Code", icon: Code, label: "Desenvolvimento" },
-  { name: "Palette", icon: Palette, label: "Design" },
+  { name: "Palette", icon: Palette, label: "Design/Photoshop" },
+  { name: "BezierCurve", icon: BezierCurve, label: "Vetor/Illustrator" },
+  { name: "FilmStrip", icon: FilmStrip, label: "Vídeo/Premiere" },
   { name: "Camera", icon: Camera, label: "Fotografia" },
   { name: "MusicNotes", icon: MusicNotes, label: "Música" },
-  { name: "VideoCamera", icon: VideoCamera, label: "Vídeo" },
   { name: "ChartBar", icon: ChartBar, label: "Marketing/Dados" },
-  { name: "Globe", icon: Globe, label: "Web/Global" },
-  { name: "Pen", icon: Pen, label: "Escrita" },
-  { name: "Lightning", icon: Lightning, label: "Performance" },
+  { name: "Pen", icon: Pen, label: "Escrita/Copy" },
+  { name: "Briefcase", icon: Briefcase, label: "Business/Gestão" },
+  { name: "TrendUp", icon: TrendUp, label: "Crescimento/SEO" },
 ];
 
 const SUGGESTIONS = [
-  "React", "Figma", "Fotografia Digital", "Edição de Áudio", "Gestão de Projetos", 
-  "Estratégia SEO", "Inglês Fluente", "Adobe Premiere", "Python", "UX Design"
+  "React", "Adobe Photoshop", "Adobe Illustrator", "Premiere Pro", "Figma", 
+  "UI/UX Design", "Estratégia SEO", "Gestão de Tráfego", "Copywriting", 
+  "Edição de Vídeo", "Fotografia", "Node.js", "TypeScript", "Inglês Fluente",
+  "Liderança", "Scrum/Agile", "Google Analytics", "Social Media"
 ];
 
 export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
