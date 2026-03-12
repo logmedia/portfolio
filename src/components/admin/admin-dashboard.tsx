@@ -316,7 +316,15 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
           </Button>
         </HStack>
 
-        <Tabs variant="enclosed" colorScheme="brand">
+        <Tabs 
+          variant="enclosed" 
+          colorScheme="brand"
+          onChange={(index) => {
+            if (index === 1) {
+              handleNewProject();
+            }
+          }}
+        >
           <TabList overflowX="auto" borderBottomColor="whiteAlpha.200">
             <Tab fontWeight="semibold"><Icon as={Cube} mr={2} /> Perfil</Tab>
             <Tab fontWeight="semibold"><Icon as={Desktop} mr={2} /> Projetos</Tab>
