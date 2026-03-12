@@ -10,6 +10,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    version: "v1.2.0",
+    date: "12 de Março, 2026",
+    title: "Galeria Moderna, Integração WhatsApp & UX Social",
+    changes: [
+      { type: "feat", description: "Nova Galeria de Projetos com slider horizontal moderno, efeito 'peek' mobile e animação de zoom." },
+      { type: "feat", description: "Integração inteligente de WhatsApp com controle de privacidade no painel administrativo." },
+      { type: "feat", description: "Editor de Redes Sociais reformulado com preenchimento automático de URLs base (Input de Usuário)." },
+      { type: "feat", description: "Barra de salvamento flutuante adicionada à aba Perfil para maior agilidade na edição." },
+      { type: "fix", description: "Tratamento de Erro 500 na integração de login de novos usuários via GitHub corrigido." },
+    ],
+  },
+  {
     version: "v1.1.0",
     date: "11 de Março, 2026",
     title: "Skills Dinâmicas & Gerenciador Interativo",
