@@ -15,9 +15,14 @@ import {
   useDisclosure,
   Grid,
   Skeleton,
+  Icon,
 } from '@chakra-ui/react';
-import { CaretLeft, CaretRight } from 'phosphor-react';
+import { CaretLeft, CaretRight, Plus } from 'phosphor-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { GalleryItem } from '@/types/content';
+
+const MotionBox = motion(Box);
+const MotionImage = motion(Image);
 
 interface GalleryCarouselProps {
   items: GalleryItem[];
@@ -66,56 +71,116 @@ export function GalleryCarousel({ items }: GalleryCarouselProps) {
 
   return (
     <>
-      {/* Grid de thumbnails */}
-      <Grid templateColumns="repeat(auto-fill, minmax(180px, 1fr))" gap={4}>
-        {sortedItems.map((item, index) => (
-          <Box
-            key={`${item.url}-${index}`}
-            position="relative"
-            borderRadius="xl"
-            overflow="hidden"
-            cursor="pointer"
-            onClick={() => openAt(index)}
-            role="group"
-            border="1px solid"
-            borderColor="whiteAlpha.100"
-            transition="all 0.3s"
-            _hover={{ 
-              transform: 'translateY(-4px)', 
-              boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
-              borderColor: 'brand.400'
-            }}
-          >
-            <Box sx={{ aspectRatio: "16/10" }}>
-              <Image
-                src={item.url}
-                alt={item.caption || `Foto ${index + 1}`}
-                objectFit="cover"
-                w="100%"
-                h="100%"
-                fallback={<Skeleton w="100%" h="100%" />}
-                transition="transform 0.3s"
-                _groupHover={{ transform: 'scale(1.05)' }}
-              />
-            </Box>
-            {item.caption && (
+      {/* Slider Horizontal Moderno */}
+      <Box position="relative" w="full">
+        <HStack
+          overflowX="auto"
+          spacing={4}
+          px={1}
+          py={2}
+          sx={{
+            scrollSnapType: 'x mandatory',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+            scrollBehavior: 'smooth'
+          }}
+          align="stretch"
+        >
+          {sortedItems.map((item, index) => (
+            <Box
+              key={`${item.url}-${index}`}
+              flexShrink={0}
+              w={{ base: "calc(100% / 2.5)", md: "calc(100% / 3.5)", lg: "calc(100% / 4.5)" }}
+              sx={{ scrollSnapAlign: 'start' }}
+            >
               <Box
-                position="absolute"
-                bottom={0}
-                left={0}
-                right={0}
-                bg="linear-gradient(transparent, rgba(0,0,0,0.8))"
-                px={3}
-                py={2}
+                position="relative"
+                borderRadius="2xl"
+                overflow="hidden"
+                cursor="pointer"
+                onClick={() => openAt(index)}
+                role="group"
+                border="1px solid"
+                borderColor="whiteAlpha.100"
+                transition="all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+                _hover={{ 
+                  transform: 'scale(1.02) translateY(-4px)', 
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                  borderColor: 'brand.400'
+                }}
               >
-                <Text fontSize="xs" color="white" noOfLines={1}>
-                  {item.caption}
-                </Text>
+                <Box sx={{ aspectRatio: "16/10" }}>
+                  <Image
+                    src={item.url}
+                    alt={item.caption || `Foto ${index + 1}`}
+                    objectFit="cover"
+                    w="100%"
+                    h="100%"
+                    fallback={<Skeleton w="100%" h="100%" />}
+                    transition="transform 0.5s ease"
+                    _groupHover={{ transform: 'scale(1.1)' }}
+                  />
+                </Box>
+                
+                {item.caption && (
+                  <Box
+                    position="absolute"
+                    bottom={0}
+                    left={0}
+                    right={0}
+                    bg="linear-gradient(transparent, rgba(0,0,0,0.9))"
+                    px={4}
+                    py={3}
+                    opacity={0}
+                    transform="translateY(10px)"
+                    transition="all 0.3s ease"
+                    _groupHover={{ opacity: 1, transform: 'translateY(0)' }}
+                  >
+                    <Text fontSize="xs" color="white" fontWeight="medium" noOfLines={1}>
+                      {item.caption}
+                    </Text>
+                  </Box>
+                )}
+                
+                <Box
+                  position="absolute"
+                  top={3}
+                  right={3}
+                  bg="blackAlpha.600"
+                  backdropFilter="blur(4px)"
+                  p={1.5}
+                  borderRadius="full"
+                  opacity={0}
+                  _groupHover={{ opacity: 1 }}
+                  transition="opacity 0.2s"
+                >
+                  <Icon as={Plus} color="white" weight="bold" />
+                </Box>
               </Box>
-            )}
-          </Box>
-        ))}
-      </Grid>
+            </Box>
+          ))}
+        </HStack>
+
+        {/* Dots de Navegação abaixo do slider */}
+        <HStack justify="center" spacing={2} mt={6}>
+          {sortedItems.map((_, idx) => (
+            <Box
+              key={idx}
+              w={idx === currentIndex ? "20px" : "6px"}
+              h="6px"
+              borderRadius="full"
+              bg={idx === currentIndex ? "brand.400" : "whiteAlpha.300"}
+              transition="all 0.3s ease"
+              cursor="pointer"
+              onClick={() => {
+                setCurrentIndex(idx);
+                // O scroll snap cuidará do alinhamento se dermos um jeito de rolar até lá
+                // Por agora, o scroll manual ou swipe é o foco, mas mantemos o estado sincronizado
+              }}
+            />
+          ))}
+        </HStack>
+      </Box>
 
       {/* Modal Fullscreen Carousel */}
       <Modal isOpen={isOpen} onClose={onClose} size="full" isCentered>
@@ -173,23 +238,31 @@ export function GalleryCarousel({ items }: GalleryCarouselProps) {
               onClick={next}
             />
 
-            {/* Main image */}
+            {/* Main image with Zoom effect */}
             <Box
               maxW="90vw"
               maxH="80vh"
               display="flex"
               alignItems="center"
               justifyContent="center"
+              overflow="hidden"
             >
-              <Image
-                src={current?.url}
-                alt={current?.caption || ''}
-                objectFit="contain"
-                maxW="90vw"
-                maxH="75vh"
-                borderRadius="xl"
-                transition="opacity 0.3s"
-              />
+              <AnimatePresence mode="wait">
+                <MotionImage
+                  key={current?.url}
+                  src={current?.url}
+                  alt={current?.caption || ''}
+                  initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                  animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  objectFit="contain"
+                  maxW="90vw"
+                  maxH="75vh"
+                  borderRadius="xl"
+                  boxShadow="0 24px 80px rgba(0,0,0,0.6)"
+                />
+              </AnimatePresence>
             </Box>
 
             {/* Caption + Progress */}

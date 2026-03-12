@@ -43,6 +43,7 @@ import {
 import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction, checkUsernameAvailability, fetchAllProfiles } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem } from "@/types/content";
 import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash, Recycle, Users } from "phosphor-react";
+
 import { UserManagementContent } from "../UserManagementContent";
 import { StacksManagement } from "./stacks-management";
 import { TrashManager } from "./trash-manager";
