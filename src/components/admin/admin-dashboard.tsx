@@ -211,11 +211,25 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
         const savedPost = result.post as Post;
         setSelectedPost(savedPost);
         setLocalPosts(prev => {
-          // Se o post já existia (por ID ou slug se for fallback), atualiza. Caso contrário, adiciona.
-          const exists = prev.find(p => p.id === savedPost.id || p.slug === savedPost.slug);
-          if (exists) {
-            return prev.map(p => (p.id === savedPost.id || (p.slug === savedPost.slug && !uuidRegex.test(p.id))) ? savedPost : p);
+          // 1. Se estávamos editando um fallback (ID não-UUID), substituímos ele especificamente
+          const isFallback = selectedPost?.id && !uuidRegex.test(selectedPost.id);
+          if (isFallback) {
+            return prev.map(p => p.id === selectedPost.id ? savedPost : p);
           }
+
+          // 2. Tentar atualizar por ID (caso padrão para posts já salvos)
+          const existsById = prev.some(p => p.id === savedPost.id);
+          if (existsById) {
+            return prev.map(p => p.id === savedPost.id ? savedPost : p);
+          }
+
+          // 3. Fallback de segurança: se o slug for o mesmo de algum anterior (mesmo que o ID mudou)
+          const existsBySlug = prev.some(p => p.slug === savedPost.slug);
+          if (existsBySlug) {
+            return prev.map(p => p.slug === savedPost.slug ? savedPost : p);
+          }
+
+          // 4. Se chegou aqui, é um projeto realmente novo
           return [savedPost, ...prev];
         });
       }
