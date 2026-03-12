@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseCredentials } from "@/lib/env";
+import type { Post, Profile } from "@/types/content";
 
 const commentSchema = z.object({
   postId: z.string().min(1),
