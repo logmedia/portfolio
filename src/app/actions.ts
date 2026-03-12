@@ -293,6 +293,18 @@ export async function savePost(formData: FormData) {
     revalidatePath("/admin");
     revalidatePath("/");
     revalidatePath(`/projeto/${(post as any).slug}`);
+
+    // Revalidate the author's public profile to ensure dynamic stacks are updated
+    const { data } = await supabase
+      .from("profiles")
+      .select("github_username, id")
+      .eq("id", user.id)
+      .single();
+      
+    if (data) {
+      const authorProfile = data as any;
+      revalidatePath(`/${authorProfile.github_username || authorProfile.id}`);
+    }
     
     // Buscar o post atualizado com stacks para o frontend sincronizar
     const { data: updatedPost } = await (supabase as any)
