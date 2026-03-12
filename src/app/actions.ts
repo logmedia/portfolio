@@ -136,7 +136,9 @@ export async function saveProfile(formData: FormData) {
     github_username: parsed.data.github_username || null,
   };
 
-  const { error } = await (supabase.from("profiles") as any).upsert(payload as any, { onConflict: "id" });
+  const { error } = await (supabase.from("profiles") as any)
+    .update(payload as any)
+    .eq("id", payload.id);
 
   if (error) {
     return { success: false, message: "Erro ao salvar perfil." };

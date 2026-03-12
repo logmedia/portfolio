@@ -246,7 +246,20 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
     <Box bgGradient="linear(to-b, #05080c, #040507)" minH="100vh" py={16}>      <ChakraStack spacing={10} maxW="6xl" mx="auto" px={{ base: 6, md: 10 }}>
         <HStack justify="space-between" align="start">
           <ChakraStack spacing={2}>
-            <Heading size="xl">Painel Administrativo</Heading>
+            <HStack spacing={3} align="center">
+              <Heading size="xl">Painel Administrativo</Heading>
+              <Badge 
+                colorScheme={isAdmin ? "brand" : "gray"} 
+                variant="solid" 
+                px={3} 
+                py={1} 
+                borderRadius="full"
+                fontSize="xs"
+                textTransform="uppercase"
+              >
+                {isAdmin ? "Administrador" : "Editor"}
+              </Badge>
+            </HStack>
             <Text color="whiteAlpha.700">
               Gerencie seu perfil, os projetos do portfólio e as tecnologias utilizadas.
             </Text>
