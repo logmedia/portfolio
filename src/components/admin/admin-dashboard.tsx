@@ -343,7 +343,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                             <FormLabel>Bio</FormLabel>
                             <Textarea name="bio" defaultValue={profile.bio ?? ""} rows={4} bg="blackAlpha.300" />
                           </FormControl>
-                          <Box mb={6}>
+                          <Box mb={6} maxW="400px" mx="auto">
                             <ProfileHeaderEditor 
                               avatarUrl={profileAvatarUrl}
                               coverUrl={profileCoverUrl}
@@ -356,6 +356,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                                 setIsDirty(true);
                               }}
                               userName={profile.name}
+                              jobTitle={(profile as any).job_title ?? "Web Developer"}
                             />
                           </Box>
 

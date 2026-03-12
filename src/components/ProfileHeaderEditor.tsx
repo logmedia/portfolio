@@ -50,6 +50,7 @@ interface ProfileHeaderEditorProps {
   onAvatarChange: (url: string) => void;
   onCoverChange: (url: string) => void;
   userName?: string;
+  jobTitle?: string;
 }
 
 export function ProfileHeaderEditor({ 
@@ -57,7 +58,8 @@ export function ProfileHeaderEditor({
   coverUrl, 
   onAvatarChange, 
   onCoverChange,
-  userName = "Seu Nome" 
+  userName = "Seu Nome",
+  jobTitle = "Web Developer"
 }: ProfileHeaderEditorProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [activeTab, setActiveTab] = useState<"avatar" | "cover">("cover");
@@ -102,88 +104,92 @@ export function ProfileHeaderEditor({
 
   return (
     <>
-      <Box 
-        w="full" 
-        h={{ base: "160px", md: "240px" }} 
-        borderRadius="xl" 
-        overflow="hidden" 
-        position="relative"
-        bg="whiteAlpha.50"
-        border="1px solid"
-        borderColor="whiteAlpha.100"
-        boxShadow="xl"
-      >
-        {/* Cover Image + Overlay */}
-        <Box w="full" h="full" position="relative" role="group" cursor="pointer" onClick={() => openEditor('cover')}>
-          <Image 
-            src={coverUrl} 
-            alt="Capa" 
-            w="full" 
-            h="full" 
-            objectFit="cover" 
-            fallbackSrc="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop"
-          />
-          <AnimatePresence>
-            <MotionBox
-              position="absolute"
-              inset={0}
-              bg="blackAlpha.600"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              <VStack spacing={2}>
-                <Icon as={ImageIcon} boxSize={8} color="white" />
-                <Text color="white" fontWeight="bold" fontSize="sm">Alterar Capa</Text>
-              </VStack>
-            </MotionBox>
-          </AnimatePresence>
-        </Box>
-
-        {/* Avatar Overlay */}
+      <VStack spacing={0} align="stretch" bg="gray.900" borderRadius="2xl" overflow="hidden" border="1px solid" borderColor="whiteAlpha.100" pb={8}>
         <Box 
-          position="absolute" 
-          bottom="-25px" 
-          left={{ base: "50%", md: "40px" }}
-          transform={{ base: "translateX(-50%)", md: "none" }}
-          zIndex={2}
+          w="full" 
+          h="140px" 
+          position="relative"
+          bg="whiteAlpha.50"
         >
-          <Box position="relative" role="group" cursor="pointer" onClick={(e) => { e.stopPropagation(); openEditor('avatar'); }}>
-            <Avatar 
-              size="2xl" 
-              src={avatarUrl} 
-              name={userName}
-              border="4px solid"
-              borderColor="gray.900"
-              boxShadow="2xl"
-              bg="brand.500"
+          {/* Cover Image + Overlay */}
+          <Box w="full" h="full" position="relative" role="group" cursor="pointer" onClick={() => openEditor('cover')}>
+            <Image 
+              src={coverUrl} 
+              alt="Capa" 
+              w="full" 
+              h="full" 
+              objectFit="cover" 
+              fallbackSrc="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop"
             />
             <AnimatePresence>
               <MotionBox
                 position="absolute"
                 inset={0}
-                borderRadius="full"
-                bg="blackAlpha.700"
+                bg="blackAlpha.600"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                backdropFilter="blur(4px)"
               >
-                <Icon as={Camera} boxSize={6} color="white" />
+                <VStack spacing={2}>
+                  <Icon as={ImageIcon} boxSize={6} color="white" />
+                  <Text color="white" fontWeight="bold" fontSize="xs">Alterar Capa</Text>
+                </VStack>
               </MotionBox>
             </AnimatePresence>
           </Box>
-        </Box>
-      </Box>
 
-      {/* Spacer for overlapping avatar */}
-      <Box h="40px" />
+          {/* Avatar Overlay - Centered exactly like Mobile */}
+          <Box 
+            position="absolute" 
+            bottom="-50px" 
+            left="50%"
+            transform="translateX(-50%)"
+            zIndex={2}
+          >
+            <Box position="relative" role="group" cursor="pointer" onClick={(e) => { e.stopPropagation(); openEditor('avatar'); }}>
+              <Avatar 
+                size="2xl" 
+                src={avatarUrl} 
+                name={userName}
+                border="4px solid"
+                borderColor="gray.900"
+                boxShadow="2xl"
+                bg="brand.500"
+              />
+              <AnimatePresence>
+                <MotionBox
+                  position="absolute"
+                  inset={0}
+                  borderRadius="full"
+                  bg="blackAlpha.700"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                  backdropFilter="blur(4px)"
+                >
+                  <Icon as={Camera} boxSize={6} color="white" />
+                </MotionBox>
+              </AnimatePresence>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Info Preview Section */}
+        <VStack mt="60px" spacing={1} align="center" px={4}>
+          <Text color="white" fontWeight="bold" fontSize="xl" lineHeight="1.2" textAlign="center">
+            {userName}
+          </Text>
+          <Text fontSize="xs" color="brand.400" fontWeight="bold" letterSpacing="wider" textTransform="uppercase" textAlign="center">
+            {jobTitle}
+          </Text>
+        </VStack>
+      </VStack>
 
       {/* Modal Editor */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
