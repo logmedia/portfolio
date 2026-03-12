@@ -11,7 +11,7 @@ import {
   IconButton,
   Tooltip
 } from "@chakra-ui/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { X } from "phosphor-react";
 import type { Stack } from "@/types/content";
 
@@ -22,6 +22,7 @@ type StackFilterProps = {
 export function StackFilter({ stacks }: StackFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const activeStackId = searchParams.get("stack");
 
   const handleToggle = (id: string) => {
@@ -31,11 +32,11 @@ export function StackFilter({ stacks }: StackFilterProps) {
     } else {
       params.set("stack", id);
     }
-    router.push(`/?${params.toString()}`, { scroll: false });
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const clearFilter = () => {
-    router.push("/", { scroll: false });
+    router.push(pathname, { scroll: false });
   };
 
   if (stacks.length === 0) return null;
