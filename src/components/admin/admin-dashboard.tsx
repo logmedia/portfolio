@@ -381,10 +381,15 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                               onChange={(e) => {
                                 setIsDirty(true);
                                 if (!selectedPost) {
-                                  // Apenas auto-gera se for um novo projeto
+                                  // Auto-generate slug with a random string to prevent constraints
                                   const slugInput = document.querySelector('input[name="slug"]') as HTMLInputElement;
                                   if (slugInput) {
-                                    slugInput.value = generateSlug(e.target.value);
+                                    const baseSlug = generateSlug(e.target.value);
+                                    // appending a random ID to guarantee uniqueness for new posts
+                                    const randomHash = Math.random().toString(36).substring(2, 6);
+                                    slugInput.value = baseSlug ? `${baseSlug}-${randomHash}` : '';
+                                    // Trigger an event so React or other listeners know the input changed
+                                    slugInput.dispatchEvent(new Event('change', { bubbles: true }));
                                   }
                                 }
                               }}
@@ -424,7 +429,15 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
 
                           <FormControl isRequired>
                             <FormLabel fontSize="sm">Slug (URL amigável)</FormLabel>
-                            <Input name="slug" defaultValue={selectedPost?.slug ?? ""} bg="blackAlpha.300" />
+                            <Input 
+                              name="slug" 
+                              defaultValue={selectedPost?.slug ?? ""} 
+                              bg="blackAlpha.300" 
+                              onChange={() => setIsDirty(true)}
+                            />
+                            <Text fontSize="xs" color="whiteAlpha.400" mt={1}>
+                              Este slug deve ser único. Ele é gerado automaticamente para novos projetos.
+                            </Text>
                           </FormControl>
 
                           <Grid templateColumns={{ base: "1fr", md: "1fr" }} gap={4}>

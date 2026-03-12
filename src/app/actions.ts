@@ -266,6 +266,12 @@ export async function savePost(formData: FormData) {
 
     if (error || !post) {
       console.error("savePost error:", error);
+      
+      // Handle unique slug constraint gracefully
+      if (error?.message?.includes("posts_slug_key")) {
+        return { success: false, message: "Este slug (URL amigável) já está em uso por outro projeto. Por favor, escolha um diferente." };
+      }
+      
       return { success: false, message: `Erro no banco: ${error?.message || "Sem resposta do post"}` };
     }
 
