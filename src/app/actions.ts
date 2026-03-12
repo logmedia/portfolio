@@ -976,3 +976,32 @@ export async function generateAICover(prompt: string) {
     return { success: false, message: error.message || "Erro ao processar imagem IA." };
   }
 }
+
+export async function checkUsernameAvailability(username: string, currentUserId: string) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    
+    // Check if the username is already taken by a DIFFERENT user
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("github_username", username)
+      .neq("id", currentUserId)
+      .limit(1);
+
+    if (error) {
+      console.error("checkUsernameAvailability DB ERROR:", error);
+      return { available: false, message: "Erro ao verificar disponibilidade." };
+    }
+
+    // If data array has items, someone else is using it
+    if (data && data.length > 0) {
+      return { available: false, message: "Nome de usuário indisponível." };
+    }
+
+    return { available: true, message: "Nome de usuário disponível!" };
+  } catch (error) {
+    console.error("checkUsernameAvailability ERROR:", error);
+    return { available: false, message: "Erro no servidor." };
+  }
+}

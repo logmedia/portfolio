@@ -39,7 +39,7 @@ import {
   VStack,
   Spinner,
 } from "@chakra-ui/react";
-import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction } from "@/app/actions";
+import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction, checkUsernameAvailability } from "@/app/actions";
 import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem } from "@/types/content";
 import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash, Recycle } from "phosphor-react";
 import { StacksManagement } from "./stacks-management";
@@ -91,6 +91,35 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   // Profile media state
   const [profileAvatarUrl, setProfileAvatarUrl] = useState(profile.avatar_url ?? "");
   const [profileCoverUrl, setProfileCoverUrl] = useState(profile.cover_url ?? "");
+
+  // Profile username state
+  const [profileUsername, setProfileUsername] = useState((profile as any).github_username ?? "");
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameFeedback, setUsernameFeedback] = useState<{ available: boolean, message: string } | null>(null);
+
+  // Debounce username check
+  useEffect(() => {
+    // Skip if it hasn't changed from initial
+    if (profileUsername === (profile as any).github_username) {
+      setUsernameFeedback(null);
+      return;
+    }
+
+    if (!profileUsername || profileUsername.length < 3) {
+      setUsernameFeedback({ available: false, message: "O nome deve ter pelo menos 3 caracteres." });
+      return;
+    }
+
+    // Debounce
+    const timer = setTimeout(async () => {
+      setIsCheckingUsername(true);
+      const res = await checkUsernameAvailability(profileUsername, profile.id);
+      setUsernameFeedback(res);
+      setIsCheckingUsername(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [profileUsername, profile.id]);
 
   // Sincronizar stacks quando o post selecionado muda
   useEffect(() => {
@@ -274,9 +303,31 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                           {/* Hidden inputs to maintain form functionality with old schema */}
                           <input type="hidden" name="avatarUrl" value={profileAvatarUrl} />
                           <input type="hidden" name="coverUrl" value={profileCoverUrl} />
-                           <FormControl>
-                             <FormLabel>GitHub Username (para gráfico)</FormLabel>
-                             <Input name="github_username" defaultValue={(profile as any).github_username ?? ""} placeholder="ex: josh" bg="blackAlpha.300" />
+                           <FormControl isInvalid={usernameFeedback?.available === false}>
+                             <FormLabel>Nome de Usuário (URL do Perfil)</FormLabel>
+                             <Input 
+                               name="github_username" 
+                               value={profileUsername} 
+                               onChange={(e) => {
+                                 setProfileUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
+                                 setIsDirty(true);
+                               }}
+                               placeholder="ex: logmedia" 
+                               bg="blackAlpha.300" 
+                             />
+                             {isCheckingUsername && (
+                               <Text fontSize="xs" color="brand.400" mt={1}>
+                                 <Spinner size="xs" mr={1} /> Verificando disponibilidade...
+                               </Text>
+                             )}
+                             {!isCheckingUsername && usernameFeedback && (
+                               <Text fontSize="xs" color={usernameFeedback.available ? "green.400" : "red.400"} mt={1}>
+                                 {usernameFeedback.message}
+                               </Text>
+                             )}
+                             <Text fontSize="xs" color="whiteAlpha.400" mt={2}>
+                               Sua página pública será: portfolio.logmedia.com.br/<b>{profileUsername || "seu-nome"}</b>
+                             </Text>
                            </FormControl>
                           <FormControl>
                             <FormLabel>Redes sociais</FormLabel>
@@ -295,7 +346,13 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                           <FormControl>
                             <SkillsManager initialSkills={profile.skills || []} />
                           </FormControl>
-                          <Button type="submit" isLoading={isSavingProfile} loadingText="Salvando" colorScheme="brand">
+                          <Button 
+                            type="submit" 
+                            isLoading={isSavingProfile} 
+                            loadingText="Salvando" 
+                            colorScheme="brand"
+                            isDisabled={usernameFeedback?.available === false}
+                          >
                             Salvar Perfil
                           </Button>
                         </ChakraStack>
