@@ -81,6 +81,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
   const [isLoggingOut, startLogoutTransition] = useTransition();
   const [isCommentPending, startCommentTransition] = useTransition();
   const [isDirty, setIsDirty] = useState(false);
+  const [formKey, setFormKey] = useState(0);
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
 
   // Sync with props when they change (SSR)
@@ -194,6 +195,12 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
       }
       toast({ title: "Perfil atualizado com sucesso", status: "success" });
     });
+  };
+
+  const handleNewProject = () => {
+    setSelectedPost(null);
+    setFormKey(prev => prev + 1);
+    setIsDirty(false);
   };
 
   const handlePostSubmit = (formData: FormData) => {
@@ -459,7 +466,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                   <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
                     <CardBody>
                       <form 
-                        key={selectedPost?.id ?? "new-project"} 
+                        key={selectedPost?.id || `new-project-${formKey}`} 
                         action={handlePostSubmit}
                         onChange={() => setIsDirty(true)}
                       >
@@ -696,7 +703,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                       <ChakraStack spacing={4}>
                         <HStack justify="space-between" align="center">
                           <Heading size="md">Projetos Ativos</Heading>
-                          <Button size="sm" variant="outline" onClick={() => setSelectedPost(null)}>
+                          <Button size="sm" variant="outline" onClick={handleNewProject}>
                             Novo Projeto
                           </Button>
                         </HStack>
