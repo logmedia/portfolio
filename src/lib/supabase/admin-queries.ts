@@ -87,3 +87,31 @@ export async function fetchAdminUsers(): Promise<Profile[]> {
     return [];
   }
 }
+
+/**
+ * Busca atividades recentes do usuário
+ */
+export async function fetchRecentActivities(limit = 10): Promise<any[]> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from("activity_log")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error || !data) {
+      console.warn("Could not fetch recent activities", error);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("fetchRecentActivities ERROR:", error);
+    return [];
+  }
+}

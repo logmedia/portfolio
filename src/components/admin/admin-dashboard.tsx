@@ -48,6 +48,7 @@ import { TrashManager } from "./trash-manager";
 import { StackSelector } from "./stack-selector";
 import { MediaPicker } from "./media-picker";
 import { GalleryManager } from "./gallery-manager";
+import { ActivityFeed } from "./activity-feed";
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 
@@ -60,7 +61,7 @@ const ModernEditor = dynamic(() => import("./modern-editor").then(mod => mod.Mod
     </Box>
   )
 });
-import { GithubActivity } from "./github-activity";
+
 import { CoverPicker } from "../CoverPicker";
 import { SkillsManager } from "./skills-manager";
 import { ProfileHeaderEditor } from "../ProfileHeaderEditor";
@@ -70,9 +71,10 @@ type AdminDashboardProps = {
   posts: Post[];
   comments: ContentComment[];
   stacks: Stack[];
+  activities: any[];
 };
 
-export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashboardProps) {
+export function AdminDashboard({ profile, posts, comments, stacks, activities }: AdminDashboardProps) {
   const toast = useToast();
   const [selectedPost, setSelectedPost] = useState<Post | null>(posts[0] ?? null);
   const [isSavingProfile, startProfileTransition] = useTransition();
@@ -447,8 +449,7 @@ export function AdminDashboard({ profile, posts, comments, stacks }: AdminDashbo
                            Configure URLs públicas hospedadas no Supabase Storage ou em CDNs confiáveis.
                          </Text>
                          <Divider borderColor="whiteAlpha.200" />
-                         
-                         <GithubActivity username={(profile as any).github_username} />
+                          <ActivityFeed activities={activities} />
 
                          <Divider borderColor="whiteAlpha.200" />
                          <Text color="whiteAlpha.700" fontSize="sm">

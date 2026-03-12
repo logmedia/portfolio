@@ -8,6 +8,28 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseCredentials } from "@/lib/env";
 import type { Post, Profile } from "@/types/content";
 
+/**
+ * Helper to log user activity
+ */
+async function logActivity(action: string, entityType?: string, entityId?: string, details: any = {}) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    await (supabase.from("activity_log") as any).insert({
+      user_id: user.id,
+      action,
+      entity_type: entityType,
+      entity_id: entityId,
+      details
+    });
+  } catch (error) {
+    console.error("logActivity ERROR:", error);
+  }
+}
+
+
 const commentSchema = z.object({
   postId: z.string().min(1),
   postSlug: z.string().min(1),
@@ -144,6 +166,8 @@ export async function saveProfile(formData: FormData) {
   if (error) {
     return { success: false, message: "Erro ao salvar perfil." };
   }
+
+  await logActivity("update_profile", "profile", payload.id, { name: payload.name });
 
   revalidatePath("/");
   revalidatePath("/admin");
@@ -343,6 +367,13 @@ export async function savePost(formData: FormData) {
       stacks: updatedPost.stacks?.map((s: any) => s.stack).filter(Boolean) || []
     } : post;
 
+    await logActivity(
+      parsed.data.id ? "update_project" : "create_project", 
+      "project", 
+      formattedPost.id, 
+      { title: formattedPost.title }
+    );
+
     return { success: true, post: formattedPost as Post };
   } catch (error: any) {
     console.error("savePost error:", error);
@@ -362,6 +393,8 @@ export async function moveToTrash(id: string) {
       .eq("id", id);
 
     if (error) return { success: false, message: "Erro ao mover para lixeira." };
+
+    await logActivity("trash_project", "project", id);
 
     revalidatePath("/admin");
     revalidatePath("/");
@@ -420,6 +453,8 @@ export async function restoreFromTrash(id: string) {
 
     if (error) return { success: false, message: "Erro ao restaurar projeto." };
 
+    await logActivity("restore_project", "project", id);
+
     revalidatePath("/admin");
     revalidatePath("/");
     return { success: true };
@@ -456,6 +491,8 @@ export async function permanentlyDeletePost(id: string, mediaToDelete: { id: str
     const { error } = await (supabase as any).from("posts").delete().eq("id", id);
 
     if (error) return { success: false, message: "Erro ao excluir projeto permanentemente." };
+
+    await logActivity("delete_project", "project", id);
 
     revalidatePath("/admin");
     revalidatePath("/");
@@ -515,6 +552,13 @@ export async function saveStack(formData: FormData) {
       return { success: false, message: `Erro no banco: ${error.message}` };
     }
 
+    await logActivity(
+      parsed.data.id ? "update_stack" : "create_stack", 
+      "stack", 
+      parsed.data.id, 
+      { name: payload.name }
+    );
+
     revalidatePath("/admin");
     return { success: true };
   } catch (error) {
@@ -531,6 +575,8 @@ export async function deleteStack(id: string) {
     if (error) {
       return { success: false, message: "Erro ao excluir stack." };
     }
+
+    await logActivity("delete_stack", "stack", id);
 
     revalidatePath("/admin");
     return { success: true };
@@ -749,6 +795,9 @@ export async function uploadMedia(formData: FormData) {
     ));
 
     console.log("[uploadMedia] Success!");
+    
+    await logActivity("upload_media", "media", safeRecord.id, { filename: safeRecord.filename });
+
     return { success: true, media: safeRecord };
   } catch (error: any) {
     console.error("[uploadMedia] Fatal error:", error);
@@ -773,6 +822,8 @@ export async function deleteMedia(id: string, path: string) {
     // 2. Deletar do Banco
     const { error: dbError } = await (supabase as any).from("media").delete().eq("id", id).eq("user_id", user.id);
     if (dbError) return { success: false, message: "Erro ao deletar do banco." };
+
+    await logActivity("delete_media", "media", id);
 
     return { success: true };
   } catch (error) {
