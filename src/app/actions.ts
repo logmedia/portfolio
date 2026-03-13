@@ -79,8 +79,8 @@ const profileSchema = z.object({
   jobTitle: z.string().optional(),
   role: z.string().optional(),
   bio: z.string().optional(),
-  avatarUrl: z.string().url().optional().or(z.literal("")),
-  coverUrl: z.string().url().optional().or(z.literal("")),
+  avatarUrl: z.string().optional(),
+  coverUrl: z.string().optional(),
   socials: socialsSchema,
   stacks: stacksSchema,
   skills: z.string().optional(),
@@ -138,58 +138,67 @@ const parseSkills = (input?: string) => {
 };
 
 export async function saveProfile(formData: FormData) {
-  const parsed = profileSchema.safeParse({
-    id: formData.get("id")?.toString(),
-    name: formData.get("name")?.toString(),
-    jobTitle: formData.get("role")?.toString(), // Map the form field 'role' (job title) to jobTitle
-    bio: formData.get("bio")?.toString(),
-    avatarUrl: formData.get("avatarUrl")?.toString(),
-    coverUrl: formData.get("coverUrl")?.toString(),
-    socials: formData.get("socials")?.toString(),
-    stacks: formData.get("stacks")?.toString(),
-    skills: formData.get("skills")?.toString(),
-    github_username: formData.get("github_username")?.toString(),
-    whatsapp_number: formData.get("whatsapp_number")?.toString(),
-    whatsapp_public: formData.get("whatsapp_public") === "on",
-  });
+  try {
+    const parsed = profileSchema.safeParse({
+      id: formData.get("id")?.toString(),
+      name: formData.get("name")?.toString(),
+      jobTitle: formData.get("role")?.toString(), // Map the form field 'role' (job title) to jobTitle
+      bio: formData.get("bio")?.toString(),
+      avatarUrl: formData.get("avatarUrl")?.toString(),
+      coverUrl: formData.get("coverUrl")?.toString(),
+      socials: formData.get("socials")?.toString(),
+      stacks: formData.get("stacks")?.toString(),
+      skills: formData.get("skills")?.toString(),
+      github_username: formData.get("github_username")?.toString(),
+      whatsapp_number: formData.get("whatsapp_number")?.toString(),
+      whatsapp_public: formData.get("whatsapp_public") === "on",
+    });
 
-  if (!parsed.success) {
-    return { success: false, errors: parsed.error.flatten() };
+    if (!parsed.success) {
+      console.error("[saveProfile] Validation error:", JSON.stringify(parsed.error.flatten(), null, 2));
+      return { success: false, errors: parsed.error.flatten() };
+    }
+
+    if (!hasSupabaseCredentials()) {
+      return { success: false, message: "Configure as chaves do Supabase no .env." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const payload = {
+      id: parsed.data.id,
+      name: parsed.data.name,
+      job_title: parsed.data.jobTitle ?? null,
+      bio: parsed.data.bio ?? null,
+      avatar_url: parsed.data.avatarUrl || null,
+      cover_url: parsed.data.coverUrl || null,
+      socials: parseSocials(parsed.data.socials),
+      stacks: parseStacks(parsed.data.stacks),
+      skills: parseSkills(parsed.data.skills),
+      github_username: parsed.data.github_username || null,
+      whatsapp_number: parsed.data.whatsapp_number || null,
+      whatsapp_public: parsed.data.whatsapp_public ?? false,
+    };
+
+    console.log("[saveProfile] Saving payload for ID:", payload.id);
+
+    const { error } = await (supabase.from("profiles") as any)
+      .update(payload as any)
+      .eq("id", payload.id);
+
+    if (error) {
+      console.error("[saveProfile] Supabase error:", JSON.stringify(error, null, 2));
+      return { success: false, message: `Erro ao salvar perfil: ${error.message}` };
+    }
+
+    await logActivity("update_profile", "profile", payload.id, { name: payload.name });
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err: any) {
+    console.error("[saveProfile] Unexpected exception:", err);
+    return { success: false, message: `Erro inesperado: ${err.message || "Verifique os logs."}` };
   }
-
-  if (!hasSupabaseCredentials()) {
-    return { success: false, message: "Configure as chaves do Supabase no .env." };
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const payload = {
-    id: parsed.data.id,
-    name: parsed.data.name,
-    job_title: parsed.data.jobTitle ?? null,
-    bio: parsed.data.bio ?? null,
-    avatar_url: parsed.data.avatarUrl || null,
-    cover_url: parsed.data.coverUrl || null,
-    socials: parseSocials(parsed.data.socials),
-    stacks: parseStacks(parsed.data.stacks),
-    skills: parseSkills(parsed.data.skills),
-    github_username: parsed.data.github_username || null,
-    whatsapp_number: parsed.data.whatsapp_number || null,
-    whatsapp_public: parsed.data.whatsapp_public ?? false,
-  };
-
-  const { error } = await (supabase.from("profiles") as any)
-    .update(payload as any)
-    .eq("id", payload.id);
-
-  if (error) {
-    return { success: false, message: "Erro ao salvar perfil." };
-  }
-
-  await logActivity("update_profile", "profile", payload.id, { name: payload.name });
-
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return { success: true };
 }
 
 const postSchema = z.object({
