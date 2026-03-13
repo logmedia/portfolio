@@ -12,6 +12,7 @@ import {
   CardBody, 
   Link,
   Tag,
+  TagLabel,
   HStack,
   Icon,
   Input,
@@ -34,34 +35,42 @@ import {
   Tag as TagIcon
 } from "lucide-react";
 import { Lightning } from "phosphor-react";
-import type { Profile, Skill } from "@/types/content";
+import { getIconComponent } from "@/lib/utils/icons";
+import type { Profile, Skill, Stack } from "@/types/content";
 
 interface ExploreContentProps {
   profiles: Profile[];
+  allStacks: Stack[];
 }
 
-export function ExploreContent({ profiles }: ExploreContentProps) {
+export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeStacks, setActiveStacks] = useState<Set<string>>(new Set());
   const [activeSkills, setActiveSkills] = useState<Set<string>>(new Set());
 
-  // Extair todas as stacks e habilidades únicas disponíveis
-  const { availableStacks, availableSkills } = useMemo(() => {
-    const stacks = new Set<string>();
-    const skills = new Set<string>();
+  // Criar mapa de ID -> Nome para stacks
+  const stackMap = useMemo(() => {
+    const map = new Map<string, string>();
+    allStacks.forEach(s => map.set(s.id, s.name));
+    return map;
+  }, [allStacks]);
 
+  // Extrair habilidades únicas disponíveis
+  const availableSkills = useMemo(() => {
+    const skills = new Set<string>();
     profiles.forEach(profile => {
-      profile.stacks?.forEach(s => stacks.add(s));
       profile.skills?.forEach(s => {
         if (s && s.name) skills.add(s.name);
       });
     });
-
-    return {
-      availableStacks: Array.from(stacks).sort(),
-      availableSkills: Array.from(skills).sort()
-    };
+    return Array.from(skills).sort();
   }, [profiles]);
+
+  const availableStacks = useMemo(() => {
+    return allStacks.filter(stack => 
+      profiles.some(profile => profile.stacks?.includes(stack.id) || profile.stacks?.includes(stack.name))
+    );
+  }, [allStacks, profiles]);
 
   // Filtrar usuários
   const filteredProfiles = useMemo(() => {
@@ -76,8 +85,8 @@ export function ExploreContent({ profiles }: ExploreContentProps) {
 
       // 2. Filtro de Stacks (AND - deve ter todas as selecionadas)
       const hasAllActiveStacks = activeStacks.size === 0 || 
-        Array.from(activeStacks).every(active => 
-          profile.stacks?.some(s => s.toLowerCase() === active.toLowerCase())
+        Array.from(activeStacks).every(activeId => 
+          profile.stacks?.some(s => s === activeId || stackMap.get(s) === stackMap.get(activeId))
         );
 
       if (!hasAllActiveStacks) return false;
@@ -90,7 +99,7 @@ export function ExploreContent({ profiles }: ExploreContentProps) {
 
       return hasAllActiveSkills;
     });
-  }, [profiles, searchQuery, activeStacks, activeSkills]);
+  }, [profiles, searchQuery, activeStacks, activeSkills, stackMap]);
 
   const toggleStack = (stack: string) => {
     const newStacks = new Set(activeStacks);
@@ -189,28 +198,37 @@ export function ExploreContent({ profiles }: ExploreContentProps) {
                 </HStack>
                 <Flex wrap="wrap" gap={3}>
                   {availableStacks.map((stack) => {
-                    const isActive = activeStacks.has(stack);
+                    const isActive = activeStacks.has(stack.id);
+                    const brandColor = stack.color || '#00e5ff';
+                    
                     return (
                       <Tag
-                        key={stack}
+                        key={stack.id}
                         size="lg"
                         variant={isActive ? "solid" : "outline"}
                         colorScheme={isActive ? "brand" : "whiteAlpha"}
                         cursor="pointer"
-                        onClick={() => toggleStack(stack)}
+                        onClick={() => toggleStack(stack.id)}
                         borderRadius="full"
                         px={5}
                         py={2}
                         _hover={{ 
                           transform: 'translateY(-2px)', 
-                          borderColor: 'brand.500',
-                          bg: isActive ? 'brand.600' : 'whiteAlpha.100'
+                          borderColor: brandColor,
+                          bg: isActive ? brandColor : 'whiteAlpha.100',
+                          color: isActive ? "black" : "white"
                         }}
                         transition="all 0.2s"
                         borderWidth="1px"
-                        fontWeight={isActive ? "bold" : "medium"}
+                        borderColor={isActive ? brandColor : "whiteAlpha.200"}
+                        bg={isActive ? brandColor : "transparent"}
+                        color={isActive ? "black" : "whiteAlpha.800"}
+                        fontWeight={isActive ? "800" : "bold"}
+                        textTransform="uppercase"
+                        fontSize="xs"
+                        letterSpacing="wider"
                       >
-                        {stack}
+                        {stack.name}
                       </Tag>
                     );
                   })}
@@ -318,19 +336,34 @@ export function ExploreContent({ profiles }: ExploreContentProps) {
                       <Box flex="1" w="full">
                         {profile.skills && Array.isArray(profile.skills) && profile.skills.length > 0 && (
                           <HStack spacing={2} wrap="wrap" justify="center">
-                            {profile.skills.slice(0, 3).map((skill: any) => (
-                              <Tag 
-                                key={skill.name} 
-                                size="sm" 
-                                variant="subtle" 
-                                bg={`${skill.color || '#3182ce'}22`}
-                                color={skill.color || '#3182ce'}
-                                border="1px solid"
-                                borderColor={`${skill.color || '#3182ce'}44`}
-                              >
-                                {skill.name}
-                              </Tag>
-                            ))}
+                            {profile.skills.slice(0, 3).map((skill: any, idx: number) => {
+                              const SkillIcon = getIconComponent(skill.icon || 'Code');
+                              const brandColor = skill.color || '#00e5ff';
+                              return (
+                                <Tag 
+                                  key={idx} 
+                                  size="md" // Increased size for visibility
+                                  variant="solid" 
+                                  bg="gray.800" // Solid dark background for text contrast
+                                  border="1.5px solid"
+                                  borderColor={brandColor} // Brand color border
+                                  color="white"
+                                  borderRadius="full"
+                                  px={3}
+                                  py={1.5}
+                                  boxShadow={`0 0 10px ${brandColor}33`}
+                                  _hover={{ bg: "gray.700", transform: "scale(1.05)" }}
+                                  transition="all 0.2s"
+                                >
+                                  <HStack spacing={2}>
+                                    <Icon as={SkillIcon} color={brandColor} fontSize="14px" />
+                                    <TagLabel fontSize="11px" fontWeight="800" letterSpacing="widest" textTransform="uppercase" color="white">
+                                      {skill.name}
+                                    </TagLabel>
+                                  </HStack>
+                                </Tag>
+                              );
+                            })}
                             {profile.skills.length > 3 && (
                               <Text fontSize="xs" color="whiteAlpha.400">+{profile.skills.length - 3}</Text>
                             )}

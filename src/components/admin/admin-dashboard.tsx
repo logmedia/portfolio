@@ -108,6 +108,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
   const [profileCoverUrl, setProfileCoverUrl] = useState(profile.cover_url ?? "");
   const [profileName, setProfileName] = useState(profile.name ?? "");
   const [profileJobTitle, setProfileJobTitle] = useState((profile as any).job_title ?? "");
+  const [profileStacks, setProfileStacks] = useState<string[]>(profile.stacks ?? []);
   
   // Admin state
   const [allUsers, setAllUsers] = useState<Profile[]>([]);
@@ -156,6 +157,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
       setProfileAvatarUrl(profile.avatar_url ?? "");
       setProfileCoverUrl(profile.cover_url ?? "");
       setProfileUsername((profile as any).github_username ?? "");
+      setProfileStacks(profile.stacks ?? []);
     }
   }, [profile]);
 
@@ -507,6 +509,20 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                              </Text>
                           <FormControl>
                             <SocialsManager initialSocials={(profile.socials as any) || []} />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Tecnologias Principais</FormLabel>
+                            <Text color="whiteAlpha.500" fontSize="xs" mb={3}>
+                              Selecione as tecnologias que aparecerão como filtros no Explore.
+                            </Text>
+                            <StackSelector 
+                              allStacks={stacks} 
+                              selectedStackIds={profileStacks} 
+                              onChange={(ids) => {
+                                setProfileStacks(ids);
+                                setIsDirty(true);
+                              }} 
+                            />
                           </FormControl>
                           <FormControl>
                             <SkillsManager initialSkills={profile.skills || []} />

@@ -46,6 +46,8 @@ interface MediaFile {
   url: string;
   path: string;
   type: string;
+  width?: number;
+  height?: number;
   created_at: string;
 }
 
@@ -53,9 +55,10 @@ interface MediaLibraryProps {
   onSelect: (media: MediaFile) => void;
   onBatchSelect?: (mediaItems: MediaFile[]) => void;
   selectedUrl?: string;
+  intent?: 'cover' | 'avatar' | 'general';
 }
 
-export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl }: MediaLibraryProps) {
+export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl, intent = 'general' }: MediaLibraryProps) {
   const [mediaItems, setMediaItems] = useState<MediaFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -309,7 +312,7 @@ export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl }: MediaLibr
                 <Grid templateColumns="1fr 1fr" gap={3}>
                   <VStack spacing={1}>
                     <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500">ORIGINAL</Text>
-                    <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="whiteAlpha.200" h="120px" w="100%">
+                    <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="whiteAlpha.200" h="120px" minH="120px" w="100%" bg="blackAlpha.300">
                       <Image src={previewFiles[currentPreviewIndex]?.original} alt="Original" objectFit="contain" h="100%" w="100%" />
                     </Box>
                     {originalSize && (
@@ -323,7 +326,7 @@ export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl }: MediaLibr
                       <Text fontSize="xs" fontWeight="bold" color="brand.300">OTIMIZADA</Text>
                       {savingsPercent > 0 && <Badge colorScheme="green" fontSize="10px">-{savingsPercent}%</Badge>}
                     </HStack>
-                    <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="brand.400" h="120px" w="100%" position="relative">
+                    <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor="brand.400" h="120px" minH="120px" w="100%" position="relative" bg="blackAlpha.300">
                       {isProcessing ? (
                         <Box display="flex" alignItems="center" justifyContent="center" h="100%">
                           <Spinner size="sm" color="brand.400" />
@@ -432,7 +435,20 @@ export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl }: MediaLibr
               </VStack>
             ) : (
               <Grid templateColumns="repeat(auto-fill, minmax(100px, 1fr))" gap={3} maxH="400px" overflowY="auto" px={2}>
-                {mediaItems.map((item) => (
+                {mediaItems
+                  .filter(item => {
+                    if (intent === 'general') return true;
+                    
+                    const width = item.width || 0;
+                    const height = item.height || 0;
+                    if (!width || !height) return true; // Mostra se não tiver metadados, para não sumir com imagens antigas
+
+                    const ratio = width / height;
+                    if (intent === 'cover') return ratio >= 1.5;
+                    if (intent === 'avatar') return ratio >= 0.8 && ratio <= 1.25;
+                    return true;
+                  })
+                  .map((item) => (
                   <Box
                     key={item.id}
                     position="relative"

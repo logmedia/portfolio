@@ -77,9 +77,11 @@ export function ProfileHeaderEditor({
     
     setIsGenerating(true);
     try {
-      // "Nano Banana" style enhancement
+      // "Nano Banana" style enhancement - Google AI inspired premium aesthetic
+      const bananaKeywords = "google art, material design 3 aesthetic, vibrant azure and yellow, clean tech textures, abstract spherical shapes, professional lighting, 8k, bokeh";
+      
       const finalPrompt = withBanana 
-        ? `${aiPrompt || 'modern tech wallpaper'} with a stylized nano banana aesthetic, vibrant colors, premium texture, hyper-realistic, 8k`
+        ? `${aiPrompt || 'modern abstract technology'} in the style of ${bananaKeywords}`
         : aiPrompt;
 
       const result = await generateAICover(finalPrompt);
@@ -87,7 +89,8 @@ export function ProfileHeaderEditor({
       if (result.success && result.url) {
         onCoverChange(result.url);
         toast({
-          title: "Capa gerada com sucesso!",
+          title: withBanana ? "Capa Nano Banana gerada!" : "Capa gerada com sucesso!",
+          description: "A imagem foi gerada via Pollinations AI (Estilo Nano)",
           status: "success",
           duration: 5000,
         });
@@ -291,6 +294,7 @@ export function ProfileHeaderEditor({
                   <VStack spacing={4} align="center">
                     <MediaPicker 
                       label={activeTab === 'cover' ? "Upload de Capa" : "Upload de Avatar"}
+                      intent={activeTab === 'cover' ? 'cover' : 'avatar'}
                       value={activeTab === 'cover' ? coverUrl : avatarUrl}
                       onChange={(url: string) => {
                         if (activeTab === 'cover') onCoverChange(url);

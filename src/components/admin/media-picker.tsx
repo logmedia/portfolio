@@ -29,9 +29,10 @@ interface MediaPickerProps {
   value?: string;
   onChange: (url: string) => void;
   label: string;
+  intent?: 'cover' | 'avatar' | 'general';
 }
 
-export function MediaPicker({ value, onChange, label }: MediaPickerProps) {
+export function MediaPicker({ value, onChange, label, intent = 'general' }: MediaPickerProps) {
   const { isOpen: showUrlInput, onToggle: toggleUrlInput } = useDisclosure();
   const inputName = label === "Foto de Destaque" ? "heroImage" : "gallery";
 
@@ -135,7 +136,7 @@ export function MediaPicker({ value, onChange, label }: MediaPickerProps) {
                   <PopoverContent bg="gray.900" borderColor="whiteAlpha.300" w="480px" boxShadow="dark-lg" zIndex={2000}>
                     <PopoverArrow bg="gray.900" />
                     <PopoverBody p={0}>
-                      <MediaLibrary selectedUrl={value} onSelect={(media) => onChange(media.url)} />
+                      <MediaLibrary selectedUrl={value} onSelect={(media) => onChange(media.url)} intent={intent} />
                     </PopoverBody>
                   </PopoverContent>
                 </Portal>

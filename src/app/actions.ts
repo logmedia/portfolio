@@ -147,7 +147,7 @@ export async function saveProfile(formData: FormData) {
       avatarUrl: formData.get("avatarUrl")?.toString(),
       coverUrl: formData.get("coverUrl")?.toString(),
       socials: formData.get("socials")?.toString(),
-      stacks: formData.get("stacks")?.toString(),
+      stacks: formData.getAll("stacks[]").join(","), // Get all stack IDs as comma-separated string for parseStacks
       skills: formData.get("skills")?.toString(),
       github_username: formData.get("github_username")?.toString(),
       whatsapp_number: formData.get("whatsapp_number")?.toString(),

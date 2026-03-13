@@ -31,3 +31,20 @@ This skill provides the agent with instructions on how to maintain the visual an
 - [progress.md](file:///Users/joserenato/Desktop/portfolioonline/.agents/skills/UX_UI/progress.md)
 - [theme/index.ts](file:///Users/joserenato/Desktop/portfolioonline/src/theme/index.ts)
 - [globals.css](file:///Users/joserenato/Desktop/portfolioonline/src/app/globals.css)
+## Standardized Procedures
+
+1. **Accessibility & Contrast**
+   - All text components must maintain a minimum contrast ratio of 4.5:1 against their background.
+   - Use solid background variants or high-contrast borders for tags and badges on glassmorphic cards.
+   - Never rely solely on color to convey information (add icons or sub-labels).
+
+2. **Brand Integrity**
+   - Technology icons (Stacks) must preserve their original brand colors to facilitate cognitive recognition.
+   - Accents and gradients should complement, not override, the primary colors of integrated technologies.
+
+3. **Data Management & Filtering**
+   - Ensure profile-level technologies (stacks) are explicitly editable in the admin dashboard.
+   - Global discovery views (Explore) must prioritize these profile stacks for consistent filtering.
+
+4. **Empty State Protocol**
+   - Provide friendly feedback with actionable suggestions when a search or filter returns no results.
