@@ -91,12 +91,17 @@ function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
       getProfileStacks(p).forEach(s => uniqueIdsOrNames.add(s));
     });
 
+    if (uniqueIdsOrNames.size === 0 && allStacks.length > 0) {
+       // Opcional: Se não houver perfis com stacks, mostrar as stacks mais comuns do sistema
+       // Mas por enquanto vamos apenas garantir que a lista seja gerada se houver dados
+    }
+
     return Array.from(uniqueIdsOrNames).map(idOrName => {
       const master = allStacks.find(s => s.id === idOrName || s.name === idOrName);
       return {
         id: master?.id || idOrName,
         name: master?.name || idOrName,
-        color: master?.color
+        color: master?.color || "var(--chakra-colors-brand-500)"
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
   }, [allStacks, profiles, getProfileStacks]);

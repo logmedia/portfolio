@@ -10,6 +10,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    version: "v1.2.3",
+    date: "12 de Março, 2026",
+    title: "Correção de Filtros & Visibilidade",
+    changes: [
+      { type: "fix", description: "Corrigida a lógica de busca que ocultava talentos sem GitHub vinculado, permitindo que todas as tecnologias (Stacks) apareçam no filtro." },
+      { type: "fix", description: "Melhorada a resiliência do mapeamento de tecnologias no diretório de talentos." },
+    ],
+  },
+  {
     version: "v1.2.2",
     date: "12 de Março, 2026",
     title: "Harmonização de Design & Explore 2.0",

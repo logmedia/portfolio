@@ -133,7 +133,6 @@ export async function fetchAllProfiles(): Promise<Profile[]> {
       .from("profiles")
       .select("*, stacks")
       .eq("status", "active")
-      .not("github_username", "is", null)
       .not("name", "is", null)
       .order("name", { ascending: true });
 
