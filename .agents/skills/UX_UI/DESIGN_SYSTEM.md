@@ -106,7 +106,7 @@ Glass properties:
 
 background: var(--chakra-colors-whiteAlpha-50) (rgba(255, 255, 255, 0.05))\
 backdrop-filter: blur(16px)\
-border: 1px solid var(--chakra-colors-whiteAlpha-200)
+border: 1px solid var(--chakra-colors-whiteAlpha-200) (rgba(255, 255, 255, 0.2))
 
 Rules:
 

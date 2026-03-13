@@ -43,7 +43,13 @@ interface ExploreContentProps {
   allStacks: Stack[];
 }
 
-export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
+export /* 3. Página Explore (ExploreContent)
+- **Correção de Dados**: Atualizei a query do banco de dados para garantir que as tecnologias (Stacks) de cada perfil sejam carregadas, ativando corretamente os filtros de busca.
+- **Expertises (Skills)**: Redesenhei as tags de habilidades com um novo estilo de Glassmorphism de alto contraste (`rgba(255, 255, 255, 0.08)` com blur).
+- **Legibilidade Total**: Agora as tags possuem bordas nítidas e sombras sutis, garantindo que o texto e os ícones sejam perfeitamente legíveis mesmo sobre fundos escuros.
+- **Filtros Profissionais**: Ajustei os filtros de Stacks e Expertises para usarem cores vibrantes e estados de seleção claros (hover/active).
+*/
+function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeStacks, setActiveStacks] = useState<Set<string>>(new Set());
   const [activeSkills, setActiveSkills] = useState<Set<string>>(new Set());
@@ -225,7 +231,7 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
                 <Flex wrap="wrap" gap={3}>
                   {availableStacks.map((stack) => {
                     const isActive = activeStacks.has(stack.id);
-                    const brandColor = stack.color || '#00e5ff';
+                    const brandColor = stack.color || "var(--chakra-colors-brand-500)";
                     
                     return (
                       <Tag
@@ -237,12 +243,13 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
                         onClick={() => toggleStack(stack.id)}
                         borderRadius="full"
                         px={5}
-                        py={2}
+                        py={2.5}
                         _hover={{ 
                           transform: 'translateY(-2px)', 
                           borderColor: brandColor,
-                          bg: isActive ? brandColor : 'whiteAlpha.100',
-                          color: isActive ? "black" : "white"
+                          bg: isActive ? brandColor : 'whiteAlpha.200',
+                          color: isActive ? "black" : "white",
+                          boxShadow: isActive ? `0 0 15px ${brandColor}` : "none"
                         }}
                         transition="all 0.2s"
                         borderWidth="1px"
@@ -282,11 +289,15 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
                         onClick={() => toggleSkill(skill)}
                         borderRadius="full"
                         px={5}
-                        py={2}
+                        py={2.5}
+                        bg={isActive ? "orange.400" : "transparent"}
+                        color={isActive ? "black" : "orange.200"}
+                        borderColor={isActive ? "orange.400" : "orange.800"}
                         _hover={{ 
                           transform: 'translateY(-2px)', 
-                          borderColor: 'orange.500',
-                          bg: isActive ? 'orange.600' : 'whiteAlpha.100'
+                          borderColor: 'orange.300',
+                          bg: isActive ? 'orange.500' : 'whiteAlpha.200',
+                          color: isActive ? "black" : "white"
                         }}
                         transition="all 0.2s"
                         borderWidth="1px"
@@ -322,7 +333,7 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
                 <Card 
                   h="full"
                   bg="whiteAlpha.50" 
-                  borderColor="whiteAlpha.100" 
+                  borderColor="whiteAlpha.200" 
                   borderWidth="1px"
                   _hover={{ 
                     transform: 'translateY(-8px)', 
@@ -364,21 +375,22 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
                           <HStack spacing={2} wrap="wrap" justify="center">
                             {profile.skills.slice(0, 3).map((skill: any, idx: number) => {
                               const SkillIcon = getIconComponent(skill.icon || 'Code');
-                              const brandColor = skill.color || '#00e5ff';
+                              const brandColor = "var(--chakra-colors-brand-500)";
                               return (
                                 <Tag 
                                   key={idx} 
                                   size="md" // Increased size for visibility
                                   variant="solid" 
-                                  bg="gray.800" // Solid dark background for text contrast
-                                  border="1.5px solid"
-                                  borderColor={brandColor} // Brand color border
+                                  bg="rgba(255, 255, 255, 0.08)" 
+                                  backdropFilter="blur(8px)"
+                                  border="1px solid"
+                                  borderColor="whiteAlpha.300"
                                   color="white"
                                   borderRadius="full"
-                                  px={3}
-                                  py={1.5}
-                                  boxShadow={`0 0 10px ${brandColor}33`}
-                                  _hover={{ bg: "gray.700", transform: "scale(1.05)" }}
+                                  px={4}
+                                  py={2}
+                                  boxShadow={`0 4px 12px rgba(0, 0, 0, 0.5)`}
+                                  _hover={{ bg: "whiteAlpha.200", transform: "translateY(-1px)", borderColor: brandColor }}
                                   transition="all 0.2s"
                                 >
                                   <HStack spacing={2}>

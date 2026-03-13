@@ -131,14 +131,18 @@ export async function fetchAllProfiles(): Promise<Profile[]> {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select("*, stacks")
       .eq("status", "active")
       .not("github_username", "is", null)
       .not("name", "is", null)
       .order("name", { ascending: true });
 
     if (error || !data) return [];
-    return data as Profile[];
+    return data.map((profile: any) => ({
+      ...profile,
+      stacks: profile.stacks || [],
+      skills: profile.skills || []
+    })) as Profile[];
   } catch (error) {
     console.error("fetchAllProfiles ERROR:", error);
     return [];

@@ -1,9 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-green-300: #00837E;
-  --color-brand-green-500: #00875f;
-  
   --color-brand-gray-100: #e1e1e6;
   --color-brand-gray-300: #c4c4cc;
   --color-brand-gray-400: #8d8d99;
@@ -22,8 +19,9 @@
   --gray-700: #29292e;
   --gray-800: #202024;
   --gray-900: #121214;
-  --green-300: #00837E;
-  --green-500: #00875f;
+  /* Use the brand menta color as the primary green */
+  --green-300: #22b99d;
+  --green-500: #15937d;
 }
 
 :focus {
@@ -33,10 +31,11 @@
 
 body {
   -webkit-font-smoothing: antialiased;
+  background-color: var(--gray-900);
+  color: var(--gray-300);
 }
 
+/* Removed hardcoded Roboto to use Space Grotesk from Chakra UI */
 body, input, textarea, button {
-  font-family: 'Roboto', sans-serif;
-  font-weight: 400;
-  font-size: 1rem;
+  font-family: inherit;
 }

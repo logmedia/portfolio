@@ -20,6 +20,7 @@ This skill provides the agent with instructions on how to maintain the visual an
 2. Ensure high contrast for accessibility.
 3. Interactive elements (buttons, tags) must have clear hover and active states.
 4. Maintain a consistent border-radius (default to 2xl for cards).
+5. STRICT GLASSMORPHISM: Use `whiteAlpha.50` (5% opacity) for card backgrounds and `whiteAlpha.200` for borders to maintain design harmony.
 
 ## Resources
 - [DESIGN_SYSTEM.md](file:///Users/joserenato/Desktop/portfolioonline/.agents/skills/UX_UI/DESIGN_SYSTEM.md)

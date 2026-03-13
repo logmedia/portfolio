@@ -182,9 +182,9 @@ Glass panels define the visual identity.
 
 Glass style:
 
-background: rgba(255,255,255,0.5)  
+background: rgba(255, 255, 255, 0.05) (whiteAlpha.50)  
 backdrop-filter: blur(16px)  
-border: 1px solid rgba(255,255,255,0.2)
+border: 1px solid rgba(255, 255, 255, 0.2) (whiteAlpha.200)
 
 Use glass for:
 

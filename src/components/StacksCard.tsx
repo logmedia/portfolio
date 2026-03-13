@@ -25,10 +25,10 @@ interface StacksCardProps {
 }
 
 export function StacksCard({ stacks }: StacksCardProps) {
-  const bg = useColorModeValue("whiteAlpha.500", "whiteAlpha.500");
-  const borderColor = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
+  const bg = useColorModeValue("whiteAlpha.50", "whiteAlpha.50");
+  const borderColor = useColorModeValue("whiteAlpha.200", "whiteAlpha.100");
   const headingColor = useColorModeValue("gray.800", "gray.100");
-  const cardShadow = useColorModeValue("xl", "2xl");
+  const cardShadow = useColorModeValue("lg", "xl");
   
   // Custom logic to flip the Next.js icon black when in light mode
   const nextJsColor = useColorModeValue("black", "white");

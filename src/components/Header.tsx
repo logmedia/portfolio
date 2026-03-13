@@ -47,10 +47,10 @@ export function Header() {
       position="sticky"
       top={0}
       zIndex={10}
-      bg={colorMode === "light" ? "whiteAlpha.800" : "blackAlpha.800"}
+      bg={colorMode === "light" ? "whiteAlpha.700" : "blackAlpha.700"}
       backdropFilter="blur(16px)"
       borderBottom="1px solid"
-      borderColor={colorMode === "light" ? "whiteAlpha.200" : "whiteAlpha.100"}
+      borderColor={colorMode === "light" ? "blackAlpha.100" : "whiteAlpha.100"}
       justify="space-between"
       align="center"
       py={4}

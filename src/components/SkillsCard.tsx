@@ -31,13 +31,13 @@ interface SkillsCardProps {
 }
 
 export function SkillsCard({ skills }: SkillsCardProps) {
-  const bg = useColorModeValue("whiteAlpha.500", "whiteAlpha.500");
-  const borderColor = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
+  const bg = useColorModeValue("whiteAlpha.50", "whiteAlpha.50");
+  const borderColor = useColorModeValue("whiteAlpha.200", "whiteAlpha.100");
   const headingColor = useColorModeValue("gray.800", "gray.100");
   const textColor = useColorModeValue("gray.700", "gray.200");
   const subTextColor = useColorModeValue("gray.500", "gray.400");
   const trackBg = useColorModeValue("gray.200", "whiteAlpha.100");
-  const cardShadow = useColorModeValue("xl", "2xl");
+  const cardShadow = useColorModeValue("lg", "xl");
 
   const getIconComponent = (iconName: string, customSvg?: string) => {
     if (iconName === "custom" && customSvg) {
@@ -72,7 +72,7 @@ export function SkillsCard({ skills }: SkillsCardProps) {
       <Stack spacing={6}>
         {(skills || []).map((skill, index) => {
           const IconComponent = getIconComponent(skill.icon, skill.customSvg);
-          const skillColor = skill.color || "#0BC5EA"; // cyan.400 approx or brand
+          const skillColor = skill.color || "var(--chakra-colors-brand-500)";
           
           return (
             <Box key={`${skill.name}-${index}`}>
