@@ -10,6 +10,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    version: "v1.2.1",
+    date: "12 de Março, 2026",
+    title: "Estabilidade do Editor & Refinamento de Design",
+    changes: [
+      { type: "fix", description: "Corrigido erro de salvamento de projetos causado por conflitos de extensões no ModernEditor." },
+      { type: "fix", description: "Resolvido loop de renderização infinita no editor HTML ao sincronizar conteúdo." },
+      { type: "fix", description: "Sincronização global da transparência Glassmorphism para 5% atendendo às novas diretrizes de design." },
+      { type: "chore", description: "Implementação de logs de diagnóstico detalhados para ações administrativas (Posts & Perfil)." },
+      { type: "feat", description: "Criada Skill de Manutenção para garantir padronização de Changelog e Git." },
+    ],
+  },
+  {
     version: "v1.2.0",
     date: "12 de Março, 2026",
     title: "Galeria Moderna, Integração WhatsApp & UX Social",
