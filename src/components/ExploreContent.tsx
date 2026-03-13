@@ -72,29 +72,12 @@ function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
     return map;
   }, [allStacks]);
 
-  // Extrair habilidades únicas disponíveis dos perfis (fallback se master list falhar)
-  const availableSkills = useMemo(() => {
-    const skills = new Set<string>();
-    profiles.forEach(profile => {
-      const pSkills = Array.isArray(profile.skills) ? profile.skills : [];
-      pSkills.forEach(s => {
-        if (s && s.name) skills.add(s.name);
-      });
-    });
-    return Array.from(skills).sort();
-  }, [profiles]);
-
   // Extrair stacks únicas disponíveis dos perfis e cruzar com master list
   const availableStacks = useMemo(() => {
     const uniqueIdsOrNames = new Set<string>();
     profiles.forEach(p => {
       getProfileStacks(p).forEach(s => uniqueIdsOrNames.add(s));
     });
-
-    if (uniqueIdsOrNames.size === 0 && allStacks.length > 0) {
-       // Opcional: Se não houver perfis com stacks, mostrar as stacks mais comuns do sistema
-       // Mas por enquanto vamos apenas garantir que a lista seja gerada se houver dados
-    }
 
     return Array.from(uniqueIdsOrNames).map(idOrName => {
       const master = allStacks.find(s => s.id === idOrName || s.name === idOrName);
@@ -105,6 +88,25 @@ function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
   }, [allStacks, profiles, getProfileStacks]);
+
+  // Extrair habilidades únicas disponíveis dos perfis (fallback se master list falhar)
+  const availableSkills = useMemo(() => {
+    const skills = new Set<string>();
+    
+    // Nomes das stacks para filtragem
+    const stackNames = new Set(availableStacks.map(s => s.name.toLowerCase()));
+
+    profiles.forEach(profile => {
+      const pSkills = Array.isArray(profile.skills) ? profile.skills : [];
+      pSkills.forEach(s => {
+        // Apenas adiciona se tiver nome E não for uma stack (tecnologia de projeto)
+        if (s && s.name && !stackNames.has(s.name.toLowerCase())) {
+          skills.add(s.name);
+        }
+      });
+    });
+    return Array.from(skills).sort();
+  }, [profiles, availableStacks]);
 
   // Filtrar usuários
   const filteredProfiles = useMemo(() => {

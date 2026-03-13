@@ -125,8 +125,9 @@ export async function fetchProfile(userId?: string): Promise<Profile> {
 
 /**
  * Busca todos os perfis ativos e configurados para o diretório
+ * @param onlyWithProjects Se true, retorna apenas usuários com projetos publicados (para a página Exploração)
  */
-export async function fetchAllProfiles(): Promise<Profile[]> {
+export async function fetchAllProfiles(onlyWithProjects: boolean = false): Promise<Profile[]> {
   try {
     const supabase = createPublicClient();
     
@@ -154,8 +155,8 @@ export async function fetchAllProfiles(): Promise<Profile[]> {
       .map((profile: any) => {
         const publishedPosts = profile.posts?.filter((p: any) => p.status === 'published') || [];
         
-        // Se não tem posts publicados, ignoramos no diretório (conforme pedido)
-        if (publishedPosts.length === 0) return null;
+        // Se onlyWithProjects for true e não tem posts publicados, ignoramos
+        if (onlyWithProjects && publishedPosts.length === 0) return null;
 
         // Coletar stacks únicas dos projetos publicados
         const projectStackIds = new Set<string>();
