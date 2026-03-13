@@ -20,6 +20,7 @@ import {
   Collapse,
   useDisclosure,
   Grid,
+  Portal,
 } from '@chakra-ui/react';
 import { Image as ImageIcon, Trash, CloudArrowUp, Link as LinkIcon } from 'phosphor-react';
 import { MediaLibrary } from './media-library';
@@ -130,12 +131,14 @@ export function MediaPicker({ value, onChange, label }: MediaPickerProps) {
                     {value ? 'Alterar' : 'Enviar'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent bg="gray.900" borderColor="whiteAlpha.300" w="480px" boxShadow="dark-lg" zIndex={2000}>
-                  <PopoverArrow bg="gray.900" />
-                  <PopoverBody p={0}>
-                    <MediaLibrary selectedUrl={value} onSelect={(media) => onChange(media.url)} />
-                  </PopoverBody>
-                </PopoverContent>
+                <Portal>
+                  <PopoverContent bg="gray.900" borderColor="whiteAlpha.300" w="480px" boxShadow="dark-lg" zIndex={2000}>
+                    <PopoverArrow bg="gray.900" />
+                    <PopoverBody p={0}>
+                      <MediaLibrary selectedUrl={value} onSelect={(media) => onChange(media.url)} />
+                    </PopoverBody>
+                  </PopoverContent>
+                </Portal>
               </Popover>
 
               <Button

@@ -38,6 +38,7 @@ import {
   TabPanel,
   Textarea,
   Center,
+  Portal,
 } from "@chakra-ui/react";
 import { 
   Code, Palette, Database, Lightning, BracketsCurly, Cpu, Plus, Trash, 
@@ -221,126 +222,128 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
     };
 
     return (
-      <PopoverContent bg="gray.800" borderColor="whiteAlpha.200" boxShadow="xl" w="350px">
-        <PopoverArrow bg="gray.800" />
-        <PopoverCloseButton />
-        <PopoverHeader border="none" fontSize="sm" fontWeight="bold" pt={4}>
-          Personalizar Ícone
-        </PopoverHeader>
-        <PopoverBody pb={6}>
-          <Tabs size="sm" variant="soft-rounded" colorScheme="brand">
-            <TabList mb={4}>
-              <Tab fontSize="xs">Biblioteca</Tab>
-              <Tab fontSize="xs">Personalizado</Tab>
-            </TabList>
-            <TabPanels>
-              <TabPanel p={0}>
-                <VStack spacing={4} align="stretch">
-                  <Box>
-                    <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Sugestões e Cores</Text>
-                    <SimpleGrid columns={5} gap={2} mb={4}>
-                      {QUICK_ICONS.map((q) => (
-                        <IconButton
-                          key={q.name}
-                          aria-label={q.label}
-                          icon={<Icon as={q.icon} boxSize={5} />}
-                          size="sm"
-                          variant={activeIcon === q.name ? "solid" : "ghost"}
-                          colorScheme={activeIcon === q.name ? "brand" : "whiteAlpha"}
-                          onClick={() => {
-                            setIcon(q.name);
-                            if (q.color) setColor(q.color);
-                          }}
-                        />
-                      ))}
-                    </SimpleGrid>
-                    <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Cores da Marca</Text>
-                    <SimpleGrid columns={6} gap={2}>
-                      {COLOR_OPTIONS.map(c => (
-                        <Box 
-                          key={c} 
-                          bg={c} 
-                          w="100%" 
-                          h="24px" 
-                          borderRadius="md" 
-                          cursor="pointer" 
-                          border={activeColor === c ? "2px solid white" : "none"}
-                          onClick={() => setColor(c)}
-                        />
-                      ))}
-                      <IconButton 
-                        aria-label="Reset Color" 
-                        icon={<Icon as={PaintBrush} />} 
-                        size="xs" 
-                        variant="ghost" 
-                        onClick={() => setColor("")} 
-                      />
-                    </SimpleGrid>
-                  </Box>
-                  <Divider borderColor="whiteAlpha.100" />
-                  <Box>
-                    <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Buscar Biblioteca</Text>
-                    <Input 
-                      placeholder="Ex: camera, heart..." 
-                      size="sm" 
-                      bg="blackAlpha.400"
-                      value={iconSearch}
-                      onChange={(e) => setIconSearch(e.target.value)}
-                      mb={3}
-                    />
-                    <SimpleGrid columns={6} gap={2} maxH="120px" overflowY="auto" px={1}>
-                      {filteredIcons.map(iconKey => {
-                        const IconComp = (PhosphorIcons as any)[iconKey];
-                        return (
+      <Portal>
+        <PopoverContent bg="gray.800" borderColor="whiteAlpha.200" boxShadow="xl" w="350px" zIndex={2000}>
+          <PopoverArrow bg="gray.800" />
+          <PopoverCloseButton />
+          <PopoverHeader border="none" fontSize="sm" fontWeight="bold" pt={4}>
+            Personalizar Ícone
+          </PopoverHeader>
+          <PopoverBody pb={6}>
+            <Tabs size="sm" variant="soft-rounded" colorScheme="brand">
+              <TabList mb={4}>
+                <Tab fontSize="xs">Biblioteca</Tab>
+                <Tab fontSize="xs">Personalizado</Tab>
+              </TabList>
+              <TabPanels>
+                <TabPanel p={0}>
+                  <VStack spacing={4} align="stretch">
+                    <Box>
+                      <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Sugestões e Cores</Text>
+                      <SimpleGrid columns={5} gap={2} mb={4}>
+                        {QUICK_ICONS.map((q) => (
                           <IconButton
-                            key={iconKey}
-                            aria-label={iconKey}
-                            icon={<Icon as={IconComp} />}
-                            size="xs"
-                            variant={activeIcon === iconKey ? "solid" : "ghost"}
-                            colorScheme={activeIcon === iconKey ? "brand" : "whiteAlpha"}
-                            onClick={() => setIcon(iconKey)}
+                            key={q.name}
+                            aria-label={q.label}
+                            icon={<Icon as={q.icon} boxSize={5} />}
+                            size="sm"
+                            variant={activeIcon === q.name ? "solid" : "ghost"}
+                            colorScheme={activeIcon === q.name ? "brand" : "whiteAlpha"}
+                            onClick={() => {
+                              setIcon(q.name);
+                              if (q.color) setColor(q.color);
+                            }}
                           />
-                        );
-                      })}
-                    </SimpleGrid>
-                  </Box>
-                </VStack>
-              </TabPanel>
-              <TabPanel p={0}>
-                <VStack spacing={4} align="stretch">
-                  <FormControl>
-                    <FormLabel fontSize="xs" color="whiteAlpha.500">Código SVG</FormLabel>
-                    <Textarea 
-                      placeholder="Cole aqui o <svg>...</svg>" 
-                      size="sm" 
-                      fontSize="10px"
-                      fontFamily="mono"
-                      rows={6}
-                      bg="blackAlpha.400"
-                      value={activeSvg}
-                      onChange={(e) => setSvg(e.target.value)}
-                    />
-                    <Text fontSize="10px" mt={2} color="whiteAlpha.400">
-                      Dica: Garanta que o SVG tenha viewBox e use currentColor para preencher.
-                    </Text>
-                  </FormControl>
-                  <Box>
-                     <Text fontSize="10px" color="whiteAlpha.500" mb={3}>Preview</Text>
-                     <Center p={4} bg="blackAlpha.300" borderRadius="md" h="80px">
-                        {activeSvg ? (
-                          <Icon as={getIconComponent("custom", activeSvg)} boxSize={10} color={activeColor || "brand.400"} />
-                        ) : (
-                          <Text fontSize="xs" color="whiteAlpha.300">Aguardando SVG...</Text>
-                        )}
-                     </Center>
-                  </Box>
-                </VStack>
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
-        </PopoverBody>
-      </PopoverContent>
+                        ))}
+                      </SimpleGrid>
+                      <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Cores da Marca</Text>
+                      <SimpleGrid columns={6} gap={2}>
+                        {COLOR_OPTIONS.map(c => (
+                          <Box 
+                            key={c} 
+                            bg={c} 
+                            w="100%" 
+                            h="24px" 
+                            borderRadius="md" 
+                            cursor="pointer" 
+                            border={activeColor === c ? "2px solid white" : "none"}
+                            onClick={() => setColor(c)}
+                          />
+                        ))}
+                        <IconButton 
+                          aria-label="Reset Color" 
+                          icon={<Icon as={PaintBrush} />} 
+                          size="xs" 
+                          variant="ghost" 
+                          onClick={() => setColor("")} 
+                        />
+                      </SimpleGrid>
+                    </Box>
+                    <Divider borderColor="whiteAlpha.100" />
+                    <Box>
+                      <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Buscar Biblioteca</Text>
+                      <Input 
+                        placeholder="Ex: camera, heart..." 
+                        size="sm" 
+                        bg="blackAlpha.400"
+                        value={iconSearch}
+                        onChange={(e) => setIconSearch(e.target.value)}
+                        mb={3}
+                      />
+                      <SimpleGrid columns={6} gap={2} maxH="120px" overflowY="auto" px={1}>
+                        {filteredIcons.map(iconKey => {
+                          const IconComp = (PhosphorIcons as any)[iconKey];
+                          return (
+                            <IconButton
+                              key={iconKey}
+                              aria-label={iconKey}
+                              icon={<Icon as={IconComp} />}
+                              size="xs"
+                              variant={activeIcon === iconKey ? "solid" : "ghost"}
+                              colorScheme={activeIcon === iconKey ? "brand" : "whiteAlpha"}
+                              onClick={() => setIcon(iconKey)}
+                            />
+                          );
+                        })}
+                      </SimpleGrid>
+                    </Box>
+                  </VStack>
+                </TabPanel>
+                <TabPanel p={0}>
+                  <VStack spacing={4} align="stretch">
+                    <FormControl>
+                      <FormLabel fontSize="xs" color="whiteAlpha.500">Código SVG</FormLabel>
+                      <Textarea 
+                        placeholder="Cole aqui o <svg>...</svg>" 
+                        size="sm" 
+                        fontSize="10px"
+                        fontFamily="mono"
+                        rows={6}
+                        bg="blackAlpha.400"
+                        value={activeSvg}
+                        onChange={(e) => setSvg(e.target.value)}
+                      />
+                      <Text fontSize="10px" mt={2} color="whiteAlpha.400">
+                        Dica: Garanta que o SVG tenha viewBox e use currentColor para preencher.
+                      </Text>
+                    </FormControl>
+                    <Box>
+                       <Text fontSize="10px" color="whiteAlpha.500" mb={3}>Preview</Text>
+                       <Center p={4} bg="blackAlpha.300" borderRadius="md" h="80px">
+                          {activeSvg ? (
+                            <Icon as={getIconComponent("custom", activeSvg)} boxSize={10} color={activeColor || "brand.400"} />
+                          ) : (
+                            <Text fontSize="xs" color="whiteAlpha.300">Aguardando SVG...</Text>
+                          )}
+                       </Center>
+                    </Box>
+                  </VStack>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
     );
   };
 

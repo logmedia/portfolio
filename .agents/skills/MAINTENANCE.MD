@@ -40,4 +40,7 @@ Antes de finalizar, verifique se nenhum componente introduziu cores ou opacidade
 Toda alteração de layout (Grid, Flex, etc.) deve ser testada para responsividade.
 - **Grids**: Use objetos de breakpoint (ex: `{{ base: "1fr", md: "1fr 1fr" }}`) para garantir que o layout empilhe corretamente em telas menores.
 - **Imagens e Mockups**: Garanta que elementos fixos no desktop não quebrem o layout ou causem scroll horizontal no mobile. Use `w="full"` ou `maxW` adequados.
-
+## 5. Portais em Elementos Flutuantes
+Para evitar problemas de camadas (z-index) onde elementos como Popovers, Menus ou Tooltips ficam escondidos atrás de outros componentes (como sidebars), sempre use o componente `<Portal>` do Chakra UI.
+- **Regra**: Todo `PopoverContent`, `MenuList` ou equivalente que possa sobrepor outros elementos de layout deve estar dentro de um `<Portal>`.
+- **Z-index**: Mantenha um `zIndex` alto (ex: 2000) nessas camadas portais para garantir visibilidade absoluta.
