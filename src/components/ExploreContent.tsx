@@ -24,7 +24,7 @@ import {
   useColorModeValue,
   Divider,
 } from "@chakra-ui/react";
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import NextLink from "next/link";
 import { 
   Users, 
@@ -112,7 +112,7 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
       // 2. Filtro de Stacks (AND - deve ter todas as selecionadas)
       const hasAllActiveStacks = activeStacks.size === 0 || 
         Array.from(activeStacks).every(activeId => 
-          profileStacks.some(s => s === activeId || stackMap.get(s) === stackMap.get(activeId) || s === stackMap.get(activeId))
+          profileStacks.some((s: string) => s === activeId || stackMap.get(s) === stackMap.get(activeId) || s === stackMap.get(activeId))
         );
 
       if (!hasAllActiveStacks) return false;
@@ -120,7 +120,7 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
       // 3. Filtro de Skills (AND - deve ter todas as selecionadas)
       const hasAllActiveSkills = activeSkills.size === 0 || 
         Array.from(activeSkills).every(active => 
-          profileSkills.some(s => s.name.toLowerCase() === active.toLowerCase())
+          profileSkills.some((s: any) => s.name.toLowerCase() === active.toLowerCase())
         );
 
       return hasAllActiveSkills;
