@@ -1242,8 +1242,8 @@ export async function logVisit(data: {
   try {
     const supabase = await createSupabaseServerClient();
     
-    // Inserção simples na tabela de logs
-    const { error } = await supabase.from("visit_logs").insert({
+    // Inserção simples na tabela de logs (cast para any para evitar erro de tipo no build)
+    const { error } = await (supabase.from("visit_logs") as any).insert({
       path: data.path,
       referer: data.referer || null,
       browser: data.browser || null,

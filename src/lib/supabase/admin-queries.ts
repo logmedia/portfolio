@@ -127,27 +127,23 @@ export async function fetchAnalyticsSummary() {
     const supabase = await createSupabaseServerClient();
     
     // Total de Visualizações
-    const { count: totalViews } = await supabase
-      .from("visit_logs")
+    const { count: totalViews } = await (supabase.from("visit_logs") as any)
       .select("*", { count: 'exact', head: true });
 
     // Visitantes Únicos (baseado em ip_hash)
-    const { data: uniqueData } = await supabase
-      .from("visit_logs")
+    const { data: uniqueData } = await (supabase.from("visit_logs") as any)
       .select("ip_hash");
     
     const uniqueVisitors = new Set((uniqueData as any[])?.map(v => v.ip_hash)).size;
 
     // Visualizações nas últimas 24h
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { count: recentViews } = await supabase
-      .from("visit_logs")
+    const { count: recentViews } = await (supabase.from("visit_logs") as any)
       .select("*", { count: 'exact', head: true })
       .gte("created_at", twentyFourHoursAgo);
 
     // Top Páginas
-    const { data: topPagesData } = await supabase
-      .from("visit_logs")
+    const { data: topPagesData } = await (supabase.from("visit_logs") as any)
       .select("path");
     
     const pathCounts: Record<string, number> = {};
