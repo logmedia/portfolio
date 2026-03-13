@@ -183,10 +183,10 @@ export function ProfileHeaderEditor({
 
         {/* Info Preview Section */}
         <VStack mt="70px" spacing={1} align="center" px={4}>
-          <Text color="white" fontWeight="bold" fontSize="2xl" lineHeight="1.2" textAlign="center">
+          <Text color="white" fontWeight="bold" fontSize="xl" lineHeight="1.2" textAlign="center">
             {userName}
           </Text>
-          <Text fontSize="sm" color="brand.400" fontWeight="bold" letterSpacing="wider" textTransform="uppercase" textAlign="center">
+          <Text fontSize="xs" color="brand.400" fontWeight="bold" letterSpacing="wider" textTransform="uppercase" textAlign="center">
             {jobTitle}
           </Text>
         </VStack>

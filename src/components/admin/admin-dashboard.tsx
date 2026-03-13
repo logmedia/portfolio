@@ -417,7 +417,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                             <FormLabel>Bio</FormLabel>
                             <Textarea name="bio" defaultValue={profile.bio ?? ""} rows={4} bg="blackAlpha.300" />
                           </FormControl>
-                          <Grid templateColumns={{ base: "1fr", lg: "450px 1fr" }} gap={8} mb={6} alignItems="center">
+                          <Grid templateColumns={{ base: "1fr", lg: "360px 1fr" }} gap={8} mb={6} alignItems="center">
                             <Box w="full">
                               <ProfileHeaderEditor 
                                 avatarUrl={profileAvatarUrl}
