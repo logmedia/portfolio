@@ -994,6 +994,11 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities, s
                 <UserManagementContent users={allUsers} />
               </TabPanel>
             )}
+            {isAdmin && (
+              <TabPanel px={0} pt={8}>
+                <AnalyticsDashboard summary={analyticsSummary} />
+              </TabPanel>
+            )}
              {isAdmin && (
                <TabPanel pt={8} px={0}>
                  <Card variant="outline">

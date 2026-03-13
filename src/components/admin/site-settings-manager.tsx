@@ -42,9 +42,22 @@ export function SiteSettingsManager({ initialSettings }: SiteSettingsManagerProp
   const toast = useToast();
 
   const handleToggleSocial = (networkId: string) => {
-    const updatedNetworks = settings.social_networks.map(sn => 
-      sn.id === networkId ? { ...sn, enabled: !sn.enabled } : sn
-    );
+    let exists = false;
+    const updatedNetworks = settings.social_networks.map(sn => {
+      if (sn.id === networkId) {
+        exists = true;
+        return { ...sn, enabled: !sn.enabled };
+      }
+      return sn;
+    });
+
+    if (!exists) {
+      const option = SOCIAL_OPTIONS.find(opt => opt.id === networkId);
+      if (option) {
+        updatedNetworks.push({ id: networkId, name: option.name, icon: option.id, enabled: true });
+      }
+    }
+
     setSettings({ ...settings, social_networks: updatedNetworks });
   };
 
