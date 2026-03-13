@@ -238,18 +238,19 @@ export function PostDetailClient({ post, comments, profile, siteSettings }: Post
               </Badge>
             </Flex>
             
-            <Flex justify="space-between" align="start" mb={4} wrap="wrap" gap={4}>
+            <Flex mb={4}>
               <Heading size="2xl" color={headingColor} letterSpacing="tight">
                 {post.title}
               </Heading>
-              {siteSettings && (
-                <SocialShare 
-                  url={typeof window !== 'undefined' ? window.location.href : ''} 
-                  title={post.title} 
-                  activeNetworks={siteSettings.social_networks} 
-                />
-              )}
             </Flex>
+
+            {siteSettings && (
+              <SocialShare 
+                url={typeof window !== 'undefined' ? window.location.href : ''} 
+                title={post.title} 
+                activeNetworks={siteSettings.social_networks} 
+              />
+            )}
             <Text color={textColor} fontSize="xl" maxW="3xl">
               {post.subtitle}
             </Text>

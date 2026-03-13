@@ -151,19 +151,11 @@ export function Sidebar({ profile, siteSettings }: SidebarProps) {
         </HStack>
 
         {siteSettings && (
-          <>
-            <Divider borderColor={borderColor} />
-            <Stack spacing={2} pt={2} align="center">
-              <Text fontSize="xs" color={mutedTextColor} textTransform="uppercase" letterSpacing="widest">
-                Compartilhar Perfil
-              </Text>
-              <SocialShare 
-                url={typeof window !== 'undefined' ? window.location.href : ''} 
-                title={`Confira o portfólio de ${name}`} 
-                activeNetworks={siteSettings.social_networks} 
-              />
-            </Stack>
-          </>
+          <SocialShare 
+            url={typeof window !== 'undefined' ? window.location.href : ''} 
+            title={`Confira o portfólio de ${name}`} 
+            activeNetworks={siteSettings.social_networks} 
+          />
         )}
       </Stack>
     </Box>
