@@ -510,7 +510,7 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
                     colorScheme="red"
                     onClick={() => removeSkill(index)}
                     ml={4}
-                    opacity={0.3}
+                    opacity={0.5}
                     _groupHover={{ opacity: 1 }}
                   />
                 </Flex>
