@@ -107,7 +107,7 @@ export function ProfileHeaderEditor({
       <VStack spacing={0} align="stretch" bg="gray.900" borderRadius="2xl" overflow="hidden" border="1px solid" borderColor="whiteAlpha.100" pb={8}>
         <Box 
           w="full" 
-          h="180px"  // Increased height for a larger appearance
+          h={{ base: "140px", md: "180px" }} // Responsive height for mobile/desktop
           position="relative"
           bg="whiteAlpha.50"
         >

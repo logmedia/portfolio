@@ -35,3 +35,9 @@ Após o término do trabalho e atualização do changelog, o Git deve ser sincro
 Antes de finalizar, verifique se nenhum componente introduziu cores ou opacidades *hardcoded* que fujam do `DESIGN_SYSTEM.md`.
 - **Glassmorphism**: O padrão atual é `whiteAlpha.50` (5%) para fundos.
 - **Accent Color**: `brand.500` (#22b99d).
+
+## 4. Prioridade Mobile-First
+Toda alteração de layout (Grid, Flex, etc.) deve ser testada para responsividade.
+- **Grids**: Use objetos de breakpoint (ex: `{{ base: "1fr", md: "1fr 1fr" }}`) para garantir que o layout empilhe corretamente em telas menores.
+- **Imagens e Mockups**: Garanta que elementos fixos no desktop não quebrem o layout ou causem scroll horizontal no mobile. Use `w="full"` ou `maxW` adequados.
+
