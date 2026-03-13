@@ -103,10 +103,12 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [postContent, setPostContent] = useState("");
   
-  // Profile media state
+  // Profile media & info state
   const [profileAvatarUrl, setProfileAvatarUrl] = useState(profile.avatar_url ?? "");
   const [profileCoverUrl, setProfileCoverUrl] = useState(profile.cover_url ?? "");
-
+  const [profileName, setProfileName] = useState(profile.name ?? "");
+  const [profileJobTitle, setProfileJobTitle] = useState((profile as any).job_title ?? "");
+  
   // Admin state
   const [allUsers, setAllUsers] = useState<Profile[]>([]);
   const isAdmin = (profile as any).role === 'admin';
@@ -377,11 +379,28 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
 
                           <FormControl isRequired>
                             <FormLabel>Nome</FormLabel>
-                            <Input name="name" defaultValue={profile.name} placeholder="Nome completo" bg="blackAlpha.300" />
+                            <Input 
+                              name="name" 
+                              value={profileName} 
+                              onChange={(e) => {
+                                setProfileName(e.target.value);
+                                setIsDirty(true);
+                              }}
+                              placeholder="Nome completo" 
+                              bg="blackAlpha.300" 
+                            />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Cargo Atual</FormLabel>
-                            <Input name="role" defaultValue={(profile as any).job_title ?? ""} bg="blackAlpha.300" />
+                            <Input 
+                              name="role" 
+                              value={profileJobTitle} 
+                              onChange={(e) => {
+                                setProfileJobTitle(e.target.value);
+                                setIsDirty(true);
+                              }}
+                              bg="blackAlpha.300" 
+                            />
                           </FormControl>
                           <FormControl>
                             <FormLabel>Bio</FormLabel>
@@ -400,8 +419,8 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                                   setProfileCoverUrl(url);
                                   setIsDirty(true);
                                 }}
-                                userName={profile.name}
-                                jobTitle={(profile as any).job_title ?? "Web Developer"}
+                                userName={profileName}
+                                jobTitle={profileJobTitle || "Web Developer"}
                               />
                             </Box>
 
