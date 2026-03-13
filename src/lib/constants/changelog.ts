@@ -14,13 +14,9 @@ export const CHANGELOG_DATA: ChangelogEntry[] = [
     date: "12 de Março, 2026",
     title: "Estabilidade do Editor & Refinamento de Design",
     changes: [
-      { type: "fix", description: "Corrigida importação do BubbleMenu para compatibilidade total com Turbopack (Vercel Build)." },
-      { type: "fix", description: "Corrigido erro de salvamento de projetos causado por conflitos de extensões no ModernEditor." },
-      { type: "fix", description: "Resolvido loop de renderização infinita no editor HTML ao sincronizar conteúdo." },
-      { type: "fix", description: "Ajustada posição do ícone de alterar capa no mockup de perfil para evitar sobreposição." },
-      { type: "fix", description: "Sincronização global da transparência Glassmorphism para 5% atendendo às novas diretrizes de design." },
-      { type: "chore", description: "Implementação de logs de diagnóstico detalhados para ações administrativas (Posts & Perfil)." },
-      { type: "feat", description: "Criada Skill de Manutenção para garantir padronização de Changelog e Git." },
+      { type: "fix", description: "Melhorias de estabilidade no editor de projetos, corrigindo erros ao salvar e travamentos de interface." },
+      { type: "fix", description: "Refinamento visual global com transparência suave (Glassmorphism) atendendo ao novo guia de design." },
+      { type: "fix", description: "Ajustada posição dos controles de edição do perfil para maior visibilidade e fluidez." },
     ],
   },
   {

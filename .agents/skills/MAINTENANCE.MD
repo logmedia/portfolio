@@ -7,15 +7,19 @@ description: Guidelines for code maintenance, Git practices, and Changelog updat
 
 Este documento define os procedimentos obrigatórios que o agente deve seguir após completar qualquer implementação ou correção.
 
-## 1. Atualização do Changelog
-Sempre que houver uma correção de bug (`fix`), nova funcionalidade (`feat`) ou ajuste de infraestrutura (`chore`), as notas de atualização devem ser atualizadas.
+## 1. Atualização do Changelog (Foco no Essencial)
+O Changelog deve refletir apenas mudanças que tragam benefícios diretos ou visíveis para o usuário. Evite poluir a lista com erros de build, logs internos ou ajustes técnicos triviais que não impactam quem usa o site.
 
 - **Arquivo**: `src/lib/constants/changelog.ts`
+- **Critérios de Inclusão**:
+    - **Impacto**: A mudança resolve um bug funcional ou melhora a interface?
+    - **Concisão**: Agrupe ajustes técnicos sob descrições simples (ex: "Melhorias de Estabilidade").
+    - **Frequência**: Não atualize para cada commit. Junte um pacote de melhorias reais antes de subir uma versão.
 - **Procedimento**:
-    1. Incremente a versão (ex: de `v1.2.1` para `v1.2.2`).
+    1. Incremente a versão apenas em atualizações significativas.
     2. Adicione um novo objeto ao topo do array `CHANGELOG_DATA`.
-    3. Use tipos claros: `feat` (Verde), `fix` (Vermelho) ou `chore` (Azul).
-    4. Mantenha as descrições em Português (PT-BR).
+    3. Use tipos claros: `feat` ou `fix`. Evite `chore` no changelog público, a menos que seja algo estrutural.
+    4. Mantenha as descrições focadas no benefício final, em Português (PT-BR).
 
 ## 2. Padrões de Git
 Após o término do trabalho e atualização do changelog, o Git deve ser sincronizado.
