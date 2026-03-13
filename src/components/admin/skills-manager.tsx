@@ -95,10 +95,23 @@ const QUICK_ICONS = [
 ];
 
 const SUGGESTIONS = [
-  "Adobe Photoshop", "Adobe Illustrator", "Premiere Pro", "Figma", 
-  "UI/UX Design", "React", "Next.js", "Node.js", "TypeScript",
-  "Fotografia Digital", "Edição de Vídeo", "Gestão de Tráfego", "Copywriting",
-  "Estratégia SEO", "Inglês Fluente", "Liderança"
+  { name: "Adobe Photoshop", icon: "TbBrandAdobePhotoshop", color: "#31A8FF" },
+  { name: "Adobe Illustrator", icon: "TbBrandAdobeIllustrator", color: "#FF9A00" },
+  { name: "Premiere Pro", icon: "VideoCamera", color: "#CF96FD" },
+  { name: "After Effects", icon: "TbBrandAdobeAfterEffect", color: "#9F7AEA" },
+  { name: "Figma", icon: "TbBrandFigma", color: "#F24E1E" },
+  { name: "UI/UX Design", icon: "Palette", color: "#D53F8C" },
+  { name: "React", icon: "TbBrandReact", color: "#61DAFB" },
+  { name: "Next.js", icon: "TbBrandNextjs", color: "#FFFFFF" },
+  { name: "Node.js", icon: "TbBrandNodejs", color: "#339933" },
+  { name: "TypeScript", icon: "TbBrandTypescript", color: "#3178C6" },
+  { name: "Supabase", icon: "TbBrandSupabase", color: "#3ECF8E" },
+  { name: "Fotografia Digital", icon: "Camera", color: "#F6AD55" },
+  { name: "Edição de Vídeo", icon: "FilmStrip", color: "#E53E3E" },
+  { name: "Gestão de Tráfego", icon: "TrendUp", color: "#38A169" },
+  { name: "Copywriting", icon: "Pen", color: "#D69E2E" },
+  { name: "Estratégia SEO", icon: "Globe", color: "#00B5D8" },
+  { name: "Liderança", icon: "IdentificationBadge", color: "#805AD5" }
 ];
 
 export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
@@ -346,23 +359,41 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
           <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500" mb={3} textTransform="uppercase" letterSpacing="wider">
             Habilidades Sugeridas:
           </Text>
-          <Flex wrap="wrap" gap={2}>
-            {SUGGESTIONS.filter((sug) => !skills.some((s) => s.name.toLowerCase() === sug.toLowerCase())).map((suggestion) => (
-              <Tag
-                key={suggestion}
-                size="md"
-                variant="subtle"
-                colorScheme="whiteAlpha"
-                cursor="pointer"
-                onClick={() => setNewName(suggestion)}
-                _hover={{ bg: "brand.500", color: "white" }}
-                transition="all 0.2s"
-                borderRadius="full"
-              >
-                <TagLabel py={1}>{suggestion}</TagLabel>
-                <Icon as={Plus} ml={1} />
-              </Tag>
-            ))}
+          <Flex wrap="wrap" gap={3}>
+            {SUGGESTIONS.filter((sug) => !skills.some((s) => s.name.toLowerCase() === sug.name.toLowerCase())).map((suggestion) => {
+              const SuggestionIcon = getIconComponent(suggestion.icon);
+              return (
+                <Tag
+                  key={suggestion.name}
+                  size="lg"
+                  variant="subtle"
+                  bg="whiteAlpha.100"
+                  color="whiteAlpha.900"
+                  cursor="pointer"
+                  onClick={() => {
+                    setNewName(suggestion.name);
+                    setNewIcon(suggestion.icon);
+                    if (suggestion.color) setNewColor(suggestion.color);
+                  }}
+                  _hover={{ 
+                    bg: suggestion.color ? `${suggestion.color}22` : "brand.500", 
+                    color: suggestion.color || "white",
+                    transform: "translateY(-2px)",
+                    borderColor: suggestion.color || "brand.500"
+                  }}
+                  transition="all 0.2s"
+                  borderRadius="full"
+                  px={4}
+                  py={2}
+                  border="1px solid"
+                  borderColor="whiteAlpha.100"
+                >
+                  <Icon as={SuggestionIcon} mr={2} boxSize={4} />
+                  <TagLabel fontWeight="medium">{suggestion.name}</TagLabel>
+                  <Icon as={Plus} ml={2} opacity={0.5} />
+                </Tag>
+              );
+            })}
           </Flex>
         </Box>
 

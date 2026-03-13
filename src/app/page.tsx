@@ -124,11 +124,12 @@ export default function LandingPage() {
               w="full" 
               position="relative"
               p={4}
-              bg="whiteAlpha.50"
+              bg="whiteAlpha.500"
               borderRadius="2xl"
               borderWidth="1px"
               borderColor="whiteAlpha.200"
               boxShadow="2xl"
+              backdropFilter="blur(16px)"
             >
               <Box bg="#0a0f18" borderRadius="xl" overflow="hidden">
                  <Box bg="whiteAlpha.100" px={4} py={2} borderBottom="1px solid" borderColor="whiteAlpha.100" display="flex" gap={2}>
@@ -257,7 +258,7 @@ export default function LandingPage() {
 
 function FeatureCard({ icon: IconComponent, title, description }: any) {
   return (
-    <VStack align="start" spacing={4} p={8} bg="whiteAlpha.50" borderRadius="2xl" border="1px solid" borderColor="whiteAlpha.100">
+    <VStack align="start" spacing={4} p={8} bg="whiteAlpha.500" backdropFilter="blur(16px)" borderRadius="2xl" border="1px solid" borderColor="whiteAlpha.200">
       <Box bg="brand.500" p={2} borderRadius="lg">
         <Icon as={IconComponent} size={24} color="white" />
       </Box>

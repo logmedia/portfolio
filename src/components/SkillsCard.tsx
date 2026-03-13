@@ -31,13 +31,13 @@ interface SkillsCardProps {
 }
 
 export function SkillsCard({ skills }: SkillsCardProps) {
-  const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
-  const borderColor = useColorModeValue("white", "whiteAlpha.100");
+  const bg = useColorModeValue("whiteAlpha.500", "whiteAlpha.500");
+  const borderColor = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
   const headingColor = useColorModeValue("gray.800", "gray.100");
   const textColor = useColorModeValue("gray.700", "gray.200");
   const subTextColor = useColorModeValue("gray.500", "gray.400");
   const trackBg = useColorModeValue("gray.200", "whiteAlpha.100");
-  const cardShadow = useColorModeValue("0 4px 20px 0 rgba(0, 0, 0, 0.05)", "0 8px 32px 0 rgba(0, 0, 0, 0.37)");
+  const cardShadow = useColorModeValue("xl", "2xl");
 
   const getIconComponent = (iconName: string, customSvg?: string) => {
     if (iconName === "custom" && customSvg) {

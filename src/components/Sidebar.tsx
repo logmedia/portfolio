@@ -45,11 +45,11 @@ interface SidebarProps {
 export function Sidebar({ profile }: SidebarProps) {
   const { name, role, job_title, bio, avatar_url, cover_url, socials, whatsapp_number, whatsapp_public } = { ...DEFAULT_PROFILE, ...profile };
 
-  const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
-  const borderColor = useColorModeValue("white", "whiteAlpha.100");
+  const bg = useColorModeValue("whiteAlpha.700", "whiteAlpha.500");
+  const borderColor = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
   const textColor = useColorModeValue("gray.800", "gray.100");
   const mutedTextColor = useColorModeValue("gray.600", "gray.400");
-  const cardShadow = useColorModeValue("0 4px 20px 0 rgba(0, 0, 0, 0.05)", "0 8px 32px 0 rgba(0, 0, 0, 0.37)");
+  const cardShadow = useColorModeValue("xl", "2xl");
 
   return (
     <Box

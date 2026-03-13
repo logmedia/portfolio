@@ -36,8 +36,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   const bg = useColorModeValue("gray.50", "#05080c");
-  const cardBg = useColorModeValue("white", "rgba(32, 32, 36, 0.4)");
-  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const cardBg = useColorModeValue("whiteAlpha.800", "whiteAlpha.500");
+  const borderColor = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
   const headingColor = useColorModeValue("gray.800", "white");
 
   const handleLogin = (formData: FormData) => {

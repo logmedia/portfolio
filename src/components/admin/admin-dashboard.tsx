@@ -339,7 +339,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
             <TabPanel px={0} pt={8}>
               <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={8} as="section">
                 <GridItem>
-                  <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
+                  <Card variant="outline">
                     <CardBody>
                       <form 
                         key={profile.id ?? "profile-form"} 
@@ -349,7 +349,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                         <input type="hidden" name="id" value={safeProfileId} />
                         <ChakraStack spacing={4}>
                           {/* Top Action Bar */}
-                          <HStack justify="space-between" align="center" bg="blackAlpha.400" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(8px)">
+                          <HStack justify="space-between" align="center" bg="blackAlpha.600" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(16px)">
                             <Text fontWeight="bold" fontSize="sm" ml={2}>
                               Configurações do Perfil
                             </Text>
@@ -476,7 +476,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                   </Card>
                 </GridItem>
                 <GridItem>
-                  <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
+                  <Card variant="outline">
                     <CardBody>
                        <ChakraStack spacing={4}>
                          <Heading size="md">Dashboard de Controle</Heading>
@@ -500,7 +500,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
             <TabPanel px={0} pt={8}>
               <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8}>
                 <GridItem>
-                  <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
+                  <Card variant="outline">
                     <CardBody>
                       <form 
                         key={selectedPost?.id || `new-project-${formKey}`} 
@@ -510,7 +510,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                         <input type="hidden" name="id" value={safePostId} />
                         <ChakraStack spacing={6}>
                           {/* Top Action Bar */}
-                          <HStack justify="space-between" align="center" bg="blackAlpha.400" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(8px)">
+                          <HStack justify="space-between" align="center" bg="blackAlpha.600" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(16px)">
                             <Text fontWeight="bold" fontSize="sm" ml={2}>
                               {selectedPost ? "Editando Projeto" : "Novo Projeto"}
                             </Text>
@@ -747,7 +747,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                   </Card>
                 </GridItem>
                 <GridItem>
-                  <Card bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100">
+                  <Card variant="outline">
                     <CardBody>
                       <ChakraStack spacing={4}>
                         <HStack justify="space-between" align="center">

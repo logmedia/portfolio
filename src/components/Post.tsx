@@ -27,14 +27,14 @@ export function Post({ post, profile }: PostProps) {
   const publishedAt = post.published_at ? new Date(post.published_at) : new Date();
 
   // Dynamic Colors
-  const bg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(32, 32, 36, 0.4)");
-  const telemetryBg = useColorModeValue("rgba(240, 240, 245, 0.5)", "rgba(20, 20, 23, 0.3)");
-  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const bg = useColorModeValue("whiteAlpha.500", "whiteAlpha.500");
+  const telemetryBg = useColorModeValue("blackAlpha.50", "blackAlpha.50");
+  const borderColor = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
   const headingColor = useColorModeValue("gray.800", "white");
   const textColor = useColorModeValue("gray.600", "gray.400");
   const metaTextColor = useColorModeValue("gray.500", "whiteAlpha.500");
-  const cardShadow = useColorModeValue("0 4px 20px 0 rgba(0, 0, 0, 0.05)", "0 8px 32px 0 rgba(0, 0, 0, 0.37)");
-  const hoverShadow = useColorModeValue("0 10px 25px -3px rgba(0, 0, 0, 0.1)", "0 10px 20px -3px rgba(0, 0, 0, 0.4)");
+  const cardShadow = useColorModeValue("xl", "2xl");
+  const hoverShadow = useColorModeValue("2xl", "dark-lg");
   const btnBg = useColorModeValue("gray.100", "whiteAlpha.100");
   const btnColor = useColorModeValue("gray.800", "white");
   

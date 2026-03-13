@@ -67,7 +67,7 @@ const components = {
         backdropFilter: "blur(16px)",
         borderWidth: "1px",
         borderColor: "whiteAlpha.200",
-        boxShadow: "xl",
+        boxShadow: "2xl",
       },
     },
   },
