@@ -59,6 +59,31 @@ export type Post = {
   status?: "draft" | "published" | "trash";
   published_at?: string | null;
   author?: Profile;
+  // SEO Fields
+  seo_title?: string;
+  seo_description?: string;
+  seo_keywords?: string[];
+  seo_image_url?: string;
+};
+
+export type SocialNetwork = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  icon: string;
+};
+
+export type SiteSettings = {
+  id: string;
+  site_name: string;
+  seo_title?: string;
+  seo_description?: string;
+  seo_keywords?: string[];
+  og_image_url?: string;
+  google_analytics_id?: string;
+  google_search_console_id?: string;
+  social_networks: SocialNetwork[];
+  updated_at?: string;
 };
 
 export type Project = Post;

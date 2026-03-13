@@ -216,16 +216,18 @@ const postSchema = z.object({
   difficulty: z.preprocess((val) => Number(val ?? 1), z.number().min(1).max(5)),
   status: z.enum(["draft", "published", "trash"]),
   publishedAt: z.string().optional().nullable(),
+  seoTitle: z.string().optional(),
+  seoDescription: z.string().optional(),
+  seoKeywords: z.string().optional(),
+  seoImageUrl: z.string().optional(),
 });
 
 const parseGallery = (input?: string) => {
   if (!input) return [];
-  // Tentar parsear como JSON (novo formato com caption/order)
   try {
     const parsed = JSON.parse(input);
     if (Array.isArray(parsed)) return parsed;
   } catch {}
-  // Fallback: formato legado (URLs separadas por newline)
   return input
     .split("\n")
     .map((url, i) => url.trim())
@@ -250,6 +252,10 @@ export async function savePost(formData: FormData) {
       difficulty: formData.get("difficulty")?.toString(),
       status: formData.get("status")?.toString() as "draft" | "published" | "trash",
       publishedAt: formData.get("publishedAt")?.toString(),
+      seoTitle: formData.get("seoTitle")?.toString(),
+      seoDescription: formData.get("seoDescription")?.toString(),
+      seoKeywords: formData.get("seoKeywords")?.toString(),
+      seoImageUrl: formData.get("seoImageUrl")?.toString(),
     });
 
     if (!parsed.success) {
@@ -261,36 +267,20 @@ export async function savePost(formData: FormData) {
     }
 
     const supabase = await createSupabaseServerClient();
-    
-    // Check authentication for admin actions
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, message: "Não autorizado. Faça login novamente." };
-    }
+    if (!user) return { success: false, message: "Não autorizado." };
 
-    // Garantir que existe um perfil para este usuário no banco (evita erro de FK)
-    // Se não existir, criamos um básico usando upsert por segurança
     const { error: profileError } = await (supabase as any).from("profiles").upsert({
       id: user.id,
       name: user.email?.split("@")[0] || "Admin",
     }, { onConflict: "id" });
 
-    if (profileError) {
-      console.error("Erro ao sincronizar perfil:", profileError);
-      return { success: false, message: `Erro ao preparar perfil: ${profileError.message}` };
-    }
+    if (profileError) return { success: false, message: `Erro ao preparar perfil: ${profileError.message}` };
 
-    // Pegar IDs das stacks do formData (enviados como stacks[])
     const selectedStackIds = formData.getAll("stacks[]").map(id => id.toString());
 
-    // Segurança: Se for um update (tem ID), validar se o post pertence ao usuário
     if (parsed.data.id) {
-      const { data: existingPost } = await supabase
-        .from("posts")
-        .select("author_id")
-        .eq("id", parsed.data.id)
-        .single();
-      
+      const { data: existingPost } = await supabase.from("posts").select("author_id").eq("id", parsed.data.id).single();
       if (existingPost && (existingPost as any).author_id !== user.id) {
         return { success: false, message: "Você não tem permissão para editar este projeto." };
       }
@@ -304,15 +294,17 @@ export async function savePost(formData: FormData) {
       content: parsed.data.content ?? null,
       hero_image_url: parsed.data.heroImage || null,
       gallery: parseGallery(parsed.data.gallery),
-      tags: parseStacks(parsed.data.tags), // Mantemos tags legadas
+      tags: parseStacks(parsed.data.tags),
       external_link: parsed.data.externalLink || null,
       difficulty: parsed.data.difficulty,
       status: parsed.data.status,
       published_at: parsed.data.publishedAt || new Date().toISOString(),
       author_id: user.id,
+      seo_title: parsed.data.seoTitle || null,
+      seo_description: parsed.data.seoDescription || null,
+      seo_keywords: parsed.data.seoKeywords ? parsed.data.seoKeywords.split(",").map(k => k.trim()).filter(Boolean) : null,
+      seo_image_url: parsed.data.seoImageUrl || null,
     };
-
-    console.log("Saving project payload:", payload);
 
     let currentSlug = payload.slug;
     let post = null;
@@ -320,87 +312,36 @@ export async function savePost(formData: FormData) {
     let success = false;
     let attempts = 0;
 
-    // Slug Auto-Resolver Logic
     while (!success && attempts < 5) {
-      const response = await (supabase as any)
-        .from("posts")
-        .upsert({ ...payload, slug: currentSlug } as any, { onConflict: "id" })
-        .select()
-        .single();
-      
+      const response = await (supabase as any).from("posts").upsert({ ...payload, slug: currentSlug } as any, { onConflict: "id" }).select().single();
       if (!response.error) {
         post = response.data;
         success = true;
-      } else if (
-        response.error.code === "23505" || 
-        response.error.message?.includes("posts_author_slug_key") ||
-        response.error.message?.includes("duplicate key value violates unique constraint")
-      ) {
+      } else if (response.error.code === "23505" || response.error.message?.includes("posts_author_slug_key")) {
         attempts++;
         currentSlug = `${payload.slug}-${attempts}`;
-        console.warn(`Slug conflict detected. Retrying with: ${currentSlug} (Attempt ${attempts})`);
       } else {
         error = response.error;
         break;
       }
     }
 
-    if (!success || !post) {
-      console.error("savePost error after attempts:", error);
-      return { success: false, message: `Erro no banco: ${error?.message || "Conflito de slug persistente"}` };
-    }
+    if (!success || !post) return { success: false, message: `Erro no banco: ${error?.message || "Conflito de slug"}` };
 
-    console.log("Project saved successfully:", post);
-
-    // Sincronizar stacks (Muitos-para-Muitos)
-    // 1. Remover relações antigas
-    const { error: deleteError } = await (supabase as any).from("post_stacks").delete().eq("post_id", (post as any).id);
-    if (deleteError) {
-      console.error("Error deleting old stacks:", deleteError);
-    }
-
-    // 2. Inserir novas relações
+    await (supabase as any).from("post_stacks").delete().eq("post_id", (post as any).id);
     if (selectedStackIds.length > 0) {
-      const relations = selectedStackIds.map(stackId => ({
-        post_id: (post as any).id,
-        stack_id: stackId
-      }));
-      const { error: insertError } = await (supabase as any).from("post_stacks").insert(relations);
-      if (insertError) {
-        console.error("Error inserting new stacks:", insertError);
-      }
+      const relations = selectedStackIds.map(stackId => ({ post_id: (post as any).id, stack_id: stackId }));
+      await (supabase as any).from("post_stacks").insert(relations);
     }
 
-    // 3. Revalidações
     revalidatePath(`/projeto/${(post as any).slug}`);
     revalidatePath("/admin", 'page');
     revalidatePath("/", 'layout');
 
-    // 4. Buscar o post atualizado com stacks para o frontend sincronizar
-    const { data: updatedPost } = await (supabase as any)
-      .from("posts")
-      .select(`
-        *,
-        stacks:post_stacks(
-          stack:stacks(*)
-        )
-      `)
-      .eq("id", (post as any).id)
-      .single();
+    const { data: updatedPost } = await (supabase as any).from("posts").select(`*, stacks:post_stacks(stack:stacks(*))`).eq("id", (post as any).id).single();
+    const formattedPost = updatedPost ? { ...updatedPost, stacks: updatedPost.stacks?.map((s: any) => s.stack).filter(Boolean) || [] } : post;
 
-    // Formatar o retorno para o tipo Post esperado pelo frontend
-    const formattedPost = updatedPost ? {
-      ...updatedPost,
-      stacks: updatedPost.stacks?.map((s: any) => s.stack).filter(Boolean) || []
-    } : post;
-
-    await logActivity(
-      parsed.data.id ? "update_project" : "create_project", 
-      "project", 
-      formattedPost.id, 
-      { title: formattedPost.title }
-    );
-
+    await logActivity(parsed.data.id ? "update_project" : "create_project", "project", formattedPost.id, { title: formattedPost.title });
     return { success: true, post: formattedPost as Post };
   } catch (error: any) {
     console.error("savePost error:", error);
@@ -1216,4 +1157,108 @@ export async function updateProfileRole(profileId: string, role: 'admin' | 'edit
   
   revalidatePath("/admin");
   return { success: true };
+}
+
+const siteSettingsSchema = z.object({
+  id: z.string(),
+  siteName: z.string().min(1),
+  seoTitle: z.string().optional(),
+  seoDescription: z.string().optional(),
+  seoKeywords: z.string().optional(),
+  ogImageUrl: z.string().optional(),
+  googleAnalyticsId: z.string().optional(),
+  googleSearchConsoleId: z.string().optional(),
+  socialNetworks: z.string(), // JSON string
+});
+
+export async function saveSiteSettings(formData: FormData) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Não autorizado." };
+
+    // Verificar se o usuário atual é admin
+    const { data: adminUser } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if ((adminUser as any)?.role !== 'admin') {
+      return { success: false, message: "Acesso negado. Apenas administradores." };
+    }
+
+    const parsed = siteSettingsSchema.safeParse({
+      id: formData.get("id")?.toString(),
+      siteName: formData.get("siteName")?.toString(),
+      seoTitle: formData.get("seoTitle")?.toString(),
+      seoDescription: formData.get("seoDescription")?.toString(),
+      seoKeywords: formData.get("seoKeywords")?.toString(),
+      ogImageUrl: formData.get("ogImageUrl")?.toString(),
+      googleAnalyticsId: formData.get("googleAnalyticsId")?.toString(),
+      googleSearchConsoleId: formData.get("googleSearchConsoleId")?.toString(),
+      socialNetworks: formData.get("socialNetworks")?.toString(),
+    });
+
+    if (!parsed.success) {
+      return { success: false, errors: parsed.error.flatten() };
+    }
+
+    const payload = {
+      site_name: parsed.data.siteName,
+      seo_title: parsed.data.seoTitle || null,
+      seo_description: parsed.data.seoDescription || null,
+      seo_keywords: parsed.data.seoKeywords ? parsed.data.seoKeywords.split(",").map(k => k.trim()).filter(Boolean) : null,
+      og_image_url: parsed.data.ogImageUrl || null,
+      google_analytics_id: parsed.data.googleAnalyticsId || null,
+      google_search_console_id: parsed.data.googleSearchConsoleId || null,
+      social_networks: JSON.parse(parsed.data.socialNetworks),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await (supabase.from("site_settings") as any)
+      .update(payload)
+      .eq("id", parsed.data.id);
+
+    if (error) return { success: false, message: error.message };
+
+    revalidatePath("/", "layout");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("saveSiteSettings ERROR:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+export async function logVisit(data: {
+  path: string;
+  referer?: string;
+  browser?: string;
+  os?: string;
+  deviceType?: string;
+  ipHash?: string;
+}) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    
+    // Inserção simples na tabela de logs
+    const { error } = await supabase.from("visit_logs").insert({
+      path: data.path,
+      referer: data.referer || null,
+      browser: data.browser || null,
+      os: data.os || null,
+      device_type: data.deviceType || null,
+      ip_hash: data.ipHash || null
+    });
+
+    if (error) {
+      // Falha silenciosa para não afetar o usuário
+      console.error("Error logging visit:", error.message);
+    }
+    
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
 }

@@ -38,13 +38,19 @@ import {
   ButtonGroup,
   VStack,
   Spinner,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
   Checkbox,
 } from "@chakra-ui/react";
-import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction, checkUsernameAvailability, fetchAllProfiles } from "@/app/actions";
-import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem } from "@/types/content";
-import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash, Recycle, Users } from "phosphor-react";
+import { deletePost, savePost, saveProfile, signOut, updateCommentStatus, deleteComment as removeCommentAction, checkUsernameAvailability, fetchAllProfiles, saveSiteSettings } from "@/app/actions";
+import type { Post, Profile, Comment as ContentComment, Stack, GalleryItem, SiteSettings } from "@/types/content";
+import { SignOut, Cube, Desktop, ChatCircleText, Stack as StackIcon, Trash, Recycle, Users, GearSix, Globe, ShareNetwork } from "phosphor-react";
 
 import { UserManagementContent } from "../UserManagementContent";
+import { fetchRecentComments, fetchStacks, fetchSiteSettings } from "@/lib/supabase/queries";
 import { StacksManagement } from "./stacks-management";
 import { TrashManager } from "./trash-manager";
 import { StackSelector } from "./stack-selector";
@@ -68,16 +74,20 @@ import { CoverPicker } from "../CoverPicker";
 import { SkillsManager } from "./skills-manager";
 import { SocialsManager } from "./socials-manager";
 import { ProfileHeaderEditor } from "../ProfileHeaderEditor";
+import { SiteSettingsManager } from "./site-settings-manager";
+import { AnalyticsDashboard } from "./analytics-dashboard";
 
-type AdminDashboardProps = {
+interface AdminDashboardProps {
   profile: Profile;
   posts: Post[];
   comments: ContentComment[];
   stacks: Stack[];
   activities: any[];
+  siteSettings: SiteSettings | null;
+  analyticsSummary: any;
 };
 
-export function AdminDashboard({ profile, posts, comments, stacks, activities }: AdminDashboardProps) {
+export function AdminDashboard({ profile, posts, comments, stacks, activities, siteSettings, analyticsSummary }: AdminDashboardProps) {
   const toast = useToast();
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isSavingProfile, startProfileTransition] = useTransition();
@@ -358,7 +368,9 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
             <Tab fontWeight="semibold"><Icon as={StackIcon} mr={2} /> Stacks</Tab>
             <Tab fontWeight="semibold"><Icon as={ChatCircleText} mr={2} /> Comentários</Tab>
             <Tab fontWeight="semibold"><Icon as={Recycle} mr={2} /> Lixeira</Tab>
-            {isAdmin && <Tab fontWeight="semibold"><Icon as={Users} mr={2} /> Usuários</Tab>}
+             {isAdmin && <Tab fontWeight="semibold"><Icon as={Users} mr={2} /> Usuários</Tab>}
+             {isAdmin && <Tab fontWeight="semibold"><Icon as={ShareNetwork} mr={2} /> Analytics</Tab>}
+             {isAdmin && <Tab fontWeight="semibold"><Icon as={GearSix} mr={2} /> Configurações</Tab>}
           </TabList>
           <TabPanels>
             <TabPanel px={0} pt={8}>
@@ -740,13 +752,13 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                                 sx={{
                                   "&::-webkit-calendar-picker-indicator": {
                                     filter: "invert(1)",
-                                    opacity: 0.8,
+                                    opacity: 1,
                                     cursor: "pointer",
                                     padding: "4px",
                                     borderRadius: "4px",
+                                    background: "whiteAlpha.200",
                                     _hover: {
-                                      opacity: 1,
-                                      bg: "whiteAlpha.100"
+                                      bg: "whiteAlpha.300"
                                     }
                                   },
                                   "&::-webkit-datetime-edit": {
@@ -757,6 +769,38 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                               />
                             </FormControl>
                           </Grid>
+
+                          <Accordion allowToggle>
+                            <AccordionItem border="none">
+                              <AccordionButton px={0} _hover={{ bg: "transparent" }}>
+                                <HStack flex="1" textAlign="left" spacing={2}>
+                                  <Icon as={Globe} color="brand.400" />
+                                  <Text fontWeight="bold" fontSize="xs" color="brand.400">SEO & METADADOS (OPCIONAL)</Text>
+                                </HStack>
+                                <AccordionIcon />
+                              </AccordionButton>
+                              <AccordionPanel pb={4} px={0}>
+                                <ChakraStack spacing={3}>
+                                  <FormControl>
+                                    <FormLabel fontSize="xs">Título SEO</FormLabel>
+                                    <Input name="seoTitle" defaultValue={selectedPost?.seo_title} placeholder="Título personalizado para buscadores" size="sm" bg="blackAlpha.200" />
+                                  </FormControl>
+                                  <FormControl>
+                                    <FormLabel fontSize="xs">Descrição SEO</FormLabel>
+                                    <Textarea name="seoDescription" defaultValue={selectedPost?.seo_description} placeholder="Descrição curta para redes sociais e Google" size="sm" bg="blackAlpha.200" />
+                                  </FormControl>
+                                  <FormControl>
+                                    <FormLabel fontSize="xs">Keywords (separadas por vírgula)</FormLabel>
+                                    <Input name="seoKeywords" defaultValue={selectedPost?.seo_keywords?.join(", ")} placeholder="ex: design, react, portfólio" size="sm" bg="blackAlpha.200" />
+                                  </FormControl>
+                                  <FormControl>
+                                    <FormLabel fontSize="xs">URL da Imagem SEO (OG Image)</FormLabel>
+                                    <Input name="seoImageUrl" defaultValue={selectedPost?.seo_image_url} placeholder="https://..." size="sm" bg="blackAlpha.200" />
+                                  </FormControl>
+                                </ChakraStack>
+                              </AccordionPanel>
+                            </AccordionItem>
+                          </Accordion>
 
 
                           <Divider borderColor="whiteAlpha.100" />
@@ -950,8 +994,21 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                 <UserManagementContent users={allUsers} />
               </TabPanel>
             )}
-          </TabPanels>
-        </Tabs>
+             {isAdmin && (
+               <TabPanel pt={8} px={0}>
+                 <Card variant="outline">
+                   <CardBody>
+                     {siteSettings ? (
+                       <SiteSettingsManager initialSettings={siteSettings} />
+                     ) : (
+                       <Text color="whiteAlpha.500">Configurações globais não encontradas ou erro no banco.</Text>
+                     )}
+                   </CardBody>
+                 </Card>
+               </TabPanel>
+             )}
+           </TabPanels>
+         </Tabs>
       </ChakraStack>
     </Box>
   );

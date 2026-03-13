@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Post, Profile, Comment, Stack } from "@/types/content";
-export type { Post, Profile, Comment, Stack };
+import type { Post, Profile, Comment, Stack, SiteSettings } from "@/types/content";
+export type { Post, Profile, Comment, Stack, SiteSettings };
 import type { Database } from "./types";
 
 const createPublicClient = () => {
@@ -420,5 +420,23 @@ export async function fetchNotifications(): Promise<any[]> {
   } catch (error) {
     console.error("fetchNotifications ERROR:", error);
     return [];
+  }
+}
+/**
+ * Busca as configurações globais do site
+ */
+export async function fetchSiteSettings(): Promise<SiteSettings | null> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("site_settings")
+      .select("*")
+      .single();
+
+    if (error || !data) return null;
+    return data as SiteSettings;
+  } catch (error) {
+    console.error("fetchSiteSettings ERROR:", error);
+    return null;
   }
 }

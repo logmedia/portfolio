@@ -3,6 +3,9 @@
 import { Box, Flex, Text, Link, Icon, Stack, HStack, useColorModeValue } from "@chakra-ui/react";
 import { GithubLogo, LinkedinLogo, InstagramLogo, Globe, WhatsappLogo, FacebookLogo, DiscordLogo, YoutubeLogo, TwitterLogo } from "phosphor-react";
 import Image from "next/image";
+import { SocialShare } from "./social-share";
+import { SiteSettings } from "@/types/content";
+import { Divider } from "@chakra-ui/react";
 
 interface Profile {
   name: string;
@@ -40,9 +43,10 @@ const iconMap: Record<string, any> = {
 
 interface SidebarProps {
   profile?: Partial<Profile>;
+  siteSettings?: SiteSettings | null;
 }
 
-export function Sidebar({ profile }: SidebarProps) {
+export function Sidebar({ profile, siteSettings }: SidebarProps) {
   const { name, role, job_title, bio, avatar_url, cover_url, socials, whatsapp_number, whatsapp_public } = { ...DEFAULT_PROFILE, ...profile };
 
   const bg = useColorModeValue("whiteAlpha.50", "whiteAlpha.50");
@@ -145,6 +149,22 @@ export function Sidebar({ profile }: SidebarProps) {
             </Link>
           )}
         </HStack>
+
+        {siteSettings && (
+          <>
+            <Divider borderColor={borderColor} />
+            <Stack spacing={2} pt={2} align="center">
+              <Text fontSize="xs" color={mutedTextColor} textTransform="uppercase" letterSpacing="widest">
+                Compartilhar Perfil
+              </Text>
+              <SocialShare 
+                url={typeof window !== 'undefined' ? window.location.href : ''} 
+                title={`Confira o portfólio de ${name}`} 
+                activeNetworks={siteSettings.social_networks} 
+              />
+            </Stack>
+          </>
+        )}
       </Stack>
     </Box>
   );

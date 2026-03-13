@@ -8,6 +8,7 @@ import { Box, Flex, Text as ChakraText } from "@chakra-ui/react";
 import { FeedTitle } from "@/components/FeedTitle";
 import { StackFilter } from "@/components/StackFilter";
 import { Suspense } from "react";
+import { SiteSettings } from "@/types/content";
 
 interface PortfolioContentProps {
   profile: any;
@@ -16,9 +17,10 @@ interface PortfolioContentProps {
   searchParams: {
     stack?: string;
   };
+  siteSettings: SiteSettings | null;
 }
 
-export function PortfolioContent({ profile, posts, stacks, searchParams }: PortfolioContentProps) {
+export function PortfolioContent({ profile, posts, stacks, searchParams, siteSettings }: PortfolioContentProps) {
   const filteredPosts = searchParams.stack 
     ? posts.filter(post => post.stacks?.some((s: any) => s.id === searchParams.stack))
     : posts;
@@ -51,7 +53,7 @@ export function PortfolioContent({ profile, posts, stacks, searchParams }: Portf
           avatar_url: profile.avatar_url ?? "",
           cover_url: profile.cover_url ?? "",
           socials: profile.socials
-        }} />
+        }} siteSettings={siteSettings} />
         <SkillsCard skills={profile.skills} />
         <StacksCard stacks={profile.stacks} />
       </Box>

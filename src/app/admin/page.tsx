@@ -1,6 +1,6 @@
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
-import { fetchAdminPosts, fetchAdminProfile, fetchRecentActivities } from "@/lib/supabase/admin-queries";
-import { fetchRecentComments, fetchStacks } from "@/lib/supabase/queries";
+import { fetchAdminPosts, fetchAdminProfile, fetchRecentActivities, fetchAnalyticsSummary } from "@/lib/supabase/admin-queries";
+import { fetchRecentComments, fetchStacks, fetchSiteSettings } from "@/lib/supabase/queries";
 import type { Profile } from "@/types/content";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -28,14 +28,26 @@ export default async function AdminPage() {
       redirect("/");
     }
 
-    const [posts, comments, stacks, activities] = await Promise.all([
-      fetchAdminPosts(user.id).catch(e => { console.error("Posts fetch error:", e); return []; }),
-      fetchRecentComments().catch(e => { console.error("Comments fetch error:", e); return []; }),
-      fetchStacks().catch(e => { console.error("Stacks fetch error:", e); return []; }),
-      fetchRecentActivities().catch(e => { console.error("Activities fetch error:", e); return []; }),
+    const [posts, comments, stacks, activities, siteSettings, analyticsSummary] = await Promise.all([
+      fetchAdminPosts(user.id).catch((e: any) => { console.error("Posts fetch error:", e); return []; }),
+      fetchRecentComments().catch((e: any) => { console.error("Comments fetch error:", e); return []; }),
+      fetchStacks().catch((e: any) => { console.error("Stacks fetch error:", e); return []; }),
+      fetchRecentActivities().catch((e: any) => { console.error("Activities fetch error:", e); return []; }),
+      fetchSiteSettings().catch((e: any) => { console.error("SiteSettings fetch error:", e); return null; }),
+      fetchAnalyticsSummary().catch((e: any) => { console.error("Analytics fetch error:", e); return null; }),
     ]);
 
-    return <AdminDashboard profile={profile as Profile} posts={posts} comments={comments} stacks={stacks} activities={activities} />;
+    return (
+      <AdminDashboard 
+        profile={profile as Profile} 
+        posts={posts} 
+        comments={comments} 
+        stacks={stacks} 
+        activities={activities}
+        siteSettings={siteSettings} 
+        analyticsSummary={analyticsSummary}
+      />
+    );
   } catch (error: any) {
     // Re-throw redirect errors so Next.js handles them normally
     if (error?.digest?.startsWith('NEXT_REDIRECT')) {

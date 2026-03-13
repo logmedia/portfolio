@@ -35,6 +35,8 @@ import Image from "next/image";
 import type { Comment, Post, Profile, GalleryItem } from "@/types/content";
 import { createComment } from "@/app/actions";
 import { GalleryCarousel } from "@/components/gallery-carousel";
+import { SocialShare } from "@/components/social-share";
+import { SiteSettings } from "@/types/content";
 
 const pulseRing = keyframes`
   0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
@@ -143,9 +145,10 @@ type PostDetailClientProps = {
   post: Post;
   comments: Comment[];
   profile: Profile;
+  siteSettings: SiteSettings | null;
 };
 
-export function PostDetailClient({ post, comments, profile }: PostDetailClientProps) {
+export function PostDetailClient({ post, comments, profile, siteSettings }: PostDetailClientProps) {
   const toast = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -235,9 +238,18 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
               </Badge>
             </Flex>
             
-            <Heading size="2xl" color={headingColor} mb={4} letterSpacing="tight">
-              {post.title}
-            </Heading>
+            <Flex justify="space-between" align="start" mb={4} wrap="wrap" gap={4}>
+              <Heading size="2xl" color={headingColor} letterSpacing="tight">
+                {post.title}
+              </Heading>
+              {siteSettings && (
+                <SocialShare 
+                  url={typeof window !== 'undefined' ? window.location.href : ''} 
+                  title={post.title} 
+                  activeNetworks={siteSettings.social_networks} 
+                />
+              )}
+            </Flex>
             <Text color={textColor} fontSize="xl" maxW="3xl">
               {post.subtitle}
             </Text>

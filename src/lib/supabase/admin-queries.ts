@@ -118,3 +118,61 @@ export async function fetchRecentActivities(limit = 10): Promise<any[]> {
     return [];
   }
 }
+
+/**
+ * Busca o resumo de estatísticas de visitas
+ */
+export async function fetchAnalyticsSummary() {
+  try {
+    const supabase = await createSupabaseServerClient();
+    
+    // Total de Visualizações
+    const { count: totalViews } = await supabase
+      .from("visit_logs")
+      .select("*", { count: 'exact', head: true });
+
+    // Visitantes Únicos (baseado em ip_hash)
+    const { data: uniqueData } = await supabase
+      .from("visit_logs")
+      .select("ip_hash");
+    
+    const uniqueVisitors = new Set((uniqueData as any[])?.map(v => v.ip_hash)).size;
+
+    // Visualizações nas últimas 24h
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count: recentViews } = await supabase
+      .from("visit_logs")
+      .select("*", { count: 'exact', head: true })
+      .gte("created_at", twentyFourHoursAgo);
+
+    // Top Páginas
+    const { data: topPagesData } = await supabase
+      .from("visit_logs")
+      .select("path");
+    
+    const pathCounts: Record<string, number> = {};
+    (topPagesData as any[])?.forEach(v => {
+      pathCounts[v.path] = (pathCounts[v.path] || 0) + 1;
+    });
+    
+    const topPages = Object.entries(pathCounts)
+      .map(([path, count]) => ({ path, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    return {
+      totalViews: totalViews || 0,
+      uniqueVisitors,
+      recentViews: recentViews || 0,
+      topPages
+    };
+  } catch (error) {
+    console.error("fetchAnalyticsSummary ERROR:", error);
+    return {
+      totalViews: 0,
+      uniqueVisitors: 0,
+      recentViews: 0,
+      topPages: []
+    };
+  }
+}
