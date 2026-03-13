@@ -344,7 +344,7 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
         {/* Suggestions */}
         <Box>
           <Text fontSize="xs" fontWeight="bold" color="whiteAlpha.500" mb={3} textTransform="uppercase" letterSpacing="wider">
-            Sugestões Sugeridas:
+            Habilidades Sugeridas:
           </Text>
           <Flex wrap="wrap" gap={2}>
             {SUGGESTIONS.filter((sug) => !skills.some((s) => s.name.toLowerCase() === sug.toLowerCase())).map((suggestion) => (
