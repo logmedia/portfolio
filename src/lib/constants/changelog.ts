@@ -14,6 +14,7 @@ export const CHANGELOG_DATA: ChangelogEntry[] = [
     date: "12 de Março, 2026",
     title: "Estabilidade do Editor & Refinamento de Design",
     changes: [
+      { type: "fix", description: "Corrigida importação do BubbleMenu para compatibilidade total com Turbopack (Vercel Build)." },
       { type: "fix", description: "Corrigido erro de salvamento de projetos causado por conflitos de extensões no ModernEditor." },
       { type: "fix", description: "Resolvido loop de renderização infinita no editor HTML ao sincronizar conteúdo." },
       { type: "fix", description: "Ajustada posição do ícone de alterar capa no mockup de perfil para evitar sobreposição." },

@@ -1,8 +1,7 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
-// @ts-ignore - BubbleMenu is exported from @tiptap/react but can have type issues
-import { BubbleMenu } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
