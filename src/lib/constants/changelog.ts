@@ -10,6 +10,19 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    version: "v1.3.0",
+    date: "12 de Março, 2026",
+    title: "Master SEO, Analytics & Social Share",
+    changes: [
+      { type: "feat", description: "Painel de Configurações Globais: Controle total sobre o nome do site, metadados e redes de compartilhamento." },
+      { type: "feat", description: "Integração Google Analytics 4: Configure seu ID de mensuração diretamente pelo painel administrativo." },
+      { type: "feat", description: "Novo Dashboard de Analytics: Visualize tráfego interno, visitantes únicos e páginas populares em tempo real." },
+      { type: "feat", description: "SEO Avançado por Projeto: Suporte a JSON-LD, metadados personalizados e fallback automático de imagens hero." },
+      { type: "feat", description: "Compartilhamento Social: Novos botões flutuantes e na sidebar para WhatsApp, LinkedIn, Facebook e Twitter." },
+      { type: "fix", description: "Corrigida a visibilidade do seletor de data no admin dashboard para melhor experiência UX." },
+    ],
+  },
+  {
     version: "v1.2.3",
     date: "12 de Março, 2026",
     title: "Correção de Filtros & Visibilidade",
