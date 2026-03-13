@@ -146,9 +146,10 @@ type PostDetailClientProps = {
   comments: Comment[];
   profile: Profile;
   siteSettings: SiteSettings | null;
+  isAuthor?: boolean;
 };
 
-export function PostDetailClient({ post, comments, profile, siteSettings }: PostDetailClientProps) {
+export function PostDetailClient({ post, comments, profile, siteSettings, isAuthor }: PostDetailClientProps) {
   const toast = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -238,10 +239,25 @@ export function PostDetailClient({ post, comments, profile, siteSettings }: Post
               </Badge>
             </Flex>
             
-            <Flex mb={4}>
+            <Flex mb={4} align="center" gap={3}>
               <Heading size="2xl" color={headingColor} letterSpacing="tight">
                 {post.title}
               </Heading>
+              {isAuthor && (
+                <Tooltip label="Editar Projeto" hasArrow>
+                  <Button
+                    as={Link}
+                    href="/admin"
+                    size="sm"
+                    colorScheme="brand"
+                    variant="outline"
+                    borderRadius="full"
+                    leftIcon={<Icon as={Code} weight="bold" />}
+                  >
+                    Editar
+                  </Button>
+                </Tooltip>
+              )}
             </Flex>
 
             {siteSettings && (

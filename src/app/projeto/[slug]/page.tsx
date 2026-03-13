@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { fetchComments, fetchPostBySlug, fetchProfile, fetchAllPostSlugs, fetchSiteSettings } from "@/lib/supabase/queries";
 import { PostDetailClient } from "@/components/post/post-detail-client";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 interface PostPageProps {
   params: { slug: string };
@@ -21,6 +22,9 @@ export default async function PostPage({ params }: PostPageProps) {
     fetchPostBySlug(slug),
     fetchSiteSettings()
   ]);
+
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!post) {
     notFound();
@@ -55,6 +59,7 @@ export default async function PostPage({ params }: PostPageProps) {
         comments={comments} 
         profile={profile} 
         siteSettings={siteSettings} 
+        isAuthor={user?.id === (post as any).author_id}
       />
     </>
   );
