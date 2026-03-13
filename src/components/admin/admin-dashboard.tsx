@@ -111,7 +111,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
   const [profileStacks, setProfileStacks] = useState<string[]>(profile.stacks ?? []);
   
   // Admin state
-  const [allUsers, setAllUsers] = useState<Profile[]>([]);
+  const [allUsers, setAllUsers] = useState<Profile[] | null>(null);
   const isAdmin = (profile as any).role === 'admin';
 
   useEffect(() => {

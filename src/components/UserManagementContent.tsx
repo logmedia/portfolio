@@ -29,13 +29,25 @@ import { updateProfileStatus, updateProfileRole } from "@/app/actions";
 import type { Profile } from "@/types/content";
 
 interface UserManagementContentProps {
-  users: Profile[];
+  users: Profile[] | null;
 }
 
 export function UserManagementContent({ users: initialUsers }: UserManagementContentProps) {
-  const [users, setUsers] = useState<Profile[]>(initialUsers);
+  const [users, setUsers] = useState<Profile[] | null>(initialUsers);
   const [isPending, startTransition] = useTransition();
   const toast = useToast();
+
+  // Sync state if initialUsers changes (e.g. after fetch)
+  useState(() => {
+    if (initialUsers && !users) {
+      setUsers(initialUsers);
+    }
+  });
+
+  // Need a better way to sync state from props in client components
+  if (initialUsers !== null && users === null) {
+     setUsers(initialUsers);
+  }
 
   const handleToggleStatus = (userId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'blocked' ? 'active' : 'blocked';
@@ -43,7 +55,7 @@ export function UserManagementContent({ users: initialUsers }: UserManagementCon
     startTransition(async () => {
       const result = await updateProfileStatus(userId, newStatus);
       if (result.success) {
-        setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: newStatus } : u));
+        setUsers(prev => prev ? prev.map(u => u.id === userId ? { ...u, status: newStatus } : u) : null);
         toast({
           title: `Usuário ${newStatus === 'blocked' ? 'bloqueado' : 'desbloqueado'}`,
           status: "success",
@@ -61,7 +73,7 @@ export function UserManagementContent({ users: initialUsers }: UserManagementCon
     startTransition(async () => {
       const result = await updateProfileRole(userId, newRole);
       if (result.success) {
-        setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+        setUsers(prev => prev ? prev.map(u => u.id === userId ? { ...u, role: newRole } : u) : null);
         toast({
           title: `Permissão alterada para ${newRole}`,
           status: "success",
@@ -73,7 +85,16 @@ export function UserManagementContent({ users: initialUsers }: UserManagementCon
     });
   };
 
-  if (!users || users.length === 0) {
+  if (!users) {
+    return (
+      <Box p={8} textAlign="center">
+        <Spinner size="xl" color="brand.500" thickness="3px" />
+        <Text mt={4} color="whiteAlpha.500">Buscando usuários...</Text>
+      </Box>
+    );
+  }
+
+  if (users.length === 0) {
     return (
       <Box p={8} textAlign="center" bg="whiteAlpha.50" borderRadius="xl">
         <Text color="whiteAlpha.500">Nenhum outro usuário encontrado.</Text>
