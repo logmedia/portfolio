@@ -48,6 +48,17 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
   const [activeStacks, setActiveStacks] = useState<Set<string>>(new Set());
   const [activeSkills, setActiveSkills] = useState<Set<string>>(new Set());
 
+  // Helper para garantir que stacks sejam sempre um array de strings
+  const getProfileStacks = useCallback((profile: Profile): string[] => {
+    if (!profile.stacks) return [];
+    if (Array.isArray(profile.stacks)) return profile.stacks;
+    if (typeof profile.stacks === 'string') {
+      // @ts-ignore - Caso o DB retorne string por erro de tipagem
+      return (profile.stacks as string).split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  }, []);
+
   // Criar mapa de ID -> Nome para stacks
   const stackMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -55,26 +66,41 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
     return map;
   }, [allStacks]);
 
-  // Extrair habilidades únicas disponíveis
+  // Extrair habilidades únicas disponíveis dos perfis (fallback se master list falhar)
   const availableSkills = useMemo(() => {
     const skills = new Set<string>();
     profiles.forEach(profile => {
-      profile.skills?.forEach(s => {
+      const pSkills = Array.isArray(profile.skills) ? profile.skills : [];
+      pSkills.forEach(s => {
         if (s && s.name) skills.add(s.name);
       });
     });
     return Array.from(skills).sort();
   }, [profiles]);
 
+  // Extrair stacks únicas disponíveis dos perfis e cruzar com master list
   const availableStacks = useMemo(() => {
-    return allStacks.filter(stack => 
-      profiles.some(profile => profile.stacks?.includes(stack.id) || profile.stacks?.includes(stack.name))
-    );
-  }, [allStacks, profiles]);
+    const uniqueIdsOrNames = new Set<string>();
+    profiles.forEach(p => {
+      getProfileStacks(p).forEach(s => uniqueIdsOrNames.add(s));
+    });
+
+    return Array.from(uniqueIdsOrNames).map(idOrName => {
+      const master = allStacks.find(s => s.id === idOrName || s.name === idOrName);
+      return {
+        id: master?.id || idOrName,
+        name: master?.name || idOrName,
+        color: master?.color
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  }, [allStacks, profiles, getProfileStacks]);
 
   // Filtrar usuários
   const filteredProfiles = useMemo(() => {
     return profiles.filter(profile => {
+      const profileStacks = getProfileStacks(profile);
+      const profileSkills = Array.isArray(profile.skills) ? profile.skills : [];
+
       // 1. Filtro de Texto (Nome, Bio, Cargo)
       const matchesSearch = searchQuery === "" || 
         profile.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -86,7 +112,7 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
       // 2. Filtro de Stacks (AND - deve ter todas as selecionadas)
       const hasAllActiveStacks = activeStacks.size === 0 || 
         Array.from(activeStacks).every(activeId => 
-          profile.stacks?.some(s => s === activeId || stackMap.get(s) === stackMap.get(activeId))
+          profileStacks.some(s => s === activeId || stackMap.get(s) === stackMap.get(activeId) || s === stackMap.get(activeId))
         );
 
       if (!hasAllActiveStacks) return false;
@@ -94,12 +120,12 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
       // 3. Filtro de Skills (AND - deve ter todas as selecionadas)
       const hasAllActiveSkills = activeSkills.size === 0 || 
         Array.from(activeSkills).every(active => 
-          profile.skills?.some(s => s.name.toLowerCase() === active.toLowerCase())
+          profileSkills.some(s => s.name.toLowerCase() === active.toLowerCase())
         );
 
       return hasAllActiveSkills;
     });
-  }, [profiles, searchQuery, activeStacks, activeSkills, stackMap]);
+  }, [profiles, searchQuery, activeStacks, activeSkills, stackMap, getProfileStacks]);
 
   const toggleStack = (stack: string) => {
     const newStacks = new Set(activeStacks);
@@ -334,7 +360,7 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
                       </Text>
                       
                       <Box flex="1" w="full">
-                        {profile.skills && Array.isArray(profile.skills) && profile.skills.length > 0 && (
+                        {profile.skills && Array.isArray(profile.skills) && profile.skills.length > 0 ? (
                           <HStack spacing={2} wrap="wrap" justify="center">
                             {profile.skills.slice(0, 3).map((skill: any, idx: number) => {
                               const SkillIcon = getIconComponent(skill.icon || 'Code');
@@ -367,6 +393,10 @@ export function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
                             {profile.skills.length > 3 && (
                               <Text fontSize="xs" color="whiteAlpha.400">+{profile.skills.length - 3}</Text>
                             )}
+                          </HStack>
+                        ) : (
+                          <HStack justify="center" opacity={0.3}>
+                             <Text fontSize="10px" textTransform="uppercase" letterSpacing="1px">Perifil sem expertises definidas</Text>
                           </HStack>
                         )}
                       </Box>
