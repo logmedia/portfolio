@@ -1168,6 +1168,10 @@ const siteSettingsSchema = z.object({
   ogImageUrl: z.string().optional(),
   googleAnalyticsId: z.string().optional(),
   googleSearchConsoleId: z.string().optional(),
+  metaPixelId: z.string().optional(),
+  linkedinInsightTagId: z.string().optional(),
+  clarityId: z.string().optional(),
+  googleTagManagerId: z.string().optional(),
   socialNetworks: z.string(), // JSON string
 });
 
@@ -1197,6 +1201,10 @@ export async function saveSiteSettings(formData: FormData) {
       ogImageUrl: formData.get("ogImageUrl")?.toString(),
       googleAnalyticsId: formData.get("googleAnalyticsId")?.toString(),
       googleSearchConsoleId: formData.get("googleSearchConsoleId")?.toString(),
+      metaPixelId: formData.get("metaPixelId")?.toString(),
+      linkedinInsightTagId: formData.get("linkedinInsightTagId")?.toString(),
+      clarityId: formData.get("clarityId")?.toString(),
+      googleTagManagerId: formData.get("googleTagManagerId")?.toString(),
       socialNetworks: formData.get("socialNetworks")?.toString(),
     });
 
@@ -1212,6 +1220,10 @@ export async function saveSiteSettings(formData: FormData) {
       og_image_url: parsed.data.ogImageUrl || null,
       google_analytics_id: parsed.data.googleAnalyticsId || null,
       google_search_console_id: parsed.data.googleSearchConsoleId || null,
+      meta_pixel_id: parsed.data.metaPixelId || null,
+      linkedin_insight_tag_id: parsed.data.linkedinInsightTagId || null,
+      clarity_id: parsed.data.clarityId || null,
+      google_tag_manager_id: parsed.data.googleTagManagerId || null,
       social_networks: JSON.parse(parsed.data.socialNetworks),
       updated_at: new Date().toISOString(),
     };

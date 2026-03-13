@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import { GlobalFooter } from "@/components/GlobalFooter";
 import { fetchSiteSettings } from "@/lib/supabase/queries";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { TrackingScripts } from "@/components/analytics/tracking-scripts";
 import { Suspense } from "react";
 
 const geistSans = Geist({
@@ -45,6 +46,7 @@ export default async function RootLayout({
           {siteSettings?.google_analytics_id && (
             <GoogleAnalytics gaId={siteSettings.google_analytics_id} />
           )}
+          <TrackingScripts settings={siteSettings} />
         </Suspense>
         <Providers>
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

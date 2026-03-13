@@ -167,6 +167,46 @@ export function SiteSettingsManager({ initialSettings }: SiteSettingsManagerProp
                     bg="blackAlpha.300"
                   />
                 </FormControl>
+
+                <FormControl>
+                  <FormLabel>Meta Pixel ID (Facebook/Instagram)</FormLabel>
+                  <Input 
+                    name="metaPixelId" 
+                    defaultValue={settings.meta_pixel_id || ''} 
+                    placeholder="ex: 123456789012345 (Apenas números)"
+                    bg="blackAlpha.300"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>LinkedIn Insight Tag Partner ID</FormLabel>
+                  <Input 
+                    name="linkedinInsightTagId" 
+                    defaultValue={settings.linkedin_insight_tag_id || ''} 
+                    placeholder="ex: 1234567 (Apenas números)"
+                    bg="blackAlpha.300"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Microsoft Clarity Project ID</FormLabel>
+                  <Input 
+                    name="clarityId" 
+                    defaultValue={settings.clarity_id || ''} 
+                    placeholder="ex: abcdefghij"
+                    bg="blackAlpha.300"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Google Tag Manager ID (GTM)</FormLabel>
+                  <Input 
+                    name="googleTagManagerId" 
+                    defaultValue={settings.google_tag_manager_id || ''} 
+                    placeholder="ex: GTM-XXXXXXX"
+                    bg="blackAlpha.300"
+                  />
+                </FormControl>
               </VStack>
             </CardBody>
           </Card>

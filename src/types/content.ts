@@ -82,6 +82,10 @@ export type SiteSettings = {
   og_image_url?: string;
   google_analytics_id?: string;
   google_search_console_id?: string;
+  meta_pixel_id?: string;
+  linkedin_insight_tag_id?: string;
+  clarity_id?: string;
+  google_tag_manager_id?: string;
   social_networks: SocialNetwork[];
   updated_at?: string;
 };
