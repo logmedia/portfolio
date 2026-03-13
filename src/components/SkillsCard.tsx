@@ -1,35 +1,33 @@
 "use client";
 
 import { Box, Flex, Text, Stack, Heading, Icon, useColorModeValue } from "@chakra-ui/react";
-import { Cpu, Palette, Code, Database, BracketsCurly, Lightning } from "phosphor-react";
+import * as PhosphorIcons from "phosphor-react";
+import { Code, Lightning } from "phosphor-react";
+import { 
+  TbBrandAdobePhotoshop, TbBrandAdobeIllustrator, TbBrandAdobeAfterEffect,
+  TbBrandAdobeIndesign, TbBrandFigma, TbBrandTailwind, TbBrandNextjs,
+  TbBrandReact, TbBrandTypescript, TbBrandNodejs, TbBrandSupabase,
+  TbBrandAdobe
+} from "react-icons/tb";
+
+// Brand icons map (Identical to admin to ensure consistency)
+const BRAND_ICONS: Record<string, any> = {
+  TbBrandAdobePhotoshop, TbBrandAdobeIllustrator, TbBrandAdobeAfterEffect,
+  TbBrandAdobeIndesign, TbBrandFigma, TbBrandTailwind, TbBrandNextjs,
+  TbBrandReact, TbBrandTypescript, TbBrandNodejs, TbBrandSupabase,
+  TbBrandAdobe
+};
 
 interface Skill {
   name: string;
   level: number;
-  icon: any;
-  color: string;
+  icon: string;
+  color?: string;
+  customSvg?: string;
 }
 
-const ICON_MAP: Record<string, any> = {
-  Code,
-  Palette,
-  Database,
-  Lightning,
-  BracketsCurly,
-  Cpu,
-};
-
-const COLOR_MAP: Record<string, string> = {
-  Code: "cyan.400",
-  Palette: "pink.400",
-  Database: "purple.400",
-  Lightning: "yellow.400",
-  BracketsCurly: "blue.400",
-  Cpu: "green.400",
-};
-
 interface SkillsCardProps {
-  skills?: any[];
+  skills?: Skill[];
 }
 
 export function SkillsCard({ skills }: SkillsCardProps) {
@@ -41,6 +39,20 @@ export function SkillsCard({ skills }: SkillsCardProps) {
   const trackBg = useColorModeValue("gray.200", "whiteAlpha.100");
   const cardShadow = useColorModeValue("0 4px 20px 0 rgba(0, 0, 0, 0.05)", "0 8px 32px 0 rgba(0, 0, 0, 0.37)");
 
+  const getIconComponent = (iconName: string, customSvg?: string) => {
+    if (iconName === "custom" && customSvg) {
+      return () => (
+        <Box 
+          dangerouslySetInnerHTML={{ __html: customSvg }} 
+          boxSize="full"
+          sx={{ 'svg': { width: '100%', height: '100%', fill: 'currentColor' } }}
+        />
+      );
+    }
+    if (BRAND_ICONS[iconName]) return BRAND_ICONS[iconName];
+    return (PhosphorIcons as any)[iconName] || (PhosphorIcons as any)[iconName + "Logo"] || Code;
+  };
+
   return (
     <Box
       bg={bg}
@@ -50,21 +62,29 @@ export function SkillsCard({ skills }: SkillsCardProps) {
       boxShadow={cardShadow}
       border="1px solid"
       borderColor={borderColor}
+      mb={6}
     >
       <Heading size="md" color={headingColor} mb={6} display="flex" alignItems="center" gap={2}>
+        <Icon as={Lightning} color="brand.500" />
         Habilidades
       </Heading>
 
       <Stack spacing={6}>
-        {(skills || []).map((skill) => {
-          const IconComponent = ICON_MAP[skill.icon] || Code;
-          const skillColor = COLOR_MAP[skill.icon] || "brand.500";
+        {(skills || []).map((skill, index) => {
+          const IconComponent = getIconComponent(skill.icon, skill.customSvg);
+          const skillColor = skill.color || "#0BC5EA"; // cyan.400 approx or brand
           
           return (
-            <Box key={skill.name}>
+            <Box key={`${skill.name}-${index}`}>
               <Flex justify="space-between" align="center" mb={2}>
                 <Flex align="center" gap={2}>
-                  <Icon as={IconComponent} color={skillColor} fontSize="20px" />
+                  <Icon 
+                    as={IconComponent} 
+                    color={skillColor} 
+                    fontSize="20px"
+                    transition="all 0.3s"
+                    _hover={{ transform: 'scale(1.2)' }}
+                  />
                   <Text color={textColor} fontWeight="medium" fontSize="sm">
                     {skill.name}
                   </Text>

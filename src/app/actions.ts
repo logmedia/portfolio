@@ -116,11 +116,23 @@ const parseSkills = (input?: string) => {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
-      const [name, level, icon] = line.split("|");
+      const [name, level, icon, color, svgBase64] = line.split("|");
+      
+      let customSvg = "";
+      if (svgBase64) {
+        try {
+          customSvg = decodeURIComponent(escape(atob(svgBase64)));
+        } catch (e) {
+          console.error("Error decoding skill SVG:", e);
+        }
+      }
+
       return { 
         name: name?.trim() ?? "Skill", 
         level: Number(level?.trim() ?? 0), 
-        icon: icon?.trim() ?? "Code" 
+        icon: icon?.trim() ?? "Code",
+        color: color?.trim() || undefined,
+        customSvg: customSvg || undefined
       };
     });
 };

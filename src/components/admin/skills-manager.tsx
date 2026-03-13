@@ -31,45 +31,74 @@ import {
   PopoverCloseButton,
   SimpleGrid,
   Tooltip,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Textarea,
+  Center,
 } from "@chakra-ui/react";
 import { 
   Code, Palette, Database, Lightning, BracketsCurly, Cpu, Plus, Trash, 
   Camera, MusicNotes, ChartBar, Globe, Book, Pen, VideoCamera, 
   SpeakerHigh, Flask, MagnifyingGlass, DotsSixVertical, BezierCurve, FilmStrip,
-  Strategy, UserCircle, Briefcase, TrendUp
+  Strategy, UserCircle, Briefcase, TrendUp, IdentificationBadge, PaintBrush
 } from "phosphor-react";
 import * as PhosphorIcons from "phosphor-react";
+import { 
+  TbBrandAdobePhotoshop, TbBrandAdobeIllustrator, TbBrandAdobeAfterEffect,
+  TbBrandAdobeIndesign, TbBrandFigma, TbBrandTailwind, TbBrandNextjs,
+  TbBrandReact, TbBrandTypescript, TbBrandNodejs, TbBrandSupabase,
+  TbBrandAdobe, TbCheck
+} from "react-icons/tb";
 import { useState, useMemo } from "react";
 
 export type SkillItem = {
   name: string;
   level: number;
   icon: string;
+  color?: string;
+  customSvg?: string;
 };
 
 interface SkillsManagerProps {
   initialSkills: SkillItem[];
 }
 
+// Brand icons map
+const BRAND_ICONS: Record<string, any> = {
+  TbBrandAdobePhotoshop, TbBrandAdobeIllustrator, TbBrandAdobeAfterEffect,
+  TbBrandAdobeIndesign, TbBrandFigma, TbBrandTailwind, TbBrandNextjs,
+  TbBrandReact, TbBrandTypescript, TbBrandNodejs, TbBrandSupabase,
+  TbBrandAdobe
+};
+
+// Selection Colors
+const COLOR_OPTIONS = [
+  "#3182CE", "#E53E3E", "#38A169", "#D69E2E", "#805AD5", "#D53F8C", 
+  "#319795", "#718096", "#00B5D8", "#48BB78", "#F6AD55", "#9F7AEA"
+];
+
 // Curated icons for the "Quick Selection"
 const QUICK_ICONS = [
-  { name: "Code", icon: Code, label: "Desenvolvimento" },
-  { name: "Palette", icon: Palette, label: "Design/Photoshop" },
-  { name: "BezierCurve", icon: BezierCurve, label: "Vetor/Illustrator" },
-  { name: "FilmStrip", icon: FilmStrip, label: "Vídeo/Premiere" },
-  { name: "Camera", icon: Camera, label: "Fotografia" },
+  { name: "TbBrandAdobePhotoshop", icon: TbBrandAdobePhotoshop, label: "Photoshop", color: "#31A8FF" },
+  { name: "TbBrandAdobeIllustrator", icon: TbBrandAdobeIllustrator, label: "Illustrator", color: "#FF9A00" },
+  { name: "TbBrandAdobeAfterEffect", icon: TbBrandAdobeAfterEffect, label: "After Effect", color: "#CF96FD" },
+  { name: "TbBrandFigma", icon: TbBrandFigma, label: "Figma", color: "#F24E1E" },
+  { name: "Code", icon: Code, label: "Dev" },
+  { name: "Palette", icon: Palette, label: "Design" },
+  { name: "Camera", icon: Camera, label: "Foto" },
   { name: "MusicNotes", icon: MusicNotes, label: "Música" },
-  { name: "ChartBar", icon: ChartBar, label: "Marketing/Dados" },
-  { name: "Pen", icon: Pen, label: "Escrita/Copy" },
-  { name: "Briefcase", icon: Briefcase, label: "Business/Gestão" },
-  { name: "TrendUp", icon: TrendUp, label: "Crescimento/SEO" },
+  { name: "VideoCamera", icon: VideoCamera, label: "Vídeo" },
+  { name: "TrendUp", icon: TrendUp, label: "Crescimento" },
 ];
 
 const SUGGESTIONS = [
-  "React", "Adobe Photoshop", "Adobe Illustrator", "Premiere Pro", "Figma", 
-  "UI/UX Design", "Estratégia SEO", "Gestão de Tráfego", "Copywriting", 
-  "Edição de Vídeo", "Fotografia", "Node.js", "TypeScript", "Inglês Fluente",
-  "Liderança", "Scrum/Agile", "Google Analytics", "Social Media"
+  "Adobe Photoshop", "Adobe Illustrator", "Premiere Pro", "Figma", 
+  "UI/UX Design", "React", "Next.js", "Node.js", "TypeScript",
+  "Fotografia Digital", "Edição de Vídeo", "Gestão de Tráfego", "Copywriting",
+  "Estratégia SEO", "Inglês Fluente", "Liderança"
 ];
 
 export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
@@ -77,47 +106,230 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
   const [newName, setNewName] = useState("");
   const [newLevel, setNewLevel] = useState(80);
   const [newIcon, setNewIcon] = useState("Code");
+  const [newColor, setNewColor] = useState("");
+  const [newCustomSvg, setNewCustomSvg] = useState("");
   const [iconSearch, setIconSearch] = useState("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const bg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
   const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
 
   const addSkill = () => {
     if (!newName.trim()) return;
-    setSkills([...skills, { name: newName.trim(), level: newLevel, icon: newIcon }]);
+    setSkills([...skills, { 
+      name: newName.trim(), 
+      level: newLevel, 
+      icon: newIcon, 
+      color: newColor, 
+      customSvg: newCustomSvg 
+    }]);
+    resetForm();
+  };
+
+  const resetForm = () => {
     setNewName("");
     setNewLevel(80);
-    // Keep set to Code or try to guess?
+    setNewIcon("Code");
+    setNewColor("");
+    setNewCustomSvg("");
+    setEditingIndex(null);
   };
 
   const removeSkill = (index: number) => {
     setSkills(skills.filter((_, i) => i !== index));
+    if (editingIndex === index) resetForm();
   };
 
-  const updateSkillLevel = (index: number, newLevel: number) => {
+  const updateSkill = (index: number, updates: Partial<SkillItem>) => {
     const updated = [...skills];
-    updated[index].level = newLevel;
+    updated[index] = { ...updated[index], ...updates };
     setSkills(updated);
   };
 
   const serializedSkills = useMemo(() => {
-    return skills.map((s) => `${s.name}|${s.level}|${s.icon}`).join("\n");
+    // Format: name|level|icon|color|customSvgBase64
+    return skills.map((s) => {
+      const svgBase64 = s.customSvg ? btoa(unescape(encodeURIComponent(s.customSvg))) : "";
+      return `${s.name}|${s.level}|${s.icon}|${s.color || ""}|${svgBase64}`;
+    }).join("\n");
   }, [skills]);
 
   // Helper to get Icon Component from string name
-  const getIconComponent = (iconName: string) => {
+  const getIconComponent = (iconName: string, customSvg?: string) => {
+    if (iconName === "custom" && customSvg) {
+      return () => (
+        <Box 
+          dangerouslySetInnerHTML={{ __html: customSvg }} 
+          boxSize="full"
+          sx={{ 'svg': { width: '100%', height: '100%', fill: 'currentColor' } }}
+        />
+      );
+    }
+    if (BRAND_ICONS[iconName]) return BRAND_ICONS[iconName];
     return (PhosphorIcons as any)[iconName] || (PhosphorIcons as any)[iconName + "Logo"] || Code;
   };
 
-  // Filter Phosphor icons for search (limit to 60 for performance)
   const filteredIcons = useMemo(() => {
-    if (!iconSearch) return [];
+    const query = iconSearch.trim().toLowerCase();
+    if (query.length < 2) return [];
+    
     return Object.keys(PhosphorIcons)
-      .filter(key => key.toLowerCase().includes(iconSearch.toLowerCase()) && typeof (PhosphorIcons as any)[key] === "function")
+      .filter(key => {
+        const val = (PhosphorIcons as any)[key];
+        const isComponent = typeof val === "function" || (typeof val === "object" && val !== null);
+        return isComponent && key.toLowerCase().includes(query);
+      })
       .slice(0, 48);
   }, [iconSearch]);
 
-  const CurrentIcon = getIconComponent(newIcon);
+  const CurrentIcon = getIconComponent(
+    editingIndex !== null ? skills[editingIndex].icon : newIcon,
+    editingIndex !== null ? skills[editingIndex].customSvg : newCustomSvg
+  );
+
+  const CurrentColor = editingIndex !== null ? skills[editingIndex].color : newColor;
+
+  const IconPickerPopover = ({ index = -1 }: { index?: number }) => {
+    const isEditing = index !== -1;
+    const item = isEditing ? skills[index] : null;
+    const activeIcon = isEditing ? item?.icon : newIcon;
+    const activeColor = isEditing ? item?.color : newColor;
+    const activeSvg = isEditing ? item?.customSvg : newCustomSvg;
+
+    const setIcon = (name: string) => isEditing ? updateSkill(index, { icon: name }) : setNewIcon(name);
+    const setColor = (color: string) => isEditing ? updateSkill(index, { color }) : setNewColor(color);
+    const setSvg = (svg: string) => {
+      if (isEditing) {
+        updateSkill(index, { icon: "custom", customSvg: svg });
+      } else {
+        setNewIcon("custom");
+        setNewCustomSvg(svg);
+      }
+    };
+
+    return (
+      <PopoverContent bg="gray.800" borderColor="whiteAlpha.200" boxShadow="xl" w="350px">
+        <PopoverArrow bg="gray.800" />
+        <PopoverCloseButton />
+        <PopoverHeader border="none" fontSize="sm" fontWeight="bold" pt={4}>
+          Personalizar Ícone
+        </PopoverHeader>
+        <PopoverBody pb={6}>
+          <Tabs size="sm" variant="soft-rounded" colorScheme="brand">
+            <TabList mb={4}>
+              <Tab fontSize="xs">Biblioteca</Tab>
+              <Tab fontSize="xs">Personalizado</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel p={0}>
+                <VStack spacing={4} align="stretch">
+                  <Box>
+                    <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Sugestões e Cores</Text>
+                    <SimpleGrid columns={5} gap={2} mb={4}>
+                      {QUICK_ICONS.map((q) => (
+                        <IconButton
+                          key={q.name}
+                          aria-label={q.label}
+                          icon={<Icon as={q.icon} boxSize={5} />}
+                          size="sm"
+                          variant={activeIcon === q.name ? "solid" : "ghost"}
+                          colorScheme={activeIcon === q.name ? "brand" : "whiteAlpha"}
+                          onClick={() => {
+                            setIcon(q.name);
+                            if (q.color) setColor(q.color);
+                          }}
+                        />
+                      ))}
+                    </SimpleGrid>
+                    <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Cores da Marca</Text>
+                    <SimpleGrid columns={6} gap={2}>
+                      {COLOR_OPTIONS.map(c => (
+                        <Box 
+                          key={c} 
+                          bg={c} 
+                          w="100%" 
+                          h="24px" 
+                          borderRadius="md" 
+                          cursor="pointer" 
+                          border={activeColor === c ? "2px solid white" : "none"}
+                          onClick={() => setColor(c)}
+                        />
+                      ))}
+                      <IconButton 
+                        aria-label="Reset Color" 
+                        icon={<Icon as={PaintBrush} />} 
+                        size="xs" 
+                        variant="ghost" 
+                        onClick={() => setColor("")} 
+                      />
+                    </SimpleGrid>
+                  </Box>
+                  <Divider borderColor="whiteAlpha.100" />
+                  <Box>
+                    <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Buscar Biblioteca</Text>
+                    <Input 
+                      placeholder="Ex: camera, heart..." 
+                      size="sm" 
+                      bg="blackAlpha.400"
+                      value={iconSearch}
+                      onChange={(e) => setIconSearch(e.target.value)}
+                      mb={3}
+                    />
+                    <SimpleGrid columns={6} gap={2} maxH="120px" overflowY="auto" px={1}>
+                      {filteredIcons.map(iconKey => {
+                        const IconComp = (PhosphorIcons as any)[iconKey];
+                        return (
+                          <IconButton
+                            key={iconKey}
+                            aria-label={iconKey}
+                            icon={<Icon as={IconComp} />}
+                            size="xs"
+                            variant={activeIcon === iconKey ? "solid" : "ghost"}
+                            colorScheme={activeIcon === iconKey ? "brand" : "whiteAlpha"}
+                            onClick={() => setIcon(iconKey)}
+                          />
+                        );
+                      })}
+                    </SimpleGrid>
+                  </Box>
+                </VStack>
+              </TabPanel>
+              <TabPanel p={0}>
+                <VStack spacing={4} align="stretch">
+                  <FormControl>
+                    <FormLabel fontSize="xs" color="whiteAlpha.500">Código SVG</FormLabel>
+                    <Textarea 
+                      placeholder="Cole aqui o <svg>...</svg>" 
+                      size="sm" 
+                      fontSize="10px"
+                      fontFamily="mono"
+                      rows={6}
+                      bg="blackAlpha.400"
+                      value={activeSvg}
+                      onChange={(e) => setSvg(e.target.value)}
+                    />
+                    <Text fontSize="10px" mt={2} color="whiteAlpha.400">
+                      Dica: Garanta que o SVG tenha viewBox e use currentColor para preencher.
+                    </Text>
+                  </FormControl>
+                  <Box>
+                     <Text fontSize="10px" color="whiteAlpha.500" mb={3}>Preview</Text>
+                     <Center p={4} bg="blackAlpha.300" borderRadius="md" h="80px">
+                        {activeSvg ? (
+                          <Icon as={getIconComponent("custom", activeSvg)} boxSize={10} color={activeColor || "brand.400"} />
+                        ) : (
+                          <Text fontSize="xs" color="whiteAlpha.300">Aguardando SVG...</Text>
+                        )}
+                     </Center>
+                  </Box>
+                </VStack>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </PopoverBody>
+      </PopoverContent>
+    );
+  };
 
   return (
     <Box p={5} bg={bg} borderRadius="xl" border="1px solid" borderColor={borderColor}>
@@ -156,9 +368,8 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
 
         <Divider borderColor="whiteAlpha.100" />
 
-        {/* New Form Design */}
-        <Grid templateColumns={{ base: "1fr", md: "auto 2fr 1.5fr auto" }} gap={4} alignItems="end">
-          {/* Icon Picker Popover */}
+        {/* Add New Form */}
+        <Grid templateColumns={{ base: "1fr", md: "auto 2fr 1.5fr auto" }} gap={4} alignItems="end" bg="blackAlpha.200" p={4} borderRadius="lg">
           <FormControl>
             <FormLabel fontSize="xs" color="whiteAlpha.600">Ícone</FormLabel>
             <Popover placement="bottom-start" gutter={12}>
@@ -171,70 +382,10 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
                   w="54px"
                   p={0}
                 >
-                  <Icon as={CurrentIcon} boxSize={6} color="brand.400" />
+                  <Icon as={CurrentIcon} boxSize={6} color={newColor || "brand.400"} />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent bg="gray.800" borderColor="whiteAlpha.200" boxShadow="xl" w="320px">
-                <PopoverArrow bg="gray.800" />
-                <PopoverCloseButton />
-                <PopoverHeader border="none" fontSize="sm" fontWeight="bold" pt={4}>Selecione um Ícone</PopoverHeader>
-                <PopoverBody pb={6}>
-                  <VStack spacing={4} align="stretch">
-                    <Box>
-                      <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Sugestões Rápidas</Text>
-                      <SimpleGrid columns={5} gap={2}>
-                        {QUICK_ICONS.map((item) => (
-                          <Tooltip key={item.name} label={item.label} fontSize="xs">
-                            <IconButton
-                              aria-label={item.name}
-                              icon={<Icon as={item.icon} boxSize={5} />}
-                              size="sm"
-                              variant={newIcon === item.name ? "solid" : "ghost"}
-                              colorScheme={newIcon === item.name ? "brand" : "whiteAlpha"}
-                              onClick={() => setNewIcon(item.name)}
-                            />
-                          </Tooltip>
-                        ))}
-                      </SimpleGrid>
-                    </Box>
-                    
-                    <Divider borderColor="whiteAlpha.100" />
-                    
-                    <Box>
-                      <Text fontSize="10px" color="whiteAlpha.500" mb={3} textTransform="uppercase">Pesquisar Biblioteca</Text>
-                      <Input 
-                        placeholder="Ex: heart, guitar..." 
-                        size="sm" 
-                        variant="filled" 
-                        bg="blackAlpha.400"
-                        _focus={{ bg: "blackAlpha.500" }}
-                        value={iconSearch}
-                        onChange={(e) => setIconSearch(e.target.value)}
-                        mb={3}
-                      />
-                      <SimpleGrid columns={6} gap={2} maxH="150px" overflowY="auto" px={1}>
-                        {filteredIcons.map(iconKey => {
-                          const FoundIcon = PhosphorIcons[iconKey as keyof typeof PhosphorIcons] as any;
-                          return (
-                            <IconButton
-                              key={iconKey}
-                              aria-label={iconKey}
-                              icon={<Icon as={FoundIcon} />}
-                              size="xs"
-                              variant={newIcon === iconKey ? "solid" : "ghost"}
-                              colorScheme={newIcon === iconKey ? "brand" : "whiteAlpha"}
-                              onClick={() => setNewIcon(iconKey)}
-                            />
-                          );
-                        })}
-                      </SimpleGrid>
-                      {iconSearch && filteredIcons.length === 0 && (
-                        <Text fontSize="xs" color="whiteAlpha.400" textAlign="center">Nenhum ícone encontrado</Text>
-                      )}
-                    </Box>
-                  </VStack>
-                </PopoverBody>
-              </PopoverContent>
+              <IconPickerPopover />
             </Popover>
           </FormControl>
 
@@ -290,7 +441,9 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
         {skills.length > 0 && (
           <VStack spacing={3} align="stretch" mt={4}>
             {skills.map((skill, index) => {
-              const SkillIcon = getIconComponent(skill.icon);
+              const SkillIcon = getIconComponent(skill.icon, skill.customSvg);
+              const skillColor = skill.color || "brand.400";
+              
               return (
                 <Flex
                   key={`${skill.name}-${index}`}
@@ -305,16 +458,24 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
                   role="group"
                 >
                   <HStack spacing={4} flex="1">
-                    <Box 
-                      p={2} 
-                      bg="blackAlpha.400" 
-                      borderRadius="lg" 
-                      color="brand.400"
-                      transition="transform 0.3s"
-                      _groupHover={{ transform: 'scale(1.1)' }}
-                    >
-                      <Icon as={SkillIcon} boxSize={5} />
-                    </Box>
+                    <Popover placement="bottom-start" gutter={12}>
+                      <PopoverTrigger>
+                        <Box 
+                          p={2} 
+                          bg="blackAlpha.400" 
+                          borderRadius="lg" 
+                          color={skillColor}
+                          cursor="pointer"
+                          transition="all 0.3s"
+                          _hover={{ transform: 'scale(1.1)', boxShadow: `0 0 10px ${skillColor}44` }}
+                          _groupHover={{ borderColor: skillColor }}
+                        >
+                          <Icon as={SkillIcon} boxSize={5} />
+                        </Box>
+                      </PopoverTrigger>
+                      <IconPickerPopover index={index} />
+                    </Popover>
+
                     <Box minW="140px">
                       <Text fontWeight="bold" fontSize="sm">{skill.name}</Text>
                       <Text fontSize="10px" color="whiteAlpha.500" textTransform="uppercase" letterSpacing="wider">Habilidade</Text>
@@ -326,7 +487,7 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
                          max={100}
                          step={5}
                          value={skill.level}
-                         onChange={(v) => updateSkillLevel(index, v)}
+                         onChange={(v) => updateSkill(index, { level: v })}
                          colorScheme="brand"
                        >
                          <SliderTrack bg="whiteAlpha.200" h="5px" borderRadius="full">

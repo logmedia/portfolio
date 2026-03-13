@@ -10,6 +10,14 @@ export type Stack = {
   color?: string;
 };
 
+export type Skill = {
+  name: string;
+  level: number;
+  icon: string;
+  color?: string;
+  customSvg?: string;
+};
+
 export type Profile = {
   id: string;
   name: string;
@@ -20,7 +28,7 @@ export type Profile = {
   cover_url?: string;
   socials?: SocialLink[];
   stacks?: string[];
-  skills?: any[];
+  skills?: Skill[];
   github_username?: string;
   whatsapp_number?: string;
   whatsapp_public?: boolean;
