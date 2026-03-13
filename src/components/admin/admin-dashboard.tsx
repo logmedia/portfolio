@@ -387,42 +387,43 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                             <FormLabel>Bio</FormLabel>
                             <Textarea name="bio" defaultValue={profile.bio ?? ""} rows={4} bg="blackAlpha.300" />
                           </FormControl>
-                          <Box mb={6} maxW="400px" mx="auto">
-                            <ProfileHeaderEditor 
-                              avatarUrl={profileAvatarUrl}
-                              coverUrl={profileCoverUrl}
-                              onAvatarChange={(url) => {
-                                setProfileAvatarUrl(url);
-                                setIsDirty(true);
-                              }}
-                              onCoverChange={(url) => {
-                                setProfileCoverUrl(url);
-                                setIsDirty(true);
-                              }}
-                              userName={profile.name}
-                              jobTitle={(profile as any).job_title ?? "Web Developer"}
-                            />
-                          </Box>
+                          <Grid templateColumns={{ base: "1fr", lg: "450px 1fr" }} gap={8} mb={6} alignItems="center">
+                            <Box w="full">
+                              <ProfileHeaderEditor 
+                                avatarUrl={profileAvatarUrl}
+                                coverUrl={profileCoverUrl}
+                                onAvatarChange={(url) => {
+                                  setProfileAvatarUrl(url);
+                                  setIsDirty(true);
+                                }}
+                                onCoverChange={(url) => {
+                                  setProfileCoverUrl(url);
+                                  setIsDirty(true);
+                                }}
+                                userName={profile.name}
+                                jobTitle={(profile as any).job_title ?? "Web Developer"}
+                              />
+                            </Box>
 
-                          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
-                            <MediaPicker 
-                              label="Alterar Avatar" 
-                              value={profileAvatarUrl} 
-                              onChange={(url) => {
-                                setProfileAvatarUrl(url);
-                                setIsDirty(true);
-                              }} 
-                            />
-                            <MediaPicker 
-                              label="Alterar Capa" 
-                              value={profileCoverUrl} 
-                              onChange={(url) => {
-                                setProfileCoverUrl(url);
-                                setIsDirty(true);
-                              }} 
-                            />
+                            <ChakraStack spacing={6} w="full">
+                              <MediaPicker 
+                                label="Alterar Avatar" 
+                                value={profileAvatarUrl} 
+                                onChange={(url) => {
+                                  setProfileAvatarUrl(url);
+                                  setIsDirty(true);
+                                }} 
+                              />
+                              <MediaPicker 
+                                label="Alterar Capa" 
+                                value={profileCoverUrl} 
+                                onChange={(url) => {
+                                  setProfileCoverUrl(url);
+                                  setIsDirty(true);
+                                }} 
+                              />
+                            </ChakraStack>
                           </Grid>
-                          {/* Hidden inputs to maintain form functionality with old schema */}
                           <input type="hidden" name="avatarUrl" value={profileAvatarUrl} />
                           <input type="hidden" name="coverUrl" value={profileCoverUrl} />
                            <FormControl isInvalid={usernameFeedback?.available === false}>

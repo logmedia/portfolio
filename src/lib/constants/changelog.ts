@@ -14,6 +14,7 @@ export const CHANGELOG_DATA: ChangelogEntry[] = [
     date: "12 de Março, 2026",
     title: "Estabilidade do Editor & Refinamento de Design",
     changes: [
+      { type: "fix", description: "Otimizado layout de edição de perfil com visualização lateral (Side-by-Side) e mockup ampliado." },
       { type: "fix", description: "Melhorias de estabilidade no editor de projetos, corrigindo erros ao salvar e travamentos de interface." },
       { type: "fix", description: "Refinamento visual global com transparência suave (Glassmorphism) atendendo ao novo guia de design." },
       { type: "fix", description: "Ajustada posição dos controles de edição do perfil para maior visibilidade e fluidez." },

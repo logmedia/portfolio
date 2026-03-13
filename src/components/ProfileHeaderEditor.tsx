@@ -107,7 +107,7 @@ export function ProfileHeaderEditor({
       <VStack spacing={0} align="stretch" bg="gray.900" borderRadius="2xl" overflow="hidden" border="1px solid" borderColor="whiteAlpha.100" pb={8}>
         <Box 
           w="full" 
-          h="140px" 
+          h="180px"  // Increased height for a larger appearance
           position="relative"
           bg="whiteAlpha.50"
         >
@@ -129,14 +129,14 @@ export function ProfileHeaderEditor({
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                pb={10} // Shift content up to clear the avatar
+                pb={4} // Reduced padding to ensure text is visible
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
               >
-                <VStack spacing={1}>
-                  <Icon as={ImageIcon} boxSize={5} color="white" />
-                  <Text color="white" fontWeight="bold" fontSize="2xs">Alterar Capa</Text>
+                <VStack spacing={2}>
+                  <Icon as={ImageIcon} boxSize={6} color="white" />
+                  <Text color="white" fontWeight="bold" fontSize="xs">Alterar Capa</Text>
                 </VStack>
               </MotionBox>
             </AnimatePresence>
@@ -145,7 +145,7 @@ export function ProfileHeaderEditor({
           {/* Avatar Overlay - Centered exactly like Mobile */}
           <Box 
             position="absolute" 
-            bottom="-50px" 
+            bottom="-60px" // Adjusted for larger header
             left="50%"
             transform="translateX(-50%)"
             zIndex={2}
@@ -182,11 +182,11 @@ export function ProfileHeaderEditor({
         </Box>
 
         {/* Info Preview Section */}
-        <VStack mt="60px" spacing={1} align="center" px={4}>
-          <Text color="white" fontWeight="bold" fontSize="xl" lineHeight="1.2" textAlign="center">
+        <VStack mt="70px" spacing={1} align="center" px={4}>
+          <Text color="white" fontWeight="bold" fontSize="2xl" lineHeight="1.2" textAlign="center">
             {userName}
           </Text>
-          <Text fontSize="xs" color="brand.400" fontWeight="bold" letterSpacing="wider" textTransform="uppercase" textAlign="center">
+          <Text fontSize="sm" color="brand.400" fontWeight="bold" letterSpacing="wider" textTransform="uppercase" textAlign="center">
             {jobTitle}
           </Text>
         </VStack>
