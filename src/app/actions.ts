@@ -142,7 +142,7 @@ export async function saveProfile(formData: FormData) {
     const parsed = profileSchema.safeParse({
       id: formData.get("id")?.toString(),
       name: formData.get("name")?.toString(),
-      jobTitle: formData.get("role")?.toString(), // Map the form field 'role' (job title) to jobTitle
+      jobTitle: formData.get("job_title")?.toString(), // Explicitly map job_title from form to jobTitle state
       bio: formData.get("bio")?.toString(),
       avatarUrl: formData.get("avatarUrl")?.toString(),
       coverUrl: formData.get("coverUrl")?.toString(),

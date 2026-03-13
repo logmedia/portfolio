@@ -148,6 +148,17 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
     return () => clearTimeout(timer);
   }, [profileUsername, profile.id]);
 
+  // Sync with props when they change (Revalidation)
+  useEffect(() => {
+    if (profile) {
+      setProfileName(profile.name ?? "");
+      setProfileJobTitle(profile.job_title ?? "");
+      setProfileAvatarUrl(profile.avatar_url ?? "");
+      setProfileCoverUrl(profile.cover_url ?? "");
+      setProfileUsername((profile as any).github_username ?? "");
+    }
+  }, [profile]);
+
   // Sincronizar stacks quando o post selecionado muda
   useEffect(() => {
     setSelectedStackIds(selectedPost?.stacks?.map(s => s.id) ?? []);
@@ -393,7 +404,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                           <FormControl>
                             <FormLabel>Cargo Atual</FormLabel>
                             <Input 
-                              name="role" 
+                              name="job_title" 
                               value={profileJobTitle} 
                               onChange={(e) => {
                                 setProfileJobTitle(e.target.value);

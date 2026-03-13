@@ -23,6 +23,7 @@ export async function fetchAdminProfile(userId?: string): Promise<Profile | null
     return {
       id: profileData.id,
       name: profileData.name,
+      job_title: profileData.job_title ?? undefined,
       role: profileData.role ?? undefined,
       bio: profileData.bio ?? undefined,
       avatar_url: profileData.avatar_url ?? undefined,
