@@ -138,9 +138,8 @@ export async function fetchAllProfiles(): Promise<Profile[]> {
         posts:posts(
           id,
           status,
-          tags,
           stacks:post_stacks(
-            stack:stacks(name)
+            stack:stacks(id, name)
           )
         )
       `)
@@ -158,41 +157,22 @@ export async function fetchAllProfiles(): Promise<Profile[]> {
         // Se não tem posts publicados, ignoramos no diretório (conforme pedido)
         if (publishedPosts.length === 0) return null;
 
-        // Consolidar skills: Profile Skills + Project Tags + Project Stacks
-        const profileSkills = Array.isArray(profile.skills) ? profile.skills : [];
-        const projectSkillsSet = new Set<string>();
-
+        // Coletar stacks únicas dos projetos publicados
+        const projectStackIds = new Set<string>();
         publishedPosts.forEach((post: any) => {
-          // Adicionar tags
-          if (Array.isArray(post.tags)) {
-            post.tags.forEach((tag: string) => projectSkillsSet.add(tag));
-          }
-          // Adicionar nomes das stacks do projeto como skills também
           if (Array.isArray(post.stacks)) {
             post.stacks.forEach((s: any) => {
-              if (s.stack?.name) projectSkillsSet.add(s.stack.name);
-            });
-          }
-        });
-
-        // Criar objetos de Skill para as tags encontradas (que ainda não existem no perfil)
-        const consolidatedSkills = [...profileSkills];
-        const existingSkillNames = new Set(consolidatedSkills.map(s => s.name.toLowerCase()));
-
-        projectSkillsSet.forEach(skillName => {
-          if (!existingSkillNames.has(skillName.toLowerCase())) {
-            consolidatedSkills.push({
-              name: skillName,
-              level: 0, // Indefinido
-              icon: 'Code', // Default
+              if (s.stack?.id) projectStackIds.add(s.stack.id);
             });
           }
         });
 
         return {
           ...profile,
-          stacks: profile.stacks || [],
-          skills: consolidatedSkills
+          // Stacks agora reflete apenas o que foi usado em projetos
+          stacks: Array.from(projectStackIds),
+          // Skills reflete apenas o que está no perfil (Expertises)
+          skills: Array.isArray(profile.skills) ? profile.skills : []
         };
       })
       .filter(Boolean) as Profile[];
