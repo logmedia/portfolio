@@ -129,19 +129,75 @@ export async function fetchProfile(userId?: string): Promise<Profile> {
 export async function fetchAllProfiles(): Promise<Profile[]> {
   try {
     const supabase = createPublicClient();
+    
+    // 1. Buscar perfis ativos com seus posts publicados e as stacks desses posts
     const { data, error } = await supabase
       .from("profiles")
-      .select("*, stacks")
+      .select(`
+        *,
+        posts:posts(
+          id,
+          status,
+          tags,
+          stacks:post_stacks(
+            stack:stacks(name)
+          )
+        )
+      `)
       .eq("status", "active")
       .not("name", "is", null)
       .order("name", { ascending: true });
 
     if (error || !data) return [];
-    return data.map((profile: any) => ({
-      ...profile,
-      stacks: profile.stacks || [],
-      skills: profile.skills || []
-    })) as Profile[];
+
+    // 2. Processar e filtrar perfis
+    const processedProfiles = data
+      .map((profile: any) => {
+        const publishedPosts = profile.posts?.filter((p: any) => p.status === 'published') || [];
+        
+        // Se não tem posts publicados, ignoramos no diretório (conforme pedido)
+        if (publishedPosts.length === 0) return null;
+
+        // Consolidar skills: Profile Skills + Project Tags + Project Stacks
+        const profileSkills = Array.isArray(profile.skills) ? profile.skills : [];
+        const projectSkillsSet = new Set<string>();
+
+        publishedPosts.forEach((post: any) => {
+          // Adicionar tags
+          if (Array.isArray(post.tags)) {
+            post.tags.forEach((tag: string) => projectSkillsSet.add(tag));
+          }
+          // Adicionar nomes das stacks do projeto como skills também
+          if (Array.isArray(post.stacks)) {
+            post.stacks.forEach((s: any) => {
+              if (s.stack?.name) projectSkillsSet.add(s.stack.name);
+            });
+          }
+        });
+
+        // Criar objetos de Skill para as tags encontradas (que ainda não existem no perfil)
+        const consolidatedSkills = [...profileSkills];
+        const existingSkillNames = new Set(consolidatedSkills.map(s => s.name.toLowerCase()));
+
+        projectSkillsSet.forEach(skillName => {
+          if (!existingSkillNames.has(skillName.toLowerCase())) {
+            consolidatedSkills.push({
+              name: skillName,
+              level: 0, // Indefinido
+              icon: 'Code', // Default
+            });
+          }
+        });
+
+        return {
+          ...profile,
+          stacks: profile.stacks || [],
+          skills: consolidatedSkills
+        };
+      })
+      .filter(Boolean) as Profile[];
+
+    return processedProfiles;
   } catch (error) {
     console.error("fetchAllProfiles ERROR:", error);
     return [];
