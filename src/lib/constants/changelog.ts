@@ -10,6 +10,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    version: "v1.2.2",
+    date: "12 de Março, 2026",
+    title: "Harmonização de Design & Explore 2.0",
+    changes: [
+      { type: "feat", description: "Filtros de Stacks (Tecnologias) na página Explore agora totalmente funcionais com integração ao banco." },
+      { type: "fix", description: "Redesenho das tags de Expertises com Glassmorphism de alto contraste para legibilidade absoluta." },
+      { type: "fix", description: "Padronização global de opacidade (5%) em todos os cartões, garantindo harmonia visual premium." },
+      { type: "fix", description: "Consolidação da fonte 'Space Grotesk' e remoção de variáveis de estilo legadas." },
+    ],
+  },
+  {
     version: "v1.2.1",
     date: "12 de Março, 2026",
     title: "Estabilidade do Editor & Refinamento de Design",
