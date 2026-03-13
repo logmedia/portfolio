@@ -1,8 +1,12 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
-import { BubbleMenu } from '@tiptap/react/menus';
+// @ts-ignore - BubbleMenu is exported from @tiptap/react but can have type issues
+import { BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
+import Strike from '@tiptap/extension-strike';
 import { Underline } from '@tiptap/extension-underline';
 import { Link } from '@tiptap/extension-link';
 import { Image } from '@tiptap/extension-image';
@@ -296,7 +300,14 @@ export function ModernEditor({ initialContent, onChange }: ModernEditorProps) {
         heading: {
           levels: [1, 2, 3],
         },
+        // Avoid internal conflicts by picking what we want
+        bold: false,
+        italic: false,
+        strike: false,
       }),
+      Bold,
+      Italic,
+      Strike,
       Underline,
       Link.configure({
         openOnClick: false,
@@ -334,9 +345,9 @@ export function ModernEditor({ initialContent, onChange }: ModernEditorProps) {
     },
   });
 
-  // Atualizar conteúdo quando initialContent mudar (ex: ao selecionar outro post)
+  // Atualizar conteúdo apenas se houver mudança externa real e o editor não estiver em foco
   useEffect(() => {
-    if (editor && initialContent !== editor.getHTML()) {
+    if (editor && initialContent !== editor.getHTML() && !editor.isFocused) {
       editor.commands.setContent(initialContent);
     }
   }, [initialContent, editor]);

@@ -210,9 +210,19 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
 
   const handlePostSubmit = (formData: FormData) => {
     startPostTransition(async () => {
+      console.log("[AdminDashboard] Starting savePost with formData...");
       const result = await savePost(formData);
+      console.log("[AdminDashboard] savePost result:", result);
+      
       if (!result.success) {
-        toast({ title: result.message ?? "Erro ao salvar", status: "error" });
+        console.error("[AdminDashboard] Save failed:", result.message, result.errors);
+        toast({ 
+          title: "Erro ao salvar", 
+          description: result.message || "Verifique o console para detalhes", 
+          status: "error",
+          duration: 5000,
+          isClosable: true
+        });
         return;
       }
       toast({ title: "Projeto salvo com sucesso!", status: "success" });
@@ -349,7 +359,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                         <input type="hidden" name="id" value={safeProfileId} />
                         <ChakraStack spacing={4}>
                           {/* Top Action Bar */}
-                          <HStack justify="space-between" align="center" bg="blackAlpha.600" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(16px)">
+                          <HStack justify="space-between" align="center" bg="blackAlpha.800" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(16px)">
                             <Text fontWeight="bold" fontSize="sm" ml={2}>
                               Configurações do Perfil
                             </Text>
@@ -510,7 +520,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities }:
                         <input type="hidden" name="id" value={safePostId} />
                         <ChakraStack spacing={6}>
                           {/* Top Action Bar */}
-                          <HStack justify="space-between" align="center" bg="blackAlpha.600" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(16px)">
+                          <HStack justify="space-between" align="center" bg="blackAlpha.800" p={2} borderRadius="lg" position="sticky" top="0" zIndex="10" backdropFilter="blur(16px)">
                             <Text fontWeight="bold" fontSize="sm" ml={2}>
                               {selectedPost ? "Editando Projeto" : "Novo Projeto"}
                             </Text>

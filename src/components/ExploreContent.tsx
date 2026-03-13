@@ -112,8 +112,8 @@ export function ExploreContent({ profiles }: ExploreContentProps) {
     setActiveSkills(new Set());
   };
 
-  const filterBg = useColorModeValue("whiteAlpha.500", "whiteAlpha.500");
-  const filterBorder = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
+  const filterBg = useColorModeValue("whiteAlpha.50", "whiteAlpha.50");
+  const filterBorder = useColorModeValue("whiteAlpha.200", "whiteAlpha.100");
 
   return (
     <Container maxW="container.xl" py={20}>
@@ -204,7 +204,7 @@ export function ExploreContent({ profiles }: ExploreContentProps) {
                         _hover={{ 
                           transform: 'translateY(-2px)', 
                           borderColor: 'brand.500',
-                          bg: isActive ? 'brand.600' : 'whiteAlpha.200'
+                          bg: isActive ? 'brand.600' : 'whiteAlpha.100'
                         }}
                         transition="all 0.2s"
                         borderWidth="1px"
@@ -242,7 +242,7 @@ export function ExploreContent({ profiles }: ExploreContentProps) {
                         _hover={{ 
                           transform: 'translateY(-2px)', 
                           borderColor: 'orange.500',
-                          bg: isActive ? 'orange.600' : 'whiteAlpha.200'
+                          bg: isActive ? 'orange.600' : 'whiteAlpha.100'
                         }}
                         transition="all 0.2s"
                         borderWidth="1px"

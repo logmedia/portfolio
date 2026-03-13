@@ -35,7 +35,7 @@ export function Header() {
 
   if (!mounted) {
     return (
-      <Flex as="header" position="sticky" top={0} zIndex={10} bg="blackAlpha.700" backdropFilter="blur(16px)" borderBottom="1px solid" borderColor="whiteAlpha.100" justify="center" py={5} boxShadow="sm">
+      <Flex as="header" position="sticky" top={0} zIndex={10} bg="blackAlpha.800" backdropFilter="blur(16px)" borderBottom="1px solid" borderColor="whiteAlpha.100" justify="center" py={5} boxShadow="sm">
         <Image src="/ignite-logo.svg" alt="Logotipo do Ignite" width={65} height={61} style={{ height: "2rem", width: "auto" }} />
       </Flex>
     );
@@ -47,10 +47,10 @@ export function Header() {
       position="sticky"
       top={0}
       zIndex={10}
-      bg={colorMode === "light" ? "whiteAlpha.800" : "blackAlpha.700"}
+      bg={colorMode === "light" ? "whiteAlpha.800" : "blackAlpha.800"}
       backdropFilter="blur(16px)"
       borderBottom="1px solid"
-      borderColor={colorMode === "light" ? "gray.200" : "whiteAlpha.200"}
+      borderColor={colorMode === "light" ? "whiteAlpha.200" : "whiteAlpha.100"}
       justify="space-between"
       align="center"
       py={4}

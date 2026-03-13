@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Box, Flex, Text, Heading, useColorModeValue, Badge, Icon, HStack, VStack, CircularProgress, CircularProgressLabel, Tooltip } from "@chakra-ui/react";
+import Link from "next/link";
 import { keyframes } from "@emotion/react";
 import type { Post as PostType, Profile } from "@/types/content";
 
@@ -27,7 +28,7 @@ export function Post({ post, profile }: PostProps) {
   const publishedAt = post.published_at ? new Date(post.published_at) : new Date();
 
   // Dynamic Colors
-  const bg = useColorModeValue("whiteAlpha.500", "whiteAlpha.500");
+  const bg = useColorModeValue("whiteAlpha.50", "whiteAlpha.50");
   const telemetryBg = useColorModeValue("blackAlpha.50", "blackAlpha.50");
   const borderColor = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
   const headingColor = useColorModeValue("gray.800", "white");
@@ -66,7 +67,11 @@ export function Post({ post, profile }: PostProps) {
         <HStack spacing={3}>
           <Icon as={BookOpen} color="gray.400" fontSize="20px" />
           <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }} color={headingColor} fontFamily="monospace">
-            <Box as="span" color="brand.500">logmedia</Box>
+            <Link href={`/${post.author?.github_username || profile.github_username || ""}`}>
+              <Box as="span" color="brand.500" _hover={{ textDecoration: "underline" }}>
+                {post.author?.github_username || profile.github_username || "logmedia"}
+              </Box>
+            </Link>
             <Box as="span" color="gray.500" mx={2}>/</Box>
             {post.slug}
           </Text>

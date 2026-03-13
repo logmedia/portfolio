@@ -17,15 +17,15 @@ export async function generateStaticParams() {
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
-  const [post, profile] = await Promise.all([
-    fetchPostBySlug(slug),
-    fetchProfile(),
-  ]);
+  const post = await fetchPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
+  // Se o post já trouxer o author (pelo join), usamos ele.
+  // Caso contrário, fazemos o fetch do perfil principal como fallback.
+  const profile = post.author || await fetchProfile();
   const comments = await fetchComments(post.id);
 
   return <PostDetailClient post={post} comments={comments} profile={profile} />;
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PostPageProps) {
     return { title: "Projeto não encontrado" };
   }
   return {
-    title: `${post.title} • José Renato`,
+    title: `${post.title} • ${post.author?.name || 'LogMedia'}`,
     description: post.subtitle ?? post.content?.slice(0, 120),
   };
 }

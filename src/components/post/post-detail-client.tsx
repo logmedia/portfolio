@@ -210,7 +210,11 @@ export function PostDetailClient({ post, comments, profile }: PostDetailClientPr
               <HStack spacing={3}>
                 <Icon as={BookOpen} color="gray.400" fontSize="24px" />
                 <Text fontWeight="bold" fontSize={{ base: "md", md: "xl" }} color={headingColor} fontFamily="monospace">
-                  <Box as="span" color="brand.500">logmedia</Box>
+                  <Link href={`/${profile.github_username || ""}`}>
+                    <Box as="span" color="brand.500" _hover={{ textDecoration: "underline" }}>
+                      {profile.github_username || "logmedia"}
+                    </Box>
+                  </Link>
                   <Box as="span" color="gray.500" mx={2}>/</Box>
                   {post.slug}
                 </Text>

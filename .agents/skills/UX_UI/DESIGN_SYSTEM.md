@@ -104,7 +104,7 @@ Use glass backgrounds only for structural elements:
 
 Glass properties:
 
-background: var(--chakra-colors-whiteAlpha-500) (rgba(255, 255, 255, 0.5))\
+background: var(--chakra-colors-whiteAlpha-50) (rgba(255, 255, 255, 0.05))\
 backdrop-filter: blur(16px)\
 border: 1px solid var(--chakra-colors-whiteAlpha-200)
 

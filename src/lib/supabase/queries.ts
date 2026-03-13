@@ -211,6 +211,7 @@ export async function fetchPosts(): Promise<Post[]> {
       .from("posts")
       .select(`
         *,
+        author:profiles(*),
         stacks:post_stacks(
           stack:stacks(*)
         )
@@ -271,6 +272,7 @@ export async function fetchPostBySlug(slug: string): Promise<Post | null> {
       .from("posts")
       .select(`
         *,
+        author:profiles(*),
         stacks:post_stacks(
           stack:stacks(*)
         )

@@ -45,8 +45,8 @@ interface SidebarProps {
 export function Sidebar({ profile }: SidebarProps) {
   const { name, role, job_title, bio, avatar_url, cover_url, socials, whatsapp_number, whatsapp_public } = { ...DEFAULT_PROFILE, ...profile };
 
-  const bg = useColorModeValue("whiteAlpha.700", "whiteAlpha.500");
-  const borderColor = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
+  const bg = useColorModeValue("whiteAlpha.50", "whiteAlpha.50");
+  const borderColor = useColorModeValue("whiteAlpha.200", "whiteAlpha.100");
   const textColor = useColorModeValue("gray.800", "gray.100");
   const mutedTextColor = useColorModeValue("gray.600", "gray.400");
   const cardShadow = useColorModeValue("xl", "2xl");

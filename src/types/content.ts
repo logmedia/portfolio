@@ -58,6 +58,7 @@ export type Post = {
   difficulty?: number;
   status?: "draft" | "published" | "trash";
   published_at?: string | null;
+  author?: Profile;
 };
 
 export type Project = Post;

@@ -63,7 +63,7 @@ const components = {
     baseStyle: {
       container: {
         borderRadius: "2xl",
-        bg: "whiteAlpha.500",
+        bg: "whiteAlpha.50",
         backdropFilter: "blur(16px)",
         borderWidth: "1px",
         borderColor: "whiteAlpha.200",
