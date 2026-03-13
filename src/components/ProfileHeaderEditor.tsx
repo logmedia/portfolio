@@ -129,13 +129,14 @@ export function ProfileHeaderEditor({
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
+                pb={10} // Shift content up to clear the avatar
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
               >
-                <VStack spacing={2}>
-                  <Icon as={ImageIcon} boxSize={6} color="white" />
-                  <Text color="white" fontWeight="bold" fontSize="xs">Alterar Capa</Text>
+                <VStack spacing={1}>
+                  <Icon as={ImageIcon} boxSize={5} color="white" />
+                  <Text color="white" fontWeight="bold" fontSize="2xs">Alterar Capa</Text>
                 </VStack>
               </MotionBox>
             </AnimatePresence>

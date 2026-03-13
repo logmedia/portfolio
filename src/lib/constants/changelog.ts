@@ -16,6 +16,7 @@ export const CHANGELOG_DATA: ChangelogEntry[] = [
     changes: [
       { type: "fix", description: "Corrigido erro de salvamento de projetos causado por conflitos de extensões no ModernEditor." },
       { type: "fix", description: "Resolvido loop de renderização infinita no editor HTML ao sincronizar conteúdo." },
+      { type: "fix", description: "Ajustada posição do ícone de alterar capa no mockup de perfil para evitar sobreposição." },
       { type: "fix", description: "Sincronização global da transparência Glassmorphism para 5% atendendo às novas diretrizes de design." },
       { type: "chore", description: "Implementação de logs de diagnóstico detalhados para ações administrativas (Posts & Perfil)." },
       { type: "feat", description: "Criada Skill de Manutenção para garantir padronização de Changelog e Git." },
