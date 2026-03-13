@@ -247,7 +247,7 @@ export function PostDetailClient({ post, comments, profile, siteSettings, isAuth
                 <Tooltip label="Editar Projeto" hasArrow>
                   <Button
                     as={Link}
-                    href="/admin"
+                    href={`/admin?tab=projetos&projectId=${post.id}`}
                     size="sm"
                     colorScheme="brand"
                     variant="outline"

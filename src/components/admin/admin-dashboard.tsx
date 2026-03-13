@@ -58,6 +58,7 @@ import { MediaPicker } from "./media-picker";
 import { GalleryManager } from "./gallery-manager";
 import { ActivityFeed } from "./activity-feed";
 import { useEffect } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 
 const ModernEditor = dynamic(() => import("./modern-editor").then(mod => mod.ModernEditor), {
@@ -89,7 +90,12 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ profile, posts, comments, stacks, activities, siteSettings, analyticsSummary }: AdminDashboardProps) {
   const toast = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [tabIndex, setTabIndex] = useState(0);
   const [isSavingProfile, startProfileTransition] = useTransition();
   const [isSavingPost, startPostTransition] = useTransition();
   const [isDeletingPost, startDeleteTransition] = useTransition();
@@ -129,6 +135,49 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities, s
       fetchAllProfiles().then(data => setAllUsers(data as any));
     }
   }, [isAdmin, profile.id]);
+
+  // Tab mapping for URL Search Params
+  const TAB_KEYS = ["perfil", "projetos", "stacks", "comentarios", "lixeira", "usuarios", "analytics", "configuracoes"];
+  
+  // Read URL params on mount or when they change
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    const projectIdParam = searchParams.get("projectId");
+
+    if (tabParam) {
+      const index = TAB_KEYS.indexOf(tabParam);
+      if (index !== -1) {
+        setTabIndex(index);
+      }
+    } else {
+      setTabIndex(0);
+    }
+
+    if (projectIdParam) {
+      const foundPost = localPosts.find(p => p.id === projectIdParam);
+      if (foundPost) {
+        setSelectedPost(foundPost);
+      }
+    }
+  }, [searchParams, localPosts]);
+
+  const handleTabChange = (index: number) => {
+    const tabKey = TAB_KEYS[index];
+    
+    // Create new URL path with search params
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tabKey);
+    
+    // Note: We leave projectId in the URL if it exists so 
+    // switching back and forth preserves context, unless they click "New Project"
+
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    
+    if (index === 1 && !searchParams.get("projectId")) {
+       // If changing to projects tab without a project in URL, clear selection
+       handleNewProject();
+    }
+  };
 
   // Profile username state
   const [profileUsername, setProfileUsername] = useState((profile as any).github_username ?? "");
@@ -231,6 +280,20 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities, s
     setSelectedPost(null);
     setFormKey(prev => prev + 1);
     setIsDirty(false);
+    
+    // Clear the projectId from URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("projectId");
+    params.set("tab", "projetos");
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleSelectProject = (post: Post) => {
+    setSelectedPost(post);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("projectId", post.id);
+    params.set("tab", "projetos"); // guarantee correct tab
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handlePostSubmit = (formData: FormData) => {
@@ -356,11 +419,8 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities, s
         <Tabs 
           variant="enclosed" 
           colorScheme="brand"
-          onChange={(index) => {
-            if (index === 1) {
-              handleNewProject();
-            }
-          }}
+          index={tabIndex}
+          onChange={handleTabChange}
         >
           <TabList overflowX="auto" borderBottomColor="whiteAlpha.200">
             <Tab fontWeight="semibold"><Icon as={Cube} mr={2} /> Perfil</Tab>
@@ -865,7 +925,7 @@ export function AdminDashboard({ profile, posts, comments, stacks, activities, s
                               bg={selectedPost?.id === post.id ? "whiteAlpha.200" : "transparent"}
                               cursor="pointer"
                               transition="all 0.2s"
-                              onClick={() => setSelectedPost(post)}
+                              onClick={() => handleSelectProject(post)}
                               _hover={{ borderColor: "brand.300" }}
                             >
                               <CardBody p={3}>
