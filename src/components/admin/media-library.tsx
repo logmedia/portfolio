@@ -24,9 +24,13 @@ import {
   SliderThumb,
   Badge,
   Divider,
+  FormControl,
+  FormLabel,
+  Input,
+  Tooltip
 } from '@chakra-ui/react';
-import { CloudArrowUp, Image as ImageIcon, Trash, CheckCircle, ArrowsClockwise, CaretLeft, CaretRight } from 'phosphor-react';
-import { getMediaLibrary, uploadMedia, deleteMedia } from '@/app/actions';
+import { CloudArrowUp, Image as ImageIcon, Trash, CheckCircle, ArrowsClockwise, CaretLeft, CaretRight, Sparkle, Palette } from 'phosphor-react';
+import { getMediaLibrary, uploadMedia, deleteMedia, generateAICover } from '@/app/actions';
 import {
   processImage,
   loadImage,
@@ -74,6 +78,10 @@ export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl, intent = 'g
   const [options, setOptions] = useState<ProcessOptions>({ ...DEFAULT_OPTIONS });
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // IA Generation State
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   const fetchMedia = async () => {
     setIsLoading(true);
@@ -237,12 +245,47 @@ export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl, intent = 'g
     ? Math.round((1 - processResult.size / originalSize.size) * 100)
     : 0;
 
+  const handleGenerateAI = async (withBanana = false) => {
+    if (!aiPrompt && !withBanana) return;
+    
+    setIsGeneratingAI(true);
+    try {
+      const bananaKeywords = "google art, material design 3 aesthetic, vibrant azure and yellow, clean tech textures, abstract spherical shapes, professional lighting, 8k, bokeh";
+      const finalPrompt = withBanana ? `${aiPrompt || 'modern abstract technology'} in the style of ${bananaKeywords}` : aiPrompt;
+
+      // Determine ideal dimensions based on intent
+      const width = intent === 'cover' ? 1920 : (intent === 'avatar' ? 512 : 1200);
+      const height = intent === 'cover' ? 400 : (intent === 'avatar' ? 512 : 800);
+
+      const result = await generateAICover(finalPrompt, width, height);
+      
+      if (result.success && result.media && result.url) {
+        setMediaItems(prev => [result.media, ...prev]);
+        toast({
+          title: withBanana ? "Imagem Nano Banana gerada!" : "Imagem gerada com sucesso!",
+          status: "success",
+          duration: 3000,
+        });
+        // Select it automatically
+        onSelect(result.media);
+        setAiPrompt("");
+      } else {
+        toast({ title: "Erro ao gerar", description: result.message, status: "error" });
+      }
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, status: "error" });
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   return (
     <Box bg="gray.900" borderRadius="xl" border="1px solid" borderColor="whiteAlpha.200" overflow="hidden">
       <Tabs variant="soft-rounded" colorScheme="brand" p={4}>
         <TabList mb={4}>
           <Tab fontSize="sm">Enviar Arquivos {selectedFiles.length > 0 && <Badge ml={2} colorScheme="brand" borderRadius="full">{selectedFiles.length}</Badge>}</Tab>
-          <Tab fontSize="sm">Biblioteca de Mídia</Tab>
+          <Tab fontSize="sm">Biblioteca</Tab>
+          <Tab fontSize="sm"><HStack spacing={1}><Sparkle weight="fill" color="#F6AD55"/><Text>Gerar IA</Text></HStack></Tab>
         </TabList>
 
         <TabPanels>
@@ -500,6 +543,63 @@ export function MediaLibrary({ onSelect, onBatchSelect, selectedUrl, intent = 'g
               </Grid>
             )}
           </TabPanel>
+
+          {/* === TAB: IA GENERATION === */}
+          <TabPanel p={0} pt={4}>
+             <VStack spacing={6} align="stretch" px={2}>
+              <FormControl>
+                <FormLabel fontSize="sm" color="whiteAlpha.600">Descreva o que deseja ver na imagem:</FormLabel>
+                <Input 
+                  placeholder="Ex: Paisagem cyberpunk realista com luzes neon e chuva..." 
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  bg="blackAlpha.400"
+                  borderColor="whiteAlpha.200"
+                  _focus={{ borderColor: "brand.400" }}
+                  borderRadius="lg"
+                  h="50px"
+                />
+              </FormControl>
+
+              <HStack spacing={4}>
+                <Button 
+                  flex={1}
+                  leftIcon={isGeneratingAI ? <Spinner size="xs" /> : <Sparkle size={18} />}
+                  colorScheme="brand"
+                  onClick={() => handleGenerateAI(false)}
+                  isDisabled={!aiPrompt || isGeneratingAI}
+                  h="50px"
+                  isLoading={isGeneratingAI}
+                  loadingText="Criando magia..."
+                >
+                  Gerar Imagem
+                </Button>
+                
+                <Tooltip label="Gera uma imagem abstrata impressionante no estilo material design com foco na assinatura visual Nano Banana." hasArrow>
+                  <Button 
+                    flex={1}
+                    leftIcon={<Palette size={18} />}
+                    variant="outline"
+                    borderColor="yellow.500"
+                    color="yellow.400"
+                    _hover={{ bg: "yellow.500", color: "gray.900" }}
+                    onClick={() => handleGenerateAI(true)}
+                    isDisabled={isGeneratingAI}
+                    h="50px"
+                  >
+                    Estilo Nano Banana 🍌
+                  </Button>
+                </Tooltip>
+              </HStack>
+              
+              <Box p={4} bg="whiteAlpha.50" borderRadius="lg" border="1px dashed" borderColor="whiteAlpha.100">
+                <Text fontSize="xs" color="whiteAlpha.500" textAlign="center">
+                  A imagem gerada será automaticamente formatada para a proporção ideal requerida por este campo (<b>{intent === 'cover' ? "Capa Horizontal" : (intent === 'avatar' ? "Avatar Quadrado" : "Padrão")}</b>) e salva em sua biblioteca de mídias.
+                </Text>
+              </Box>
+            </VStack>
+          </TabPanel>
+
         </TabPanels>
       </Tabs>
     </Box>

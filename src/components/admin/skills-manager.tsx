@@ -198,7 +198,7 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
 
   const CurrentColor = editingIndex !== null ? skills[editingIndex].color : newColor;
 
-  const IconPickerPopover = ({ index = -1 }: { index?: number }) => {
+  const renderIconPickerPopover = (index = -1) => {
     const isEditing = index !== -1;
     const item = isEditing ? skills[index] : null;
     const activeIcon = isEditing ? item?.icon : newIcon;
@@ -292,8 +292,8 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
                             <IconButton
                               key={iconKey}
                               aria-label={iconKey}
-                              icon={<Icon as={IconComp} />}
-                              size="xs"
+                              icon={<Icon as={IconComp} boxSize={5} />}
+                              size="sm"
                               variant={activeIcon === iconKey ? "solid" : "ghost"}
                               colorScheme={activeIcon === iconKey ? "brand" : "whiteAlpha"}
                               onClick={() => setIcon(iconKey)}
@@ -414,7 +414,7 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
                   <Icon as={CurrentIcon} boxSize={6} color={newColor || "brand.400"} />
                 </Button>
               </PopoverTrigger>
-              <IconPickerPopover />
+              {renderIconPickerPopover()}
             </Popover>
           </FormControl>
 
@@ -502,7 +502,7 @@ export function SkillsManager({ initialSkills = [] }: SkillsManagerProps) {
                           <Icon as={SkillIcon} boxSize={5} />
                         </Box>
                       </PopoverTrigger>
-                      <IconPickerPopover index={index} />
+                      {renderIconPickerPopover(index)}
                     </Popover>
 
                     <Box minW="140px">

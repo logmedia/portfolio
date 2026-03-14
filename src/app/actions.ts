@@ -980,7 +980,7 @@ export async function deleteComment(commentId: string) {
   }
 }
 
-export async function generateAICover(prompt: string) {
+export async function generateAICover(prompt: string, width = 1920, height = 400) {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -991,7 +991,7 @@ export async function generateAICover(prompt: string) {
     // Sanitize prompt for URL
     const sanitizedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
-    const aiUrl = `https://image.pollinations.ai/prompt/${sanitizedPrompt}?width=1920&height=400&nologo=true&seed=${seed}`;
+    const aiUrl = `https://image.pollinations.ai/prompt/${sanitizedPrompt}?width=${width}&height=${height}&nologo=true&seed=${seed}`;
 
     // 1. Fetch generated image
     const response = await fetch(aiUrl);
