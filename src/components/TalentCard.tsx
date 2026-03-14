@@ -71,14 +71,14 @@ export function TalentCard({ profile }: TalentCardProps) {
             left: 0,
             right: 0,
             bottom: 0,
-            background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 229, 255, 0.15), transparent 40%)`,
+            background: `radial-gradient(500px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 229, 255, 0.06), transparent 40%)`,
             opacity: isHovered ? 1 : 0,
-            transition: 'opacity 0.3s',
+            transition: 'opacity 0.4s',
             pointerEvents: 'none',
             zIndex: 1,
           }}
         >
-          {/* Spotlight border effect */}
+          {/* Spotlight border effect - Sharper reflection */}
           <Box
             position="absolute"
             top={0}
@@ -89,7 +89,7 @@ export function TalentCard({ profile }: TalentCardProps) {
             pointerEvents="none"
             zIndex={2}
             style={{
-              background: `radial-gradient(400px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 229, 255, 0.4), transparent 40%)`,
+              background: `radial-gradient(180px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255, 255, 255, 0.9), rgba(0, 229, 255, 0.4) 30%, transparent 70%)`,
             }}
             opacity={isHovered ? 1 : 0}
             transition="opacity 0.3s"
@@ -98,7 +98,7 @@ export function TalentCard({ profile }: TalentCardProps) {
               WebkitMaskClip: 'content-box, border-box',
               WebkitMaskComposite: 'xor',
               maskComposite: 'exclude',
-              padding: '1px',
+              padding: '1.5px', // Slightly thicker hit for the light
             }}
           />
 
