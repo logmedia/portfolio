@@ -45,62 +45,85 @@ export function TalentCard({ profile }: TalentCardProps) {
       legacyBehavior
     >
       <Link _hover={{ textDecoration: 'none' }} h="full">
-        <Card
-          ref={cardRef}
+        <Box 
+          position="relative" 
           h="full"
-          bg="whiteAlpha.50"
-          borderColor="whiteAlpha.200"
-          borderWidth="1px"
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          _hover={{
-            transform: 'translateY(-8px)',
-            borderColor: 'brand.500',
-            bg: 'whiteAlpha.100',
-            boxShadow: "0 10px 30px -10px rgba(0, 229, 255, 0.2)"
-          }}
-          transition="all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
-          borderRadius="2xl"
-          overflow="hidden"
-          position="relative"
-          _before={{
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `radial-gradient(500px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 229, 255, 0.06), transparent 40%)`,
-            opacity: isHovered ? 1 : 0,
-            transition: 'opacity 0.4s',
-            pointerEvents: 'none',
-            zIndex: 1,
-          }}
         >
-          {/* Spotlight border effect - Sharper reflection */}
+          {/* Outer Glow Effect (Shadow that follows mouse) */}
           <Box
             position="absolute"
             top={0}
             left={0}
             right={0}
             bottom={0}
-            borderRadius="2xl"
             pointerEvents="none"
-            zIndex={2}
-            style={{
-              background: `radial-gradient(180px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255, 255, 255, 0.9), rgba(0, 229, 255, 0.4) 30%, transparent 70%)`,
-            }}
+            zIndex={0}
             opacity={isHovered ? 1 : 0}
-            transition="opacity 0.3s"
-            sx={{
-              WebkitMaskImage: 'linear-gradient(black, black), linear-gradient(black, black)',
-              WebkitMaskClip: 'content-box, border-box',
-              WebkitMaskComposite: 'xor',
-              maskComposite: 'exclude',
-              padding: '1.5px', // Slightly thicker hit for the light
+            transition="opacity 0.5s ease"
+            style={{
+              background: `radial-gradient(350px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 229, 255, 0.15), transparent 70%)`,
             }}
+            filter="blur(40px)"
+            transform="scale(1.1)"
           />
+
+          <Card
+            ref={cardRef}
+            h="full"
+            bg="whiteAlpha.50"
+            borderColor="whiteAlpha.200"
+            borderWidth="1px"
+            _hover={{
+              transform: 'translateY(-8px)',
+              borderColor: 'brand.500',
+              bg: 'whiteAlpha.100',
+              boxShadow: "0 10px 40px -10px rgba(0, 229, 255, 0.3)"
+            }}
+            transition="all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+            borderRadius="2xl"
+            overflow="hidden"
+            position="relative"
+            zIndex={1}
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 229, 255, 0.02), transparent 40%)`,
+              opacity: isHovered ? 1 : 0,
+              transition: 'opacity 0.6s',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          >
+            {/* Spotlight border effect - High contrast reflection */}
+            <Box
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+              borderRadius="2xl"
+              pointerEvents="none"
+              zIndex={2}
+              style={{
+                background: `radial-gradient(160px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255, 255, 255, 1), rgba(0, 229, 255, 0.6) 20%, transparent 60%)`,
+              }}
+              opacity={isHovered ? 1 : 0}
+              transition="opacity 0.3s"
+              sx={{
+                WebkitMaskImage: 'linear-gradient(black, black), linear-gradient(black, black)',
+                WebkitMaskClip: 'content-box, border-box',
+                WebkitMaskComposite: 'xor',
+                maskComposite: 'exclude',
+                padding: '1px', 
+              }}
+            />
 
           <CardBody p={8} position="relative" zIndex={3}>
             <VStack spacing={6} h="full">
@@ -177,7 +200,8 @@ export function TalentCard({ profile }: TalentCardProps) {
             </VStack>
           </CardBody>
         </Card>
-      </Link>
-    </NextLink>
+      </Box>
+    </Link>
+  </NextLink>
   );
 }
