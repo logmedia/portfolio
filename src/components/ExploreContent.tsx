@@ -37,6 +37,7 @@ import {
 import { Lightning } from "phosphor-react";
 import { getIconComponent } from "@/lib/utils/icons";
 import type { Profile, Skill, Stack } from "@/types/content";
+import { TalentCard } from "./TalentCard";
 
 interface ExploreContentProps {
   profiles: Profile[];
@@ -330,105 +331,7 @@ function ExploreContent({ profiles, allStacks }: ExploreContentProps) {
         {/* Grid */}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={8} w="full">
           {filteredProfiles.map((profile) => (
-            <NextLink
-              key={profile.id}
-              href={`/${profile.github_username || profile.id}`}
-              passHref
-              legacyBehavior
-            >
-              <Link _hover={{ textDecoration: 'none' }} h="full">
-                <Card 
-                  h="full"
-                  bg="whiteAlpha.50" 
-                  borderColor="whiteAlpha.200" 
-                  borderWidth="1px"
-                  _hover={{ 
-                    transform: 'translateY(-8px)', 
-                    borderColor: 'brand.500', 
-                    bg: 'whiteAlpha.100',
-                    boxShadow: "0 10px 30px -10px rgba(0, 229, 255, 0.2)"
-                  }}
-                  transition="all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
-                  borderRadius="2xl"
-                  overflow="hidden"
-                >
-                  <CardBody p={8}>
-                    <VStack spacing={6} h="full">
-                      <Box position="relative">
-                        <Avatar 
-                          size="2xl" 
-                          name={profile.name} 
-                          src={profile.avatar_url}
-                          border="3px solid"
-                          borderColor="brand.500"
-                          p={1}
-                          bg="blackAlpha.500"
-                        />
-                      </Box>
-                      
-                      <VStack spacing={2}>
-                        <Heading size="md" color="white" textAlign="center">{profile.name}</Heading>
-                        <Text color="brand.400" fontSize="xs" fontWeight="bold" textTransform="uppercase" letterSpacing="2px">
-                          {profile.job_title || 'Profissional'}
-                        </Text>
-                      </VStack>
-
-                      <Text color="whiteAlpha.500" fontSize="sm" noOfLines={3} textAlign="center" lineHeight="shorter">
-                        {profile.bio || "Este profissional ainda não preencheu sua biografia."}
-                      </Text>
-                      
-                      <Box flex="1" w="full">
-                        {profile.skills && Array.isArray(profile.skills) && profile.skills.length > 0 ? (
-                          <HStack spacing={2} wrap="wrap" justify="center">
-                            {profile.skills.slice(0, 3).map((skill: any, idx: number) => {
-                              const SkillIcon = getIconComponent(skill.icon || 'Code');
-                              const brandColor = "var(--chakra-colors-brand-500)";
-                              return (
-                                <Tag 
-                                  key={idx} 
-                                  size="md" // Increased size for visibility
-                                  variant="solid" 
-                                  bg="rgba(255, 255, 255, 0.08)" 
-                                  backdropFilter="blur(8px)"
-                                  border="1px solid"
-                                  borderColor="whiteAlpha.300"
-                                  color="white"
-                                  borderRadius="full"
-                                  px={4}
-                                  py={2}
-                                  boxShadow={`0 4px 12px rgba(0, 0, 0, 0.5)`}
-                                  _hover={{ bg: "whiteAlpha.200", transform: "translateY(-1px)", borderColor: brandColor }}
-                                  transition="all 0.2s"
-                                >
-                                  <HStack spacing={2}>
-                                    <Icon as={SkillIcon} color={brandColor} fontSize="14px" />
-                                    <TagLabel fontSize="11px" fontWeight="800" letterSpacing="widest" textTransform="uppercase" color="white">
-                                      {skill.name}
-                                    </TagLabel>
-                                  </HStack>
-                                </Tag>
-                              );
-                            })}
-                            {profile.skills.length > 3 && (
-                              <Text fontSize="xs" color="whiteAlpha.400">+{profile.skills.length - 3}</Text>
-                            )}
-                          </HStack>
-                        ) : (
-                          <HStack justify="center" opacity={0.3}>
-                             <Text fontSize="10px" textTransform="uppercase" letterSpacing="1px">Perifil sem expertises definidas</Text>
-                          </HStack>
-                        )}
-                      </Box>
-
-                      <HStack color="brand.500" fontWeight="bold" fontSize="sm" pt={4} spacing={2} _groupHover={{ transform: 'translateX(4px)' }} transition="all 0.2s">
-                        <Text>Ver Portfólio Completo</Text>
-                        <ArrowRight size={16} />
-                      </HStack>
-                    </VStack>
-                  </CardBody>
-                </Card>
-              </Link>
-            </NextLink>
+            <TalentCard key={profile.id} profile={profile} />
           ))}
         </SimpleGrid>
 
